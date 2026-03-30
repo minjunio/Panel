@@ -2,32 +2,24 @@
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>vouches.ink | Elite Discord Vouching Network</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>vouches.ink | Verified Discord Reviews</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
+                        brand: '#00b67a',       /* Trustpilot Green */
+                        brandHover: '#009b68',
+                        brandDark: '#005128',   /* Deep Green for text */
+                        brandLight: '#dff6ed',  /* Very light green for backgrounds */
                         discord: '#5865F2',
-                        discordHover: '#4752C4',
-                        darkBg: '#09090b', /* Zinc 950 */
-                        surface: '#18181b', /* Zinc 900 */
-                        surfaceBorder: '#27272a', /* Zinc 800 */
+                        surface: '#ffffff',
+                        surfaceBorder: '#e5e7eb',
                     },
                     fontFamily: {
                         sans: ['Plus Jakarta Sans', 'Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'float': 'float 6s ease-in-out infinite',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    },
-                    keyframes: {
-                        float: {
-                            '0%, 100%': { transform: 'translateY(0)' },
-                            '50%': { transform: 'translateY(-20px)' },
-                        }
                     }
                 }
             }
@@ -35,25 +27,17 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body {
-            background-color: #09090b;
-        }
-        
-        /* Subtle Grid Background */
-        .bg-grid {
-            background-size: 40px 40px;
-            background-image: 
-                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
-            -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+        /* CRITICAL: Fixes horizontal scrolling/swiping on mobile */
+        html, body {
+            max-width: 100vw;
+            overflow-x: hidden;
+            background-color: #fcfbf9; /* Slightly warm off-white */
         }
 
         /* Form Pop-down Animation Classes */
         .form-hidden {
             grid-template-rows: 0fr;
             opacity: 0;
-            margin-top: 0;
             padding-top: 0;
             padding-bottom: 0;
         }
@@ -61,125 +45,120 @@
         .form-visible {
             grid-template-rows: 1fr;
             opacity: 1;
-            margin-top: 3rem;
-            padding-top: 5rem;
-            padding-bottom: 5rem;
+            padding-top: 4rem;
+            padding-bottom: 4rem;
         }
 
-        /* Glassmorphism Inputs */
-        .glass-input {
-            background: rgba(24, 24, 27, 0.6);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+        /* Five Star styling */
+        .star-icon {
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            background-color: #00b67a;
+            display: inline-block;
+            width: 24px;
+            height: 24px;
         }
-        
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: #09090b; }
-        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #5865F2; }
     </style>
 </head>
-<body class="text-gray-300 font-sans antialiased selection:bg-discord selection:text-white overflow-x-hidden relative">
+<body class="text-gray-800 font-sans antialiased selection:bg-brand selection:text-white">
 
-    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-discord/20 rounded-full blur-[150px] -z-10 pointer-events-none mix-blend-screen"></div>
-    <div class="absolute top-[20%] -left-[10%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] -z-10 pointer-events-none mix-blend-screen animate-pulse-slow"></div>
-
-    <div class="absolute inset-0 bg-grid -z-20 pointer-events-none"></div>
-
-    <nav class="fixed w-full z-50 bg-darkBg/60 backdrop-blur-xl border-b border-surfaceBorder/50 supports-[backdrop-filter]:bg-darkBg/40">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8">
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md border-b border-surfaceBorder shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
-                    <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-discord to-purple-600 flex items-center justify-center font-extrabold text-white text-xl shadow-[0_0_15px_rgba(88,101,242,0.5)]">
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <div class="w-10 h-10 rounded-full bg-brand flex items-center justify-center font-extrabold text-white text-xl shadow-md">
                         v
                     </div>
-                    <span class="font-extrabold text-2xl tracking-tight text-white">vouches<span class="text-discord">.ink</span></span>
+                    <span class="font-extrabold text-2xl tracking-tight text-brandDark">vouches<span class="text-brand">.ink</span></span>
                 </div>
-                <div class="hidden md:flex items-center gap-2">
-                    <span class="flex h-2 w-2 relative">
-                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                        <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                    </span>
-                    <span class="text-xs font-medium text-gray-400 tracking-wider uppercase">Systems Operational</span>
+                <div class="hidden md:flex items-center gap-4">
+                    <span class="text-sm font-semibold text-gray-500 hover:text-brandDark cursor-pointer transition-colors">Categories</span>
+                    <span class="text-sm font-semibold text-gray-500 hover:text-brandDark cursor-pointer transition-colors">For Businesses</span>
                 </div>
             </div>
         </div>
     </nav>
 
-    <section class="pt-40 pb-16 lg:pt-52 lg:pb-24 px-6 relative z-10 flex flex-col items-center text-center">
-        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-surface border border-surfaceBorder text-gray-300 text-sm font-semibold mb-8 shadow-xl shadow-black/50 backdrop-blur-md transition-transform hover:scale-105 cursor-default">
-            <span class="text-discord">★</span> The Industry Standard for Discord Commerce
+    <section class="pt-32 pb-16 lg:pt-48 lg:pb-24 px-4 sm:px-6 relative z-10 flex flex-col items-center text-center">
+        <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-brandLight border border-brand/20 text-brandDark text-sm font-bold mb-8 shadow-sm">
+            <div class="flex gap-0.5">
+                <div class="star-icon w-3 h-3"></div>
+                <div class="star-icon w-3 h-3"></div>
+                <div class="star-icon w-3 h-3"></div>
+            </div>
+            Trusted by over 50+ Discord businesses
         </div>
         
-        <h1 class="text-5xl md:text-7xl lg:text-8xl font-extrabold text-white tracking-tight mb-8 leading-[1.1] max-w-5xl mx-auto">
-            Establish Trust.<br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-discord via-purple-400 to-discord animate-pulse-slow">Dominate Your Market.</span>
+        <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-900 tracking-tight mb-6 leading-tight max-w-4xl mx-auto">
+            Read reviews. Write reviews. <br>
+            <span class="text-brand">Find businesses you can trust.</span>
         </h1>
         
-        <p class="text-lg md:text-xl text-gray-400 mb-12 max-w-2xl mx-auto leading-relaxed font-medium">
-            Stop losing customers to unverified competitors. Collect authentic, verified reviews and build an unshakable reputation for your Discord-based business.
+        <p class="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed font-medium">
+            The standard for <span class="text-discord font-bold">Discord-based</span> commerce. Collect authentic vouches, showcase your reputation, and prove your legitimacy to customers.
         </p>
         
-        <button onclick="toggleForm()" class="group relative inline-flex items-center justify-center gap-3 bg-white text-darkBg px-8 py-5 rounded-2xl font-bold text-lg md:text-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_0_40px_rgba(255,255,255,0.3)] overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-discord to-purple-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+        <div class="flex flex-col items-center mb-10">
+            <div class="flex gap-1 mb-2">
+                <div class="star-icon w-8 h-8"></div>
+                <div class="star-icon w-8 h-8"></div>
+                <div class="star-icon w-8 h-8"></div>
+                <div class="star-icon w-8 h-8"></div>
+                <div class="star-icon w-8 h-8"></div>
+            </div>
+            <p class="text-sm font-semibold text-gray-500">Showing the world that trust matters.</p>
+        </div>
+        
+        <button onclick="toggleForm()" class="group relative inline-flex items-center justify-center gap-2 bg-brand text-white px-8 py-4 rounded-full font-bold text-lg transition-all duration-300 hover:bg-brandHover hover:shadow-lg hover:-translate-y-0.5 w-full sm:w-auto">
             <span>Apply to get vouched</span>
-            <svg class="w-6 h-6 transform group-hover:translate-y-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+            <svg class="w-5 h-5 transform group-hover:translate-y-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
         </button>
     </section>
 
-    <div class="grid transition-all duration-700 ease-in-out form-hidden" id="form-wrapper">
-        <section id="apply" class="overflow-hidden relative w-full border-y border-surfaceBorder/50 bg-surface/30 backdrop-blur-xl">
-            <div class="absolute inset-0 bg-gradient-to-b from-discord/5 to-transparent pointer-events-none"></div>
-            
-            <div class="max-w-3xl mx-auto px-6 relative z-10">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-4">Verification Application</h2>
-                    <p class="text-gray-400 font-medium">Our moderation team meticulously reviews all submissions to ensure network integrity. Please provide accurate details below.</p>
+    <div class="grid transition-all duration-500 ease-in-out form-hidden bg-brandLight/40" id="form-wrapper">
+        <section id="apply" class="overflow-hidden relative w-full border-y border-brand/10">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6 relative z-10">
+                <div class="text-center mb-10">
+                    <h2 class="text-3xl font-extrabold text-brandDark mb-3">List Your Business</h2>
+                    <p class="text-gray-600 font-medium">Join 50+ other verified servers. Submit your Discord business below for our moderation team to review.</p>
                 </div>
 
-                <div id="form-container" class="bg-surface/80 p-8 md:p-10 rounded-3xl border border-surfaceBorder shadow-2xl relative">
-                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-discord/20 rounded-full blur-[40px] pointer-events-none"></div>
-
-                    <form id="business-form" class="space-y-6 relative z-10">
+                <div id="form-container" class="bg-white p-6 sm:p-10 rounded-2xl border border-surfaceBorder shadow-xl relative transition-all duration-300">
+                    <form id="business-form" class="space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2 group">
-                                <label for="bname" class="block text-sm font-semibold text-gray-300 group-focus-within:text-discord transition-colors">Business Name <span class="text-discord">*</span></label>
-                                <input type="text" id="bname" required class="w-full glass-input border border-surfaceBorder rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-discord focus:ring-1 focus:ring-discord transition-all shadow-inner" placeholder="e.g., Apex Designs">
+                            <div class="space-y-2">
+                                <label for="bname" class="block text-sm font-bold text-gray-700">Business Name <span class="text-brand">*</span></label>
+                                <input type="text" id="bname" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" placeholder="e.g., Apex Designs">
                             </div>
                             
-                            <div class="space-y-2 group">
-                                <label for="discord" class="block text-sm font-semibold text-gray-300 group-focus-within:text-discord transition-colors">Discord Invite Link <span class="text-discord">*</span></label>
-                                <input type="url" id="discord" required class="w-full glass-input border border-surfaceBorder rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-discord focus:ring-1 focus:ring-discord transition-all shadow-inner" placeholder="https://discord.gg/...">
+                            <div class="space-y-2">
+                                <label for="discord" class="block text-sm font-bold text-gray-700">Discord Invite Link <span class="text-brand">*</span></label>
+                                <input type="url" id="discord" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" placeholder="https://discord.gg/...">
                             </div>
                         </div>
 
-                        <div class="space-y-2 group">
-                            <label for="website" class="block text-sm font-semibold text-gray-300 group-focus-within:text-discord transition-colors">Website URL (Optional)</label>
-                            <input type="url" id="website" class="w-full glass-input border border-surfaceBorder rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-discord focus:ring-1 focus:ring-discord transition-all shadow-inner" placeholder="https://yourwebsite.com">
+                        <div class="space-y-2">
+                            <label for="website" class="block text-sm font-bold text-gray-700">Website URL (Optional)</label>
+                            <input type="url" id="website" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all" placeholder="https://yourwebsite.com">
                         </div>
 
-                        <div class="space-y-2 group">
-                            <label for="desc" class="block text-sm font-semibold text-gray-300 group-focus-within:text-discord transition-colors">Business Description <span class="text-discord">*</span></label>
-                            <textarea id="desc" rows="4" required class="w-full glass-input border border-surfaceBorder rounded-xl px-4 py-3.5 text-white placeholder-gray-600 focus:outline-none focus:border-discord focus:ring-1 focus:ring-discord transition-all shadow-inner resize-none" placeholder="Describe your services, products, and target audience..."></textarea>
+                        <div class="space-y-2">
+                            <label for="desc" class="block text-sm font-bold text-gray-700">Business Description <span class="text-brand">*</span></label>
+                            <textarea id="desc" rows="4" required class="w-full bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all resize-none" placeholder="What do you sell? Who are your customers?"></textarea>
                         </div>
 
-                        <button type="submit" class="w-full bg-discord hover:bg-discordHover text-white font-bold text-lg py-4 rounded-xl transition-all shadow-[0_0_20px_rgba(88,101,242,0.3)] hover:shadow-[0_0_30px_rgba(88,101,242,0.5)] flex justify-center items-center gap-2 group mt-4">
-                            <span>Submit for Review</span>
-                            <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        <button type="submit" class="w-full bg-brand hover:bg-brandHover text-white font-bold text-lg py-4 rounded-lg transition-all shadow-md hover:shadow-lg flex justify-center items-center gap-2 group mt-2">
+                            <span>Submit Application</span>
                         </button>
                     </form>
                 </div>
 
-                <div id="success-message" class="hidden bg-surface/80 p-12 rounded-3xl border border-green-500/30 text-center shadow-2xl relative backdrop-blur-xl">
-                    <div class="absolute inset-0 bg-green-500/5 rounded-3xl pointer-events-none"></div>
-                    <div class="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-8 relative">
-                        <div class="absolute inset-0 rounded-full border-2 border-green-500/30 animate-ping"></div>
-                        <svg class="w-12 h-12 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                <div id="success-message" class="hidden bg-white p-10 rounded-2xl border border-brand/30 text-center shadow-xl relative">
+                    <div class="w-20 h-20 bg-brandLight rounded-full flex items-center justify-center mx-auto mb-6">
+                        <svg class="w-10 h-10 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
                     </div>
-                    <h3 class="text-3xl font-extrabold text-white mb-4">Application Secured.</h3>
-                    <p class="text-gray-400 mb-8 text-lg max-w-md mx-auto">Your business has been queued for verification. Keep an eye on your Discord Direct Messages for the next steps.</p>
-                    <button onclick="resetForm()" class="bg-surfaceBorder hover:bg-gray-700 text-white px-8 py-3 rounded-xl font-bold transition-all hover:scale-105">
+                    <h3 class="text-2xl font-extrabold text-brandDark mb-3">Application Received</h3>
+                    <p class="text-gray-600 mb-8 max-w-sm mx-auto">Your business is now in our verification queue. Please check your Discord DMs over the next 24-48 hours.</p>
+                    <button onclick="resetForm()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 px-6 py-3 rounded-lg font-bold transition-colors">
                         Submit Another
                     </button>
                 </div>
@@ -187,17 +166,17 @@
         </section>
     </div>
 
-    <footer class="bg-darkBg py-12 border-t border-surfaceBorder/50 mt-20 relative z-10">
-        <div class="max-w-7xl mx-auto px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+    <footer class="bg-white py-10 border-t border-surfaceBorder mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-6">
             <div class="flex items-center gap-2">
-                <span class="font-extrabold text-lg text-white opacity-50">vouches<span class="text-discord">.ink</span></span>
+                <span class="font-extrabold text-xl text-brandDark">vouches<span class="text-brand">.ink</span></span>
             </div>
-            <p class="text-gray-600 text-sm text-center font-medium">
+            <p class="text-gray-500 text-sm font-medium text-center">
                 &copy; 2026 vouches.ink. Not affiliated with Discord Inc.
             </p>
             <div class="flex gap-6">
-                <a href="#" class="text-gray-600 hover:text-white transition-colors text-sm font-medium">Terms</a>
-                <a href="#" class="text-gray-600 hover:text-white transition-colors text-sm font-medium">Privacy</a>
+                <a href="#" class="text-gray-500 hover:text-brandDark transition-colors text-sm font-bold">Terms</a>
+                <a href="#" class="text-gray-500 hover:text-brandDark transition-colors text-sm font-bold">Privacy</a>
             </div>
         </div>
     </footer>
@@ -209,77 +188,62 @@
         const formContainer = document.getElementById('form-container');
         const successMessage = document.getElementById('success-message');
 
-        // Function to pop down the form and scroll to it
         function toggleForm() {
-            // Check if it's currently hidden
             if (formWrapper.classList.contains('form-hidden')) {
-                // Remove hidden classes, add visible classes
                 formWrapper.classList.remove('form-hidden');
                 formWrapper.classList.add('form-visible');
-                
-                // Allow CSS grid transition to start, then scroll smoothly
                 setTimeout(() => {
                     applySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 150); // Small delay ensures layout is calculated before scrolling
+                }, 100); 
             } else {
-                // If it's already open, just scroll to it smoothly
                 applySection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         }
 
-        // Form submission logic (Aesthetic only)
         form.addEventListener('submit', function(e) {
             e.preventDefault(); 
             
             const btn = form.querySelector('button[type="submit"]');
             const originalText = btn.innerHTML;
             
-            // Loading state
-            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Encrypting & Sending...`;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Processing...`;
             btn.classList.add('opacity-80', 'cursor-not-allowed');
             
-            // Simulate network request
             setTimeout(() => {
-                // Fade out form
                 formContainer.style.opacity = '0';
-                formContainer.style.transform = 'scale(0.95)';
-                formContainer.style.transition = 'all 0.4s ease';
+                formContainer.style.transform = 'translateY(10px)';
                 
                 setTimeout(() => {
                     formContainer.classList.add('hidden');
                     successMessage.classList.remove('hidden');
                     
-                    // Fade in success message
                     successMessage.style.opacity = '0';
-                    successMessage.style.transform = 'scale(0.95)';
+                    successMessage.style.transform = 'translateY(10px)';
                     
-                    // Trigger reflow
                     void successMessage.offsetWidth;
                     
-                    successMessage.style.transition = 'all 0.4s ease';
+                    successMessage.style.transition = 'all 0.3s ease';
                     successMessage.style.opacity = '1';
-                    successMessage.style.transform = 'scale(1)';
+                    successMessage.style.transform = 'translateY(0)';
                     
-                    // Reset button and form for next time
                     btn.innerHTML = originalText;
                     btn.classList.remove('opacity-80', 'cursor-not-allowed');
                     form.reset(); 
-                }, 400);
-            }, 1200);
+                }, 300);
+            }, 800);
         });
 
-        // Reset functionality
         function resetForm() {
             successMessage.style.opacity = '0';
-            successMessage.style.transform = 'scale(0.95)';
+            successMessage.style.transform = 'translateY(10px)';
             
             setTimeout(() => {
                 successMessage.classList.add('hidden');
                 formContainer.classList.remove('hidden');
                 
                 formContainer.style.opacity = '1';
-                formContainer.style.transform = 'scale(1)';
-            }, 400);
+                formContainer.style.transform = 'translateY(0)';
+            }, 300);
         }
     </script>
 </body>
