@@ -10,15 +10,32 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: '#00B67A',       /* Trustpilot Green */
+                        brand: '#00B67A',       
+                        brandHover: '#009B68',
                         brandBg: '#F2FBF7',
-                        starGray: '#D1D5DB',    /* Gray for empty stars */
                         textMain: '#111827',
                         textMuted: '#4B5563',
                         borderSoft: '#E5E7EB',
+                        aiBorder: '#E0E7FF',
                     },
                     fontFamily: {
                         sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'gradient-x': 'gradient-x 3s ease infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'gradient-x': {
+                            '0%, 100%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'left center'
+                            },
+                            '50%': {
+                                'background-size': '200% 200%',
+                                'background-position': 'right center'
+                            }
+                        }
                     }
                 }
             }
@@ -30,7 +47,7 @@
         html, body {
             max-width: 100vw;
             overflow-x: hidden;
-            background-color: #F9FAFB; /* Slightly off-white for contrast against cards */
+            background-color: #F9FAFB;
         }
 
         /* Trustpilot Style Star Boxes */
@@ -44,11 +61,17 @@
         }
         .tp-star-full { background-color: #00B67A; }
         .tp-star-half { background: linear-gradient(90deg, #00B67A 40%, #D1D5DB 40%); }
+        .tp-star-empty { background-color: #D1D5DB; }
+        
+        /* Interactive Review Stars */
+        .review-star-btn { transition: transform 0.1s ease; }
+        .review-star-btn:hover { transform: scale(1.1); }
+        .star-svg { transition: color 0.2s ease; }
     </style>
 </head>
 <body class="text-textMain font-sans antialiased selection:bg-brand selection:text-white flex flex-col min-h-screen">
 
-    <nav class="bg-white border-b border-borderSoft">
+    <nav class="bg-white border-b border-borderSoft sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-5">
             <div class="flex items-center justify-between h-16">
                 <a href="index.html" class="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
@@ -75,10 +98,10 @@
             <span class="text-textMain font-medium">Bluenovel</span>
         </div>
 
-        <div class="bg-white p-6 md:p-8 rounded-xl border border-borderSoft shadow-sm mb-6 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+        <div class="bg-white p-6 md:p-8 rounded-xl border border-borderSoft shadow-sm mb-6 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between relative overflow-hidden">
             
-            <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-center w-full">
-                <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg bg-blue-600 flex items-center justify-center shadow-inner">
+            <div class="flex flex-col sm:flex-row gap-5 items-start sm:items-center w-full relative z-10">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-md">
                     <span class="text-3xl font-bold text-white">B</span>
                 </div>
                 
@@ -103,8 +126,8 @@
                 </div>
             </div>
 
-            <div class="flex flex-col sm:items-end gap-3 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-borderSoft">
-                <div class="inline-flex items-center gap-2 bg-brandBg text-brand border border-brand/20 px-4 py-2.5 rounded-lg whitespace-nowrap">
+            <div class="flex flex-col sm:items-end gap-3 w-full md:w-auto mt-4 md:mt-0 pt-4 md:pt-0 border-t md:border-t-0 border-borderSoft relative z-10">
+                <div class="inline-flex items-center gap-2 bg-brandBg text-brand border border-brand/20 px-4 py-2.5 rounded-lg whitespace-nowrap shadow-sm">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -118,43 +141,130 @@
             </div>
         </div>
 
-        <div class="bg-white p-6 md:p-8 rounded-xl border border-borderSoft shadow-sm">
-            <div class="flex items-center gap-2.5 mb-6">
-                <div class="w-8 h-8 rounded bg-indigo-50 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                    </svg>
-                </div>
-                <div>
-                    <h2 class="text-xl font-bold text-textMain leading-tight">AI Review Summary</h2>
-                    <p class="text-sm text-textMuted">Generated from 301 customer reviews</p>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <div class="lg:col-span-1">
+                <div class="rounded-2xl border border-indigo-100 bg-white overflow-hidden shadow-sm relative group">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animate-gradient-x"></div>
+                    
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-indigo-400/10 rounded-full blur-2xl animate-pulse-slow"></div>
+
+                    <div class="p-6 relative z-10">
+                        <div class="flex items-center justify-between mb-6 border-b border-indigo-50 pb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 border border-indigo-100">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                </div>
+                                <h2 class="text-lg font-bold text-textMain tracking-tight">AI Analysis</h2>
+                            </div>
+                            <div class="flex items-center gap-2 px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100">
+                                <span class="relative flex h-2 w-2">
+                                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                  <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                </span>
+                                <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">Live</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-4">
+                            <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3 hover:border-brand/30 transition-colors">
+                                <div class="mt-0.5 w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <p class="text-sm text-textMain font-medium leading-snug">Payments are consistently made on time</p>
+                            </div>
+                            
+                            <div class="p-3.5 rounded-xl bg-gray-50 border border-gray-100 flex items-start gap-3 hover:border-brand/30 transition-colors">
+                                <div class="mt-0.5 w-5 h-5 rounded-full bg-brand/10 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3 h-3 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                                </div>
+                                <p class="text-sm text-textMain font-medium leading-snug">Owner is friendly and highly accommodating to customers</p>
+                            </div>
+
+                            <div class="p-3.5 rounded-xl bg-amber-50/50 border border-amber-100/50 flex items-start gap-3 hover:border-amber-200 transition-colors">
+                                <div class="mt-0.5 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-3 h-3 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </div>
+                                <p class="text-sm text-gray-800 font-medium leading-snug">Response times can be late with inefficient workflow</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-5 text-xs text-textMuted flex justify-between items-center border-t border-gray-100 pt-4">
+                            <span>Synthesized from 301 reviews</span>
+                            <span class="flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Updated just now</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <ul class="space-y-4">
-                <li class="flex items-start gap-3">
-                    <div class="mt-0.5 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-3.5 h-3.5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <span class="text-textMain font-medium">Payments are made</span>
-                </li>
-                
-                <li class="flex items-start gap-3">
-                    <div class="mt-0.5 w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-3.5 h-3.5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-                    </div>
-                    <span class="text-textMain font-medium">Owner is friendly and nice to customers</span>
-                </li>
+            <div class="lg:col-span-2">
+                <div id="review-container" class="bg-white p-6 md:p-8 rounded-2xl border border-borderSoft shadow-sm">
+                    <h2 class="text-2xl font-bold text-textMain mb-2">Write a Review</h2>
+                    <p class="text-sm text-textMuted mb-6">Share your experience with Bluenovel to help others make better decisions.</p>
 
-                <li class="flex items-start gap-3">
-                    <div class="mt-0.5 w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                        <svg class="w-3.5 h-3.5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 flex items-start gap-3">
+                        <div class="mt-0.5 flex-shrink-0">
+                            <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-bold text-red-800 mb-1">Strict Verification Policy Active</h4>
+                            <p class="text-xs md:text-sm text-red-700 leading-relaxed">
+                                All reviews are manually vetted by our moderation team. To prevent manipulation, our system securely logs IP addresses. <strong>You may only submit ONE review per business.</strong> Attempting to bypass this via VPN, alts, or duplicate submissions will result in an immediate, permanent IP ban from the vouches.ink network.
+                            </p>
+                        </div>
                     </div>
-                    <span class="text-textMain font-medium">Response time is late and inefficient workflow</span>
-                </li>
-            </ul>
+
+                    <form id="write-review-form" class="space-y-5">
+                        
+                        <div>
+                            <label class="block text-sm font-semibold text-textMain mb-2">Rate your experience <span class="text-red-500">*</span></label>
+                            <div class="flex gap-2" id="star-selector">
+                                <button type="button" class="review-star-btn" data-value="1">
+                                    <div class="tp-star-box tp-star-empty star-bg"><svg class="w-6 h-6 text-white star-svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+                                </button>
+                                <button type="button" class="review-star-btn" data-value="2">
+                                    <div class="tp-star-box tp-star-empty star-bg"><svg class="w-6 h-6 text-white star-svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+                                </button>
+                                <button type="button" class="review-star-btn" data-value="3">
+                                    <div class="tp-star-box tp-star-empty star-bg"><svg class="w-6 h-6 text-white star-svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+                                </button>
+                                <button type="button" class="review-star-btn" data-value="4">
+                                    <div class="tp-star-box tp-star-empty star-bg"><svg class="w-6 h-6 text-white star-svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+                                </button>
+                                <button type="button" class="review-star-btn" data-value="5">
+                                    <div class="tp-star-box tp-star-empty star-bg"><svg class="w-6 h-6 text-white star-svg" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></div>
+                                </button>
+                            </div>
+                            <input type="hidden" id="selected-rating" required>
+                            <p id="rating-error" class="text-xs text-red-500 mt-1 hidden">Please select a star rating.</p>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="rev_discord" class="block text-sm font-semibold text-textMain">Your Discord Username <span class="text-red-500">*</span></label>
+                            <input type="text" id="rev_discord" required class="w-full bg-gray-50 border border-borderSoft rounded-lg px-4 py-3 text-textMain placeholder-gray-400 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors" placeholder="e.g., user#1234">
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label for="rev_content" class="block text-sm font-semibold text-textMain">Your Review <span class="text-red-500">*</span></label>
+                            <textarea id="rev_content" rows="4" required class="w-full bg-gray-50 border border-borderSoft rounded-lg px-4 py-3 text-textMain placeholder-gray-400 focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand transition-colors resize-none" placeholder="What was it like working with Bluenovel? Mention the service, speed, and communication..."></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full sm:w-auto px-8 bg-textMain hover:bg-black text-white font-medium py-3 rounded-lg transition-colors flex justify-center items-center gap-2 mt-2">
+                            <span>Submit for Verification</span>
+                        </button>
+                    </form>
+                </div>
+
+                <div id="review-success" class="hidden bg-white p-10 rounded-2xl border border-brand/30 shadow-sm text-center">
+                    <div class="w-16 h-16 bg-brandBg rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-textMain mb-2">Review Submitted</h3>
+                    <p class="text-sm text-textMuted max-w-sm mx-auto">Your review and IP data have been securely logged. It will appear on the page once approved by moderation.</p>
+                </div>
+            </div>
+
         </div>
-
     </main>
 
     <footer class="bg-white py-8 border-t border-borderSoft mt-auto">
@@ -165,9 +275,7 @@
     </footer>
 
     <div id="reportModal" class="fixed inset-0 bg-textMain/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-200">
-        
         <div class="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden transform scale-95 transition-transform duration-200" id="modalContent">
-            
             <div class="flex justify-between items-center p-5 border-b border-borderSoft bg-gray-50">
                 <h3 class="text-lg font-bold text-textMain flex items-center gap-2">
                     <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
@@ -177,31 +285,25 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
             </div>
-
             <div class="p-6">
                 <form action="https://formsubmit.co/minjunnios@gmail.com" method="POST" class="space-y-4">
-                    
                     <input type="hidden" name="_captcha" value="false">
                     <input type="hidden" name="_next" value="https://vouches.ink">
                     <input type="hidden" name="_subject" value="New Report for Bluenovel">
 
                     <div class="space-y-1.5">
                         <label for="discord_username" class="block text-sm font-semibold text-textMain">Your Discord Username</label>
-                        <input type="text" id="discord_username" name="discord_username" required class="w-full bg-white border border-borderSoft rounded-lg px-3.5 py-2.5 text-textMain placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors" placeholder="user#1234 or @username">
+                        <input type="text" id="discord_username" name="discord_username" required class="w-full bg-white border border-borderSoft rounded-lg px-3.5 py-2.5 text-textMain placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors">
                     </div>
 
                     <div class="space-y-1.5">
                         <label for="report_details" class="block text-sm font-semibold text-textMain">Report Details</label>
-                        <textarea id="report_details" name="report_details" rows="4" required class="w-full bg-white border border-borderSoft rounded-lg px-3.5 py-2.5 text-textMain placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors resize-none" placeholder="Please explain why you are reporting this business..."></textarea>
+                        <textarea id="report_details" name="report_details" rows="4" required class="w-full bg-white border border-borderSoft rounded-lg px-3.5 py-2.5 text-textMain placeholder-gray-400 focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-colors resize-none"></textarea>
                     </div>
 
                     <div class="pt-2 flex gap-3">
-                        <button type="button" onclick="toggleModal('reportModal')" class="flex-1 bg-white border border-borderSoft hover:bg-gray-50 text-textMain font-medium py-2.5 rounded-lg transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm">
-                            Submit Report
-                        </button>
+                        <button type="button" onclick="toggleModal('reportModal')" class="flex-1 bg-white border border-borderSoft hover:bg-gray-50 text-textMain font-medium py-2.5 rounded-lg transition-colors">Cancel</button>
+                        <button type="submit" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-medium py-2.5 rounded-lg transition-colors shadow-sm">Submit Report</button>
                     </div>
                 </form>
             </div>
@@ -209,38 +311,76 @@
     </div>
 
     <script>
-        // Modal Logic with smooth fade in/out
+        // Modal Logic
         function toggleModal(modalID) {
             const modal = document.getElementById(modalID);
             const content = document.getElementById('modalContent');
-            
             if (modal.classList.contains('hidden')) {
-                // Open modal
                 modal.classList.remove('hidden');
-                // Small timeout to allow display:block to apply before animating opacity
                 setTimeout(() => {
                     modal.classList.remove('opacity-0');
                     content.classList.remove('scale-95');
                     content.classList.add('scale-100');
                 }, 10);
             } else {
-                // Close modal
                 modal.classList.add('opacity-0');
                 content.classList.remove('scale-100');
                 content.classList.add('scale-95');
-                
-                // Wait for transition to finish before hiding completely
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 200); // 200ms matches the duration-200 class
+                setTimeout(() => { modal.classList.add('hidden'); }, 200);
             }
         }
 
-        // Close modal when clicking outside of the content area
-        document.getElementById('reportModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                toggleModal('reportModal');
+        // Interactive Star Rating Logic
+        const starBtns = document.querySelectorAll('.review-star-btn');
+        const hiddenRatingInput = document.getElementById('selected-rating');
+        const ratingError = document.getElementById('rating-error');
+
+        starBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const value = parseInt(btn.getAttribute('data-value'));
+                hiddenRatingInput.value = value;
+                ratingError.classList.add('hidden'); // Hide error if user clicks
+
+                // Update UI for stars
+                starBtns.forEach(b => {
+                    const bValue = parseInt(b.getAttribute('data-value'));
+                    const starBg = b.querySelector('.star-bg');
+                    
+                    if (bValue <= value) {
+                        starBg.classList.remove('tp-star-empty');
+                        starBg.classList.add('tp-star-full');
+                    } else {
+                        starBg.classList.remove('tp-star-full');
+                        starBg.classList.add('tp-star-empty');
+                    }
+                });
+            });
+        });
+
+        // Review Form Submission Simulation
+        const reviewForm = document.getElementById('write-review-form');
+        const reviewContainer = document.getElementById('review-container');
+        const reviewSuccess = document.getElementById('review-success');
+
+        reviewForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Validate star rating
+            if(!hiddenRatingInput.value) {
+                ratingError.classList.remove('hidden');
+                return;
             }
+
+            const btn = reviewForm.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Securing Data...`;
+            btn.classList.add('opacity-80', 'cursor-not-allowed');
+
+            // Simulate network request & IP logging
+            setTimeout(() => {
+                reviewContainer.classList.add('hidden');
+                reviewSuccess.classList.remove('hidden');
+            }, 1200);
         });
     </script>
 </body>
