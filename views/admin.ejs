@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Admin - studycloud</title>
+    <%- include('partials/head') %>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-4xl mx-auto relative z-10 mt-6">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+            <h1 class="text-3xl md:text-4xl font-black text-anime-textMain">Admin Hub 🛡️</h1>
+            <a href="/" class="bg-white px-5 py-2 rounded-full font-black shadow-sm text-sm">View Store</a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+            <div class="glass-card p-6">
+                <h2 class="text-xl md:text-2xl font-black mb-4">Create Vendor Account</h2>
+                <form action="/admin/create-user" method="POST" class="space-y-4">
+                    <input type="text" name="username" placeholder="Vendor Username" required class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 font-bold outline-none focus:border-anime-accent text-sm">
+                    <input type="password" name="password" placeholder="Vendor Password" required class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 font-bold outline-none focus:border-anime-accent text-sm">
+                    <button type="submit" class="w-full bg-anime-textMain text-white font-black py-3 rounded-xl text-sm">Create Account</button>
+                </form>
+            </div>
+
+            <div class="glass-card p-6">
+                <h2 class="text-xl md:text-2xl font-black mb-4">Active Vendors</h2>
+                <ul class="space-y-2">
+                    <% if (users.length === 0) { %>
+                        <li class="text-sm text-anime-textDark font-bold">No vendors created yet.</li>
+                    <% } %>
+                    <% users.forEach(u => { %>
+                        <li class="bg-white p-3 rounded-xl font-bold flex justify-between text-sm">
+                            <span>@<%= u.username %></span>
+                            <span class="text-[10px] bg-anime-skyLight px-2 py-1 rounded text-anime-textMain">Vendor</span>
+                        </li>
+                    <% }) %>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
