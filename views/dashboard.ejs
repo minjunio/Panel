@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Vendor Dashboard - studycloud</title>
+    <%- include('partials/head') %>
+</head>
+<body class="p-4 md:p-8 flex items-center justify-center min-h-screen">
+    <div class="cloud w-[600px] h-[400px] top-10 left-10 opacity-70 animate-float"></div>
+    
+    <div class="glass-card p-6 md:p-8 w-full max-w-2xl relative z-10">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+            <h1 class="text-2xl md:text-3xl font-black text-anime-textMain">Post a Product 📦</h1>
+            <a href="/" class="text-sm font-bold text-anime-accent hover:underline">View Store</a>
+        </div>
+        
+        <form action="/dashboard/add-product" method="POST" class="space-y-4">
+            <div>
+                <label class="block text-sm font-black mb-1">Product Title</label>
+                <input type="text" name="title" required placeholder="e.g. Honorlock Bypass Guide" class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 font-bold outline-none focus:border-anime-accent text-sm">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-black mb-1">Exam / Category</label>
+                    <select name="category" required class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 font-bold outline-none focus:border-anime-accent appearance-none text-sm">
+                        <% categories.forEach(cat => { %>
+                            <option value="<%= cat %>"><%= cat %></option>
+                        <% }) %>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-black mb-1">Price ($)</label>
+                    <input type="number" step="0.01" name="price" required placeholder="15.00" class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 font-bold outline-none focus:border-anime-accent text-sm">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-sm font-black mb-1">Description</label>
+                <textarea name="description" required rows="3" placeholder="What does this include?" class="w-full bg-white border-2 border-gray-100 rounded-xl px-4 py-3 font-bold outline-none focus:border-anime-accent resize-none text-sm"></textarea>
+            </div>
+
+            <button type="submit" class="w-full bg-anime-accent text-white font-black py-4 rounded-xl hover:shadow-lg transition mt-4 text-sm md:text-base">Publish to Store ✨</button>
+        </form>
+    </div>
+</body>
+</html>
