@@ -1,0 +1,15 @@
+{
+  "name": "studycloud",
+  "version": "1.0.0",
+  "description": "Exam Marketplace",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "sqlite3": "^5.1.6"
+  }
+}
