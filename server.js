@@ -1,92 +1,81 @@
 const express = require('express');
 const session = require('express-session');
 const { ethers } = require('ethers');
+const bip39 = require('bip39');
+const ed25519 = require('ed25519-hd-key');
+const { Keypair } = require('@solana/web3.js');
 const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware Setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-app.use(express.urlencoded({ extended: true })); // Parse form data
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// Session config (use a strong environment variable for secret in production)
 app.use(session({
-    secret: process.env.SESSION_SECRET || 'dev-secret-key-123',
+    secret: process.env.SESSION_SECRET || 'tactical-override-key-999',
     resave: false,
     saveUninitialized: true
 }));
 
+// Helper function to derive both wallets from a single mnemonic
+function deriveWalletsFromMnemonic(mnemonic) {
+    // 1. Derive EVM Wallet (Ethereum, Polygon, Base)
+    const ethWallet = ethers.Wallet.fromPhrase(mnemonic);
+
+    // 2. Derive Solana Wallet using standard Phantom derivation path
+    const seed = bip39.mnemonicToSeedSync(mnemonic);
+    const solanaDerivationPath = "m/44'/501'/0'/0'";
+    const derivedSeed = ed25519.derivePath(solanaDerivationPath, seed.toString('hex')).key;
+    const solanaKeypair = Keypair.fromSeed(derivedSeed);
+
+    return {
+        mnemonic,
+        ethAddress: ethWallet.address,
+        solAddress: solanaKeypair.publicKey.toBase58()
+    };
+}
+
 // --- Routes ---
 
-// 1. Home / Setup Page
 app.get('/', (req, res) => {
-    // If they already have a wallet in session, send them straight to the dashboard
-    if (req.session.wallet) {
-        return res.redirect('/wallet');
-    }
+    if (req.session.wallet) return res.redirect('/wallet');
     res.render('index', { error: null });
 });
 
-// 2. Generate New Wallet
 app.post('/generate', (req, res) => {
     try {
-        // Create a random wallet using ethers.js
-        const wallet = ethers.Wallet.createRandom();
-        
-        // Store wallet data in the session
-        req.session.wallet = {
-            address: wallet.address,
-            mnemonic: wallet.mnemonic.phrase,
-            privateKey: wallet.privateKey
-        };
-        
+        const mnemonic = bip39.generateMnemonic();
+        req.session.wallet = deriveWalletsFromMnemonic(mnemonic);
         res.redirect('/wallet');
     } catch (error) {
         console.error(error);
-        res.render('index', { error: 'An error occurred while generating the wallet.' });
+        res.render('index', { error: 'Failed to generate cryptographic seed.' });
     }
 });
 
-// 3. Import Existing Wallet
 app.post('/import', (req, res) => {
     try {
         const mnemonic = req.body.mnemonic.trim();
+        if (!bip39.validateMnemonic(mnemonic)) throw new Error("Invalid mnemonic phrase.");
         
-        // Reconstruct the wallet from the seed phrase
-        const wallet = ethers.Wallet.fromPhrase(mnemonic);
-        
-        req.session.wallet = {
-            address: wallet.address,
-            mnemonic: wallet.mnemonic.phrase,
-            privateKey: wallet.privateKey
-        };
-        
+        req.session.wallet = deriveWalletsFromMnemonic(mnemonic);
         res.redirect('/wallet');
     } catch (error) {
-        // If fromPhrase fails, the seed phrase is invalid
-        res.render('index', { error: 'Invalid seed phrase. Please check your 12 or 24 words.' });
+        res.render('index', { error: 'INVALID SEED PHRASE. VERIFY INTEGRITY AND RETRY.' });
     }
 });
 
-// 4. Wallet Dashboard
 app.get('/wallet', (req, res) => {
-    // Protect route: Ensure wallet exists in session
-    if (!req.session.wallet) {
-        return res.redirect('/');
-    }
+    if (!req.session.wallet) return res.redirect('/');
     res.render('wallet', { wallet: req.session.wallet });
 });
 
-// 5. Logout / Clear Wallet
 app.post('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/');
 });
 
-// Start Server
-app.listen(PORT, () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
+app.listen(PORT, () => console.log(`[SYSTEM] Server listening on port ${PORT}`));
