@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Setup</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+    <div class="max-w-md w-full bg-gray-800 rounded-xl shadow-lg p-8 space-y-8">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-blue-400">Web3 Wallet</h1>
+            <p class="text-gray-400 mt-2">Generate a new wallet or import an existing one.</p>
+        </div>
+
+        <% if (error) { %>
+            <div class="bg-red-500/20 border border-red-500 text-red-300 p-3 rounded-lg text-sm text-center">
+                <%= error %>
+            </div>
+        <% } %>
+
+        <div class="space-y-4">
+            <h2 class="text-xl font-semibold border-b border-gray-700 pb-2">New User?</h2>
+            <form action="/generate" method="POST">
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+                    Generate New Wallet
+                </button>
+            </form>
+        </div>
+
+        <div class="relative flex py-2 items-center">
+            <div class="flex-grow border-t border-gray-700"></div>
+            <span class="flex-shrink-0 mx-4 text-gray-500 text-sm">OR</span>
+            <div class="flex-grow border-t border-gray-700"></div>
+        </div>
+
+        <div class="space-y-4">
+            <h2 class="text-xl font-semibold border-b border-gray-700 pb-2">Already have a wallet?</h2>
+            <form action="/import" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Seed Phrase (Mnemonic)</label>
+                    <textarea name="mnemonic" rows="3" required placeholder="Enter your 12 or 24 word secret phrase separated by spaces..." class="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-gray-700 hover:bg-gray-600 border border-gray-600 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
+                    Import Wallet
+                </button>
+            </form>
+        </div>
+    </div>
+
+</body>
+</html>
