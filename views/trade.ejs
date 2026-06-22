@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault Node | Escrow Arena</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-zinc-300 font-sans antialiased min-h-screen selection:bg-amber-500 selection:text-black p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Top Status Bar & Navigation Header -->
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-zinc-900 border border-zinc-800 p-5 gap-4 shadow-xl shadow-amber-900/5">
+            <div class="flex items-center space-x-3">
+                <div class="w-2 h-6 bg-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.6)]"></div>
+                <h1 class="text-xl font-mono font-bold text-white tracking-widest uppercase">Arena <span class="text-amber-500">Engine</span></h1>
+            </div>
+            <div class="flex flex-wrap items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                <a href="/wallet/portfolio" class="text-xs font-mono text-zinc-400 hover:text-emerald-400 border border-zinc-800 hover:border-emerald-500/40 px-4 py-1.5 uppercase transition-all duration-200 bg-zinc-950">
+                    ← Return to Portfolio
+                </a>
+            </div>
+        </header>
+
+        <!-- System Alerts Pipeline -->
+        <% if (error) { %>
+            <div class="bg-red-950/40 border border-red-500/50 text-red-400 p-4 font-mono text-sm uppercase tracking-wide flex items-start gap-3">
+                <span class="text-red-500 font-bold">[!]</span>
+                <p>SYSTEM REJECTION: <%= error %></p>
+            </div>
+        <% } %>
+        <% if (success) { %>
+            <div class="bg-emerald-950/40 border border-emerald-500/50 text-emerald-400 p-4 font-mono text-sm uppercase tracking-wide flex items-start gap-3">
+                <span class="text-emerald-500 font-bold">[+]</span>
+                <p>EXECUTION SUCCESS: <%= success %></p>
+            </div>
+        <% } %>
+
+        <!-- Main Arena Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- LEFT COLUMN: Host a Match -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-zinc-900 border border-zinc-800 p-6 shadow-lg">
+                    <h2 class="text-amber-500 font-mono uppercase tracking-widest text-sm border-b border-zinc-800 pb-3 mb-6 flex items-center">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-2 animate-pulse"></span> Host Protocol
+                    </h2>
+                    
+                    <form action="/trade/host" method="POST" class="space-y-5">
+                        
+                        <!-- Network Selection -->
+                        <div>
+                            <label class="block text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Escrow Network Pipeline</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="block cursor-pointer">
+                                    <input type="radio" name="chain" value="ETH" class="peer sr-only" checked>
+                                    <div class="p-3 border border-zinc-800 text-center font-mono text-xs uppercase text-zinc-500 peer-checked:border-blue-500 peer-checked:text-blue-400 bg-zinc-950/50 hover:bg-zinc-800 transition-colors">
+                                        EVM / ETH
+                                    </div>
+                                </label>
+                                <label class="block cursor-pointer">
+                                    <input type="radio" name="chain" value="SOL" class="peer sr-only">
+                                    <div class="p-3 border border-zinc-800 text-center font-mono text-xs uppercase text-zinc-500 peer-checked:border-purple-500 peer-checked:text-purple-400 bg-zinc-950/50 hover:bg-zinc-800 transition-colors">
+                                        SOLANA
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Game Type Selection -->
+                        <div>
+                            <label class="block text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Simulation Engine</label>
+                            <select name="game" class="w-full bg-zinc-950 border border-zinc-800 p-3 text-white font-mono text-xs focus:outline-none focus:border-amber-500 transition-colors appearance-none cursor-pointer">
+                                <option value="coinflip">Quantum Coinflip (50/50)</option>
+                                <option value="dice">Cryptographic Dice Roll</option>
+                                <option value="blackjack">Automated Blackjack</option>
+                            </select>
+                        </div>
+
+                        <!-- Wager Amount -->
+                        <div>
+                            <label class="block text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Stake Value (USD Equivalent)</label>
+                            <input type="number" name="amountUSD" step="1" min="1" required placeholder="0.00" class="w-full bg-zinc-950 border border-zinc-800 p-3 text-white font-mono text-lg focus:outline-none focus:border-amber-500 transition-colors placeholder-zinc-800">
+                        </div>
+
+                        <!-- Privacy Toggle -->
+                        <div class="flex items-center space-x-3 bg-zinc-950 border border-zinc-800 p-3">
+                            <input type="checkbox" name="isPrivate" id="isPrivate" class="w-4 h-4 accent-amber-500 bg-zinc-900 border-zinc-700">
+                            <label for="isPrivate" class="text-xs font-mono text-zinc-400 uppercase tracking-wide cursor-pointer select-none">Deploy as Private Match (Requires Key)</label>
+                        </div>
+
+                        <button type="submit" class="w-full bg-amber-600 hover:bg-amber-500 text-black font-bold font-mono text-xs py-4 px-4 uppercase tracking-widest transition-all duration-200 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
+                            Lock Funds & Initialize Escrow
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- User's Quick Balances Context -->
+                <div class="bg-zinc-900 border border-zinc-800 p-4">
+                    <p class="text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Available Liquidity</p>
+                    <div class="flex justify-between text-xs font-mono border-t border-zinc-800 pt-2 text-zinc-300">
+                        <span>ETH: <%= wallet.balances.eth.toFixed(4) %></span>
+                        <span>SOL: <%= wallet.balances.sol.toFixed(4) %></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Active Network & Join Match -->
+            <div class="lg:col-span-8 space-y-6">
+                
+                <!-- Active Public Matches Grid -->
+                <div class="bg-zinc-900 border border-zinc-800 p-6 shadow-lg min-h-[300px]">
+                    <h2 class="text-white font-mono uppercase tracking-widest text-sm border-b border-zinc-800 pb-3 mb-6 flex items-center justify-between">
+                        <span>Global Order Book</span>
+                        <span class="text-[10px] text-emerald-500 tracking-normal border border-emerald-900 bg-emerald-950/30 px-2 py-0.5 animate-pulse">LIVE</span>
+                    </h2>
+
+                    <% if (publicBets && publicBets.length > 0) { %>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <% publicBets.forEach(bet => { %>
+                                <div class="bg-zinc-950 border border-zinc-800 hover:border-amber-500/50 transition-colors p-4 relative overflow-hidden group">
+                                    <div class="absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity">
+                                        <span class="font-mono text-6xl text-amber-500"><%= bet.hostChain === 'SOL' ? '◎' : 'Ξ' %></span>
+                                    </div>
+                                    
+                                    <div class="flex justify-between items-start mb-4 relative z-10">
+                                        <div>
+                                            <p class="text-[10px] text-zinc-500 font-mono uppercase">Match ID: <%= bet.id %></p>
+                                            <h3 class="text-white font-mono text-sm uppercase tracking-wide"><%= bet.game %></h3>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-amber-400 font-bold font-mono">$<%= bet.amountUSD.toFixed(2) %></p>
+                                            <p class="text-[10px] text-zinc-500 font-mono uppercase"><%= bet.cryptoAmount %> <%= bet.hostChain %></p>
+                                        </div>
+                                    </div>
+                                    
+                                    <form action="/trade/join" method="POST" class="relative z-10 m-0">
+                                        <input type="hidden" name="betId" value="<%= bet.id %>">
+                                        <button type="submit" class="w-full bg-zinc-800 hover:bg-amber-600 hover:text-black text-zinc-300 font-mono text-[10px] py-2 uppercase tracking-widest transition-all duration-200 border border-zinc-700 hover:border-amber-500">
+                                            Challenge Stake
+                                        </button>
+                                    </form>
+                                </div>
+                            <% }) %>
+                        </div>
+                    <% } else { %>
+                        <div class="flex flex-col items-center justify-center py-12 text-zinc-600">
+                            <span class="text-4xl mb-4 font-mono">∅</span>
+                            <p class="font-mono text-xs uppercase tracking-widest text-center">No active public matrices found.<br>Initiate a new host protocol.</p>
+                        </div>
+                    <% } %>
+                </div>
+
+                <!-- Manual Connection / Private Match Override -->
+                <div class="bg-zinc-900 border border-zinc-800 p-6 shadow-lg relative overflow-hidden">
+                    <div class="absolute inset-0 bg-[radial-gradient(#3f3f46_1px,transparent_1px)] [background-size:16px_16px] opacity-10"></div>
+                    <div class="relative z-10">
+                        <h2 class="text-zinc-400 font-mono uppercase tracking-widest text-sm border-b border-zinc-800 pb-3 mb-6">Targeted Override (Join Private)</h2>
+                        
+                        <form action="/trade/join" method="POST" class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-grow">
+                                <input type="text" name="betId" placeholder="Match ID (Optional if Key is provided)" class="w-full bg-zinc-950 border border-zinc-800 p-3 text-white font-mono text-xs focus:outline-none focus:border-amber-500 transition-colors placeholder-zinc-700 mb-3">
+                                <input type="text" name="accessKey" placeholder="Private Access Key" class="w-full bg-zinc-950 border border-zinc-800 p-3 text-amber-500 font-mono text-xs focus:outline-none focus:border-amber-500 transition-colors placeholder-zinc-700 uppercase">
+                            </div>
+                            <button type="submit" class="w-full md:w-auto bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 hover:border-zinc-500 font-bold font-mono text-xs py-4 px-8 uppercase tracking-widest transition-all duration-200 h-full">
+                                Connect
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
