@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Wallet Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto space-y-6">
+        
+        <div class="flex justify-between items-center bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700">
+            <h1 class="text-2xl font-bold text-blue-400">Dashboard</h1>
+            <form action="/logout" method="POST">
+                <button type="submit" class="bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/50 py-2 px-4 rounded-lg transition duration-200 text-sm">
+                    Disconnect Wallet
+                </button>
+            </form>
+        </div>
+
+        <div class="bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-700 space-y-4">
+            <h2 class="text-xl font-semibold">Deposit Details</h2>
+            <p class="text-gray-400 text-sm">Send supported EVM tokens (ETH, Polygon, etc.) to this address:</p>
+            
+            <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 flex flex-col items-center space-y-4">
+                <div class="w-40 h-40 bg-white p-2 rounded-lg flex items-center justify-center">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<%= wallet.address %>" alt="QR Code" class="w-full h-full object-contain">
+                </div>
+                
+                <div class="w-full text-center">
+                    <code class="block w-full bg-gray-800 p-3 rounded text-green-400 font-mono text-sm break-all">
+                        <%= wallet.address %>
+                    </code>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-yellow-900/20 border border-yellow-700 p-6 rounded-xl shadow-lg space-y-4">
+            <h2 class="text-xl font-semibold text-yellow-500 flex items-center gap-2">
+                ⚠️ Secret Recovery Phrase
+            </h2>
+            <p class="text-gray-300 text-sm">
+                If you just generated this wallet, write these words down on paper immediately. Never share them with anyone. If you lose them, you lose your assets.
+            </p>
+            <div class="bg-black/50 p-4 rounded-lg border border-yellow-900/50">
+                <p class="font-mono text-yellow-400 leading-relaxed tracking-wide text-center">
+                    <%= wallet.mnemonic %>
+                </p>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
