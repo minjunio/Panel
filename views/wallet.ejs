@@ -3,127 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault Node | Dashboard</title>
+    <title>Vault Node | Terminal Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
-        // Simple UI script to handle tab switching
-        function switchTab(tabId) {
+        // Smooth local client-side tab execution matching backend routing fallback
+        function switchLocalTab(tabId) {
+            if (tabId === 'trade') {
+                window.location.href = '/wallet/trade';
+                return;
+            }
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('text-emerald-500', 'border-emerald-500');
+                el.classList.remove('text-emerald-500', 'border-emerald-500', 'bg-zinc-900/50');
                 el.classList.add('text-zinc-500', 'border-transparent');
             });
             
             document.getElementById(tabId).classList.remove('hidden');
             const activeBtn = document.getElementById('btn-' + tabId);
             activeBtn.classList.remove('text-zinc-500', 'border-transparent');
-            activeBtn.classList.add('text-emerald-500', 'border-emerald-500');
+            activeBtn.classList.add('text-emerald-500', 'border-emerald-500', 'bg-zinc-900/50');
+        }
+
+        // Toggle state for cryptographic seed phrase safety
+        function toggleSeedMask() {
+            const container = document.getElementById('seed-container');
+            const button = document.getElementById('seed-toggle-btn');
+            
+            if (container.classList.contains('blur-md')) {
+                container.classList.remove('blur-md', 'select-none');
+                button.textContent = 'MASK CRITICAL DATA';
+                button.classList.remove('bg-emerald-600/20', 'text-emerald-400', 'border-emerald-500/30');
+                button.classList.add('bg-red-600/20', 'text-red-400', 'border-red-500/30');
+            } else {
+                container.add('blur-md', 'select-none');
+                button.textContent = 'UNMASK SECRET RECOVERY PHRASE';
+                button.classList.remove('bg-red-600/20', 'text-red-400', 'border-red-500/30');
+                button.classList.add('bg-emerald-600/20', 'text-emerald-400', 'border-emerald-500/30');
+            }
         }
     </script>
 </head>
 <body class="bg-zinc-950 text-zinc-300 font-sans antialiased min-h-screen selection:bg-emerald-500 selection:text-black p-4 md:p-8">
 
-    <div class="max-w-3xl mx-auto space-y-6">
+    <div class="max-w-4xl mx-auto space-y-6">
         
-        <header class="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-5 shadow-xl">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-zinc-900 border border-zinc-800 p-5 gap-4">
             <div class="flex items-center space-x-3">
-                <div class="w-2 h-6 bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"></div>
-                <h1 class="text-xl font-bold text-white tracking-widest uppercase">Vault <span class="text-emerald-500">Node</span></h1>
+                <div class="w-2 h-6 bg-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.6)]"></div>
+                <h1 class="text-xl font-mono font-bold text-white tracking-widest uppercase">Vault <span class="text-emerald-500">Node</span></h1>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2 text-xs font-mono text-emerald-500">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>NETWORK: ONLINE</span>
+            <div class="flex flex-wrap items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                <div class="flex items-center space-x-2 text-xs font-mono text-emerald-500 bg-emerald-950/30 border border-emerald-900/50 px-3 py-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>SECURE NODE ACTIVE</span>
                 </div>
                 <form action="/logout" method="POST" class="m-0">
-                    <button type="submit" class="text-xs font-mono text-zinc-500 hover:text-red-500 border border-zinc-700 hover:border-red-500 px-3 py-1 uppercase transition-all duration-200">
-                        Disconnect
+                    <button type="submit" class="text-xs font-mono text-zinc-500 hover:text-red-400 border border-zinc-800 hover:border-red-500/40 px-4 py-1.5 uppercase transition-all duration-200 bg-zinc-950">
+                        Disconnect Session
                     </button>
                 </form>
             </div>
         </header>
 
-        <nav class="flex space-x-6 border-b border-zinc-800 px-2">
-            <button id="btn-portfolio" onclick="switchTab('portfolio')" class="tab-btn px-2 py-3 text-emerald-500 border-b-2 border-emerald-500 font-mono tracking-wide uppercase text-sm transition-colors">Portfolio</button>
-            <button id="btn-receive" onclick="switchTab('receive')" class="tab-btn px-2 py-3 text-zinc-500 border-b-2 border-transparent hover:text-zinc-300 font-mono tracking-wide uppercase text-sm transition-colors">Deposit</button>
-            <button id="btn-send" onclick="switchTab('send')" class="tab-btn px-2 py-3 text-zinc-500 border-b-2 border-transparent hover:text-zinc-300 font-mono tracking-wide uppercase text-sm transition-colors">Transmit</button>
+        <nav class="flex border border-zinc-800 bg-zinc-900/20 p-1">
+            <button id="btn-portfolio" onclick="switchLocalTab('portfolio')" class="tab-btn flex-1 text-center py-3 px-2 text-emerald-500 border-b-2 border-emerald-500 bg-zinc-900/50 font-mono tracking-wide uppercase text-xs transition-all">Portfolio</button>
+            <button id="btn-receive" onclick="switchLocalTab('receive')" class="tab-btn flex-1 text-center py-3 px-2 text-zinc-500 border-b-2 border-transparent hover:text-zinc-300 font-mono tracking-wide uppercase text-xs transition-all">Deposit</button>
+            <button id="btn-send" onclick="switchLocalTab('send')" class="tab-btn flex-1 text-center py-3 px-2 text-zinc-500 border-b-2 border-transparent hover:text-zinc-300 font-mono tracking-wide uppercase text-xs transition-all">Transmit</button>
+            <button id="btn-trade" onclick="switchLocalTab('trade')" class="flex-1 text-center py-3 px-2 text-amber-500 hover:text-amber-400 font-mono tracking-wide uppercase text-xs transition-all border-b-2 border-transparent hover:border-amber-500/50 bg-amber-950/5">Bet Engine →</button>
         </nav>
 
-        <div id="portfolio" class="tab-content space-y-4">
-            <div class="bg-zinc-900 border border-zinc-800 p-8 flex flex-col items-center justify-center space-y-2">
-                <p class="text-xs text-zinc-500 uppercase tracking-widest font-mono">Total Estimated Value</p>
-                <h2 class="text-4xl font-bold text-white tracking-tight">$0.00 <span class="text-lg text-zinc-600">USD</span></h2>
+        <div id="portfolio" class="tab-content space-y-6">
+            <div class="relative bg-zinc-900 border border-zinc-800 p-8 flex flex-col items-center justify-center space-y-2 overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(#18181b_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
+                <p class="text-xs text-zinc-500 uppercase tracking-widest font-mono z-10">Aggregated Metric Net Worth</p>
+                <h2 class="text-4xl font-mono font-bold text-white tracking-tight z-10">
+                    $<%= wallet.balances ? wallet.balances.usd.toFixed(2) : '0.00' %> <span class="text-sm text-zinc-600 font-sans">USD</span>
+                </h2>
+            </div>
+
+            <div class="bg-gradient-to-r from-zinc-900 via-amber-950/20 to-zinc-900 border border-amber-900/40 p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="space-y-1 text-center md:text-left">
+                    <h4 class="text-amber-400 font-mono text-sm uppercase font-bold tracking-wider">Multiplayer Betting Engine Operational</h4>
+                    <p class="text-xs text-zinc-400">Host decentralized private matches or deploy capital pools directly using automated transient escrow mechanics.</p>
+                </div>
+                <a href="/wallet/trade" class="w-full md:w-auto text-center bg-amber-600 hover:bg-amber-500 text-black font-bold font-mono text-xs px-6 py-3 uppercase tracking-widest transition-colors whitespace-nowrap">
+                    Launch Arena Tab
+                </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-700 transition-all flex flex-col justify-between space-y-4">
+                    <div class="flex justify-between items-start">
                         <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-blue-600/20 text-blue-500 rounded flex items-center justify-center font-bold font-mono border border-blue-500/30">Ξ</div>
+                            <div class="w-9 h-9 bg-zinc-950 border border-zinc-800 text-zinc-400 rounded flex items-center justify-center font-mono text-sm font-bold">Ξ</div>
                             <div>
-                                <h3 class="text-white font-semibold">Ethereum</h3>
-                                <p class="text-xs text-zinc-500 font-mono">EVM Compatible</p>
+                                <h3 class="text-sm font-mono uppercase text-white font-semibold tracking-wide">Ethereum Ledger</h3>
+                                <p class="text-[10px] text-zinc-500 font-mono uppercase">EVM Execution Layer</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-white font-mono">0.000 ETH</p>
-                            <p class="text-xs text-zinc-500 font-mono">$0.00</p>
+                            <p class="text-sm font-mono text-white font-bold"><%= wallet.balances ? wallet.balances.eth : '0.000' %> ETH</p>
+                            <p class="text-xs text-zinc-500 font-mono">$<%= wallet.balances ? (wallet.balances.eth * 3200).toFixed(2) : '0.00' %></p>
                         </div>
                     </div>
-                    <div class="bg-zinc-950 p-2 text-xs font-mono text-zinc-400 truncate border border-zinc-800">
-                        <%= wallet.ethAddress %>
+                    <div class="bg-zinc-950 p-2.5 text-[11px] font-mono text-zinc-500 truncate border border-zinc-900 flex justify-between items-center">
+                        <span class="truncate mr-2"><%= wallet.ethAddress %></span>
+                        <span class="text-[9px] text-zinc-600 uppercase tracking-widest border border-zinc-800 px-1 py-0.5 bg-zinc-900">EVM</span>
                     </div>
                 </div>
 
-                <div class="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-600 transition-colors">
-                    <div class="flex justify-between items-center mb-4">
+                <div class="bg-zinc-900 border border-zinc-800 p-5 hover:border-zinc-700 transition-all flex flex-col justify-between space-y-4">
+                    <div class="flex justify-between items-start">
                         <div class="flex items-center space-x-3">
-                            <div class="w-8 h-8 bg-purple-600/20 text-purple-400 rounded flex items-center justify-center font-bold font-mono border border-purple-500/30">S</div>
+                            <div class="w-9 h-9 bg-zinc-950 border border-zinc-800 text-zinc-400 rounded flex items-center justify-center font-mono text-sm font-bold">◎</div>
                             <div>
-                                <h3 class="text-white font-semibold">Solana</h3>
-                                <p class="text-xs text-zinc-500 font-mono">High Speed</p>
+                                <h3 class="text-sm font-mono uppercase text-white font-semibold tracking-wide">Solana Protocol</h3>
+                                <p class="text-[10px] text-zinc-500 font-mono uppercase">High Throughput Pipeline</p>
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-white font-mono">0.000 SOL</p>
-                            <p class="text-xs text-zinc-500 font-mono">$0.00</p>
+                            <p class="text-sm font-mono text-white font-bold"><%= wallet.balances ? wallet.balances.sol : '0.000' %> SOL</p>
+                            <p class="text-xs text-zinc-500 font-mono">$<%= wallet.balances ? (wallet.balances.sol * 140).toFixed(2) : '0.00' %></p>
                         </div>
                     </div>
-                    <div class="bg-zinc-950 p-2 text-xs font-mono text-zinc-400 truncate border border-zinc-800">
-                        <%= wallet.solAddress %>
+                    <div class="bg-zinc-950 p-2.5 text-[11px] font-mono text-zinc-500 truncate border border-zinc-900 flex justify-between items-center">
+                        <span class="truncate mr-2"><%= wallet.solAddress %></span>
+                        <span class="text-[9px] text-zinc-600 uppercase tracking-widest border border-zinc-800 px-1 py-0.5 bg-zinc-900">SOL</span>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-8 border border-red-900/50 bg-red-950/10 p-5">
-                <p class="text-xs text-red-500 font-mono uppercase mb-2 flex items-center"><span class="w-2 h-2 bg-red-500 mr-2 rounded-full"></span> Classified: Recovery Phrase</p>
-                <p class="font-mono text-zinc-400 text-sm leading-loose tracking-wide bg-zinc-950 p-4 border border-zinc-800">
-                    <%= wallet.mnemonic %>
-                </p>
+            <div class="border border-red-950/60 bg-red-950/5 p-6 space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-red-950/40 pb-3">
+                    <p class="text-xs text-red-400 font-mono uppercase tracking-widest flex items-center">
+                        <span class="w-2 h-2 bg-red-500 mr-2 rounded-full animate-ping"></span> Security Threshold: Master Node Seed Phrase
+                    </p>
+                    <button id="seed-toggle-btn" onclick="toggleSeedMask()" class="text-[10px] font-mono bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 border border-emerald-500/20 px-3 py-1 transition-all">
+                        UNMASK SECRET RECOVERY PHRASE
+                    </button>
+                </div>
+                <div class="relative overflow-hidden bg-zinc-950 p-4 border border-zinc-900">
+                    <p id="seed-container" class="font-mono text-zinc-500 text-xs leading-relaxed tracking-wider text-center blur-md select-none transition-all duration-300">
+                        <%= wallet.mnemonic %>
+                    </p>
+                </div>
             </div>
         </div>
 
         <div id="receive" class="tab-content hidden space-y-6">
-            <div class="bg-zinc-900 border border-zinc-800 p-6 text-center">
-                <p class="text-sm text-zinc-400 mb-6">Scan QR or copy address to deposit funds. Ensure you select the correct network.</p>
-                
+            <div class="bg-zinc-900 border border-zinc-800 p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div class="flex flex-col items-center space-y-4">
-                        <h3 class="text-blue-400 font-mono uppercase tracking-widest text-sm border-b border-zinc-800 w-full pb-2">ETH / EVM Network</h3>
-                        <div class="bg-white p-3 rounded-sm">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<%= wallet.ethAddress %>" alt="ETH QR">
+                    <div class="flex flex-col items-center space-y-4 p-4 border border-zinc-800/60 bg-zinc-950/40">
+                        <h3 class="text-white font-mono uppercase tracking-widest text-xs border-b border-zinc-800 w-full pb-2 text-center">ETH Endpoint Matrix</h3>
+                        <div class="bg-white p-2 rounded-xs border-4 border-zinc-800">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=<%= wallet.ethAddress %>" alt="ETH QR">
                         </div>
-                        <code class="w-full bg-zinc-950 p-3 text-xs text-blue-300 font-mono break-all border border-zinc-800">
+                        <code class="w-full bg-zinc-950 p-3 text-[11px] text-zinc-400 font-mono break-all border border-zinc-900 text-center">
                             <%= wallet.ethAddress %>
                         </code>
                     </div>
 
-                    <div class="flex flex-col items-center space-y-4">
-                        <h3 class="text-purple-400 font-mono uppercase tracking-widest text-sm border-b border-zinc-800 w-full pb-2">Solana Network</h3>
-                        <div class="bg-white p-3 rounded-sm">
-                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=<%= wallet.solAddress %>" alt="SOL QR">
+                    <div class="flex flex-col items-center space-y-4 p-4 border border-zinc-800/60 bg-zinc-950/40">
+                        <h3 class="text-white font-mono uppercase tracking-widest text-xs border-b border-zinc-800 w-full pb-2 text-center">Solana Endpoint Matrix</h3>
+                        <div class="bg-white p-2 rounded-xs border-4 border-zinc-800">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=<%= wallet.solAddress %>" alt="SOL QR">
                         </div>
-                        <code class="w-full bg-zinc-950 p-3 text-xs text-purple-300 font-mono break-all border border-zinc-800">
+                        <code class="w-full bg-zinc-950 p-3 text-[11px] text-zinc-400 font-mono break-all border border-zinc-900 text-center">
                             <%= wallet.solAddress %>
                         </code>
                     </div>
@@ -133,38 +178,37 @@
 
         <div id="send" class="tab-content hidden">
             <div class="bg-zinc-900 border border-zinc-800 p-6 md:p-8">
-                <form class="space-y-6" onsubmit="event.preventDefault(); alert('RPC Endpoints not configured in mock UI.');">
-                    
+                <form class="space-y-6" onsubmit="event.preventDefault(); alert('Active transmission pipelines are simulated. Connect RPC node to broadcast raw payloads.');">
                     <div class="grid grid-cols-2 gap-4">
                         <label class="block cursor-pointer">
                             <input type="radio" name="network" class="peer sr-only" checked>
-                            <div class="p-4 border border-zinc-800 text-center font-mono text-sm text-zinc-500 peer-checked:border-blue-500 peer-checked:text-blue-400 hover:bg-zinc-800 transition-colors">
-                                ETH Network
+                            <div class="p-4 border border-zinc-800 text-center font-mono text-xs uppercase tracking-wider text-zinc-500 peer-checked:border-emerald-500 peer-checked:text-emerald-400 bg-zinc-950/50 hover:bg-zinc-800 transition-colors">
+                                Ethereum Pipe
                             </div>
                         </label>
                         <label class="block cursor-pointer">
                             <input type="radio" name="network" class="peer sr-only">
-                            <div class="p-4 border border-zinc-800 text-center font-mono text-sm text-zinc-500 peer-checked:border-purple-500 peer-checked:text-purple-400 hover:bg-zinc-800 transition-colors">
-                                SOL Network
+                            <div class="p-4 border border-zinc-800 text-center font-mono text-xs uppercase tracking-wider text-zinc-500 peer-checked:border-emerald-500 peer-checked:text-emerald-400 bg-zinc-950/50 hover:bg-zinc-800 transition-colors">
+                                Solana Pipe
                             </div>
                         </label>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">Destination Address</label>
-                        <input type="text" placeholder="0x... or Base58 Address" class="w-full bg-zinc-950 border border-zinc-800 p-4 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 transition-colors placeholder-zinc-700">
+                        <label class="block text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Target Address Terminal</label>
+                        <input type="text" placeholder="HEX OR BASE58 STRING SOURCE" class="w-full bg-zinc-950 border border-zinc-800 p-4 text-white font-mono text-xs focus:outline-none focus:border-emerald-500 transition-colors placeholder-zinc-800">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-mono text-zinc-500 uppercase tracking-widest mb-2">Amount</label>
+                        <label class="block text-[10px] font-mono text-zinc-500 uppercase tracking-widest mb-2">Quantifiable Value Token Allocation</label>
                         <div class="relative">
-                            <input type="number" step="any" placeholder="0.00" class="w-full bg-zinc-950 border border-zinc-800 p-4 text-white font-mono text-xl focus:outline-none focus:border-emerald-500 transition-colors placeholder-zinc-800">
-                            <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-xs font-mono text-emerald-500 hover:text-emerald-400 uppercase">Max</button>
+                            <input type="number" step="any" placeholder="0.00" class="w-full bg-zinc-950 border border-zinc-800 p-4 text-white font-mono text-lg focus:outline-none focus:border-emerald-500 transition-colors placeholder-zinc-900">
+                            <button type="button" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[10px] font-mono text-emerald-500 hover:text-emerald-400 uppercase tracking-widest bg-zinc-900 px-2 py-1 border border-zinc-800">Max</button>
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-bold font-mono text-sm py-4 px-4 uppercase tracking-wider transition-colors duration-200 mt-4">
-                        Authorize Transfer
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-bold font-mono text-xs py-4 px-4 uppercase tracking-widest transition-all duration-200 shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+                        Sign & Broadcast Payload
                     </button>
                 </form>
             </div>
@@ -172,5 +216,11 @@
 
     </div>
 
+    <script>
+        // Synchronizes internal view tabs to parameters received directly via URL pathing logic
+        <% if (activeTab) { %>
+            switchLocalTab('<%= activeTab %>');
+        <% } %>
+    </script>
 </body>
 </html>
