@@ -33,7 +33,7 @@ app.use(session({
 }));
 
 // --- Blockchain RPC Providers ---
-// Using public RPCs for demonstration. In production, replace with Alchemy/Infura/QuickNode keys.
+// Using public RPCs for demonstration. In production, use your own Alchemy/Infura/QuickNode endpoints.
 const ethProvider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
 const solConnection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
 
@@ -55,9 +55,9 @@ function deriveWalletsFromMnemonic(mnemonic) {
     return {
         mnemonic,
         ethAddress: ethWallet.address,
-        ethPrivateKey: ethWallet.privateKey, // Required for real transactions
+        ethPrivateKey: ethWallet.privateKey, 
         solAddress: solanaKeypair.publicKey.toBase58(),
-        solSecretKey: Buffer.from(solanaKeypair.secretKey).toString('hex') // Required for real transactions
+        solSecretKey: Buffer.from(solanaKeypair.secretKey).toString('hex') 
     };
 }
 
@@ -116,7 +116,7 @@ app.post('/generate', async (req, res) => {
         const mnemonic = bip39.generateMnemonic();
         const walletData = deriveWalletsFromMnemonic(mnemonic);
         
-        // Fetch real balances (will be 0 for a new wallet, but verifies connection)
+        // Fetch real balances 
         walletData.balances = await fetchLiveBalances(walletData.ethAddress, walletData.solAddress);
         req.session.wallet = walletData;
         
@@ -151,7 +151,7 @@ app.get('/wallet/:tab', async (req, res) => {
     const validTabs = ['portfolio', 'receive', 'send', 'trade'];
     const activeTab = validTabs.includes(req.params.tab) ? req.params.tab : 'portfolio';
     
-    // Refresh balances strictly on portfolio load
+    // Refresh balances strictly on portfolio load to avoid spamming RPC
     if (activeTab === 'portfolio') {
         req.session.wallet.balances = await fetchLiveBalances(req.session.wallet.ethAddress, req.session.wallet.solAddress);
     }
@@ -226,7 +226,8 @@ app.post('/transmit', async (req, res) => {
 app.post('/trade/host', async (req, res) => {
     if (!req.session.wallet) return res.redirect('/');
     
-    const { game, chain, amountUSD, isPrivate } = req.body;
+    // rounds parameter added from the new frontend form
+    const { game, chain, amountUSD, isPrivate, rounds } = req.body;
     const betAmount = parseFloat(amountUSD);
     const userWallet = req.session.wallet;
 
@@ -247,8 +248,7 @@ app.post('/trade/host', async (req, res) => {
         const betId = crypto.randomBytes(4).toString('hex');
         const accessKey = isPrivate ? crypto.randomBytes(3).toString('hex').toUpperCase() : null;
 
-        /* 
-        =======================================================================
+        /* =======================================================================
         REAL ON-CHAIN TRANSFER TO ESCROW (WARNING: REQUIRES GAS)
         Uncomment the execution block below to force real fund transfers. 
         If users have 0 balances, this will throw a gas error.
@@ -280,6 +280,7 @@ app.post('/trade/host', async (req, res) => {
             amountUSD: betAmount,
             cryptoAmount: costInCrypto.toFixed(4),
             game: game,
+            rounds: rounds || 1, // Store game setting
             status: 'pending',
             isPrivate: !!isPrivate,
             accessKey: accessKey,
@@ -325,7 +326,7 @@ app.post('/trade/join', async (req, res) => {
         bet.playerAddress = targetAddress;
         bet.status = 'active';
 
-        // Deterministic Game Engine Execution
+        // Deterministic Game Engine Execution (Instant resolution for stateless HTTP)
         const outcomes = ['host', 'player'];
         const winnerDecision = outcomes[Math.floor(Math.random() * outcomes.length)];
         const absoluteWinnerAddress = winnerDecision === 'host' ? bet.hostAddress : bet.playerAddress;
@@ -335,6 +336,8 @@ app.post('/trade/join', async (req, res) => {
 
         bet.status = 'completed';
         bet.winner = absoluteWinnerAddress;
+        
+        // Clean up completed bet from memory after 1 minute
         setTimeout(() => activeBets.delete(bet.id), 60000);
 
         const matchResultMessage = winnerDecision === 'host' ? 'Host won the match matrix.' : 'Challenger claimed victory.';
