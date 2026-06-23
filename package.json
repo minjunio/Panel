@@ -1,7 +1,7 @@
 {
-  "name": "vault-node-wallet",
-  "version": "2.0.0",
-  "description": "Multi-chain EVM and Solana wallet dashboard",
+  "name": "vault-arena",
+  "version": "3.0.0",
+  "description": "Multi-chain EVM and Solana wallet with Live WebSocket PvP Arena",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -17,7 +17,8 @@
     "ejs": "^3.1.9",
     "ethers": "^6.11.1",
     "express": "^4.18.2",
-    "express-session": "^1.18.0"
+    "express-session": "^1.18.0",
+    "socket.io": "^4.7.5"
   },
   "devDependencies": {
     "dotenv": "^16.4.5",
