@@ -44,7 +44,6 @@ app.use(sessionMiddleware);
 io.engine.use(sessionMiddleware);
 
 // --- Blockchain RPC Providers ---
-// Using public endpoints for demonstration. Replace with private nodes in production.
 const ethProvider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
 const solConnection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
 
@@ -112,7 +111,6 @@ async function fetchLiveBalances(ethAddress, solAddress) {
             const solPubKey = new PublicKey(solAddress);
             const solBalanceLamports = await solConnection.getBalance(solPubKey);
             const solBalance = solBalanceLamports / LAMPORTS_PER_SOL;
-            // Static fallback rates
             return { eth: ethBalance, sol: solBalance, usd: (ethBalance * 3200) + (solBalance * 140) };
         } catch (e) {
             return { eth: 0, sol: 0, usd: 0 };
@@ -160,7 +158,6 @@ app.get('/wallet/:tab', async (req, res) => {
     const validTabs = ['portfolio', 'receive', 'send', 'trade'];
     const activeTab = validTabs.includes(req.params.tab) ? req.params.tab : 'portfolio';
     
-    // Refresh balances safely
     if (activeTab === 'portfolio') {
         req.session.wallet.balances = await fetchLiveBalances(req.session.wallet.ethAddress, req.session.wallet.solAddress);
     }
@@ -219,7 +216,6 @@ app.post('/transmit', async (req, res) => {
             res.redirect(`/wallet/send?success=SOL Transmitted. Signature: ${signature}`);
         }
     } catch (error) {
-        console.error("[TRANSMIT ERROR]", error);
         res.redirect(`/wallet/send?error=Transaction Failed: ${error.message}`);
     }
 });
@@ -242,7 +238,7 @@ app.post('/trade/host', async (req, res) => {
 
     const escrow = generateEscrowWallet(chain);
     const betId = crypto.randomBytes(4).toString('hex');
-    const accessKey = isPrivate ? crypto.randomBytes(3).toString('hex').toUpperCase() : null;
+    const accessKey = isPrivate || isPractice ? crypto.randomBytes(3).toString('hex').toUpperCase() : null;
 
     /*
     // --- REAL ESCROW LOCKING (Host) ---
@@ -276,25 +272,33 @@ app.post('/trade/host', async (req, res) => {
         accessKey: accessKey,
         escrowAddress: escrow.address,
         escrowPrivateKey: escrow.privateKey,
-        status: 'pending'
+        status: 'pending' // pending until someone joins
     });
 
     res.redirect(`/wallet/trade?join=${betId}`); 
 });
 
-// Join Match (HTTP Route to handle locking opponent funds before WS entry)
+// Join Match
 app.post('/trade/join', async (req, res) => {
     if (!req.session.wallet) return res.redirect('/');
     
     const { betId, accessKey } = req.body;
-    const bet = activeBets.get(betId) || Array.from(activeBets.values()).find(b => b.accessKey === (accessKey || '').toUpperCase());
+    
+    // --- THE FIX: Check activeBets AND liveGames ---
+    let bet = activeBets.get(betId) || Array.from(activeBets.values()).find(b => b.accessKey === (accessKey || '').toUpperCase());
+    
+    if (!bet) {
+        // If the host already joined the WebSocket, the game moved to liveGames. We must check there too.
+        bet = liveGames.get(betId) || Array.from(liveGames.values()).find(b => b.accessKey === (accessKey || '').toUpperCase());
+    }
 
     if (!bet) return res.redirect('/wallet/trade?error=Match session expired or not found.');
-    if (bet.status !== 'pending') return res.redirect('/wallet/trade?error=Match is no longer open.');
+    if (bet.status !== 'pending' && bet.state !== 'waiting') return res.redirect('/wallet/trade?error=Match is no longer open.');
 
     const userWallet = req.session.wallet;
     const targetAddress = bet.hostChain === 'SOL' ? userWallet.solAddress : userWallet.ethAddress;
 
+    // Prevent joining own match
     if (bet.hostAddress === targetAddress && !bet.isPractice) {
         return res.redirect('/wallet/trade?error=You cannot challenge your own match.');
     }
@@ -338,12 +342,12 @@ io.on('connection', (socket) => {
 
     // Initialization Event
     socket.on('join_game', (betId) => {
-        const bet = activeBets.get(betId) || liveGames.get(betId);
+        let bet = activeBets.get(betId) || liveGames.get(betId);
         if (!bet) return socket.emit('game_error', 'Match session expired or not found.');
 
         const address = bet.hostChain === 'SOL' ? session.wallet.solAddress : session.wallet.ethAddress;
         
-        // Setup Live Container
+        // Setup Live Container if it's the first person joining (usually the host)
         if (!liveGames.has(betId)) {
             liveGames.set(betId, { 
                 ...bet, 
@@ -353,7 +357,7 @@ io.on('connection', (socket) => {
                 deck: getShuffledDeck(), 
                 gameData: {} 
             });
-            activeBets.delete(betId); // Remove from public board
+            activeBets.delete(betId); // Remove from public order book immediately
         }
 
         const game = liveGames.get(betId);
@@ -367,17 +371,17 @@ io.on('connection', (socket) => {
             game.logs.push(`> System: ${address.substring(0,6)}... connected.`);
         } else {
             const p = game.players.find(p => p.id === address);
-            p.socketId = socket.id;
+            p.socketId = socket.id; // Refresh connection id
         }
 
         socket.join(betId);
 
-        // Start Game
+        // Start Game when 2 players are present
         if (game.players.length === 2 && game.state === 'waiting') {
             game.state = 'playing';
             game.logs.push(`> Match initialized. Engine: ${game.game.toUpperCase()}`);
             
-            // Engine Setup
+            // Engine Specific Setup
             if (game.game === 'war') {
                 game.players[0].data.hand = [game.deck.pop(), game.deck.pop(), game.deck.pop()];
                 game.players[1].data.hand = [game.deck.pop(), game.deck.pop(), game.deck.pop()];
@@ -521,7 +525,7 @@ async function processWin(game, winnerAddress, betId) {
     
     if (!game.isPractice && game.cryptoAmount > 0) {
         game.logs.push(`> Processing Smart Contract Escrow Release...`);
-        const totalPot = parseFloat(game.cryptoAmount) * 2; // Combine both stakes
+        const totalPot = parseFloat(game.cryptoAmount) * 2; // Combine stakes
         
         try {
             /*
