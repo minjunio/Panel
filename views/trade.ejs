@@ -3,522 +3,395 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault | Arena</title>
+    <title>Vault | PvP Arena</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/socket.io/socket.io.js"></script>
     <style>
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
         
-        .glass-panel { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-card { background: linear-gradient(145deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.9) 100%); border: 1px solid rgba(255,255,255,0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; }
-        .glass-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px -10px rgba(139, 92, 246, 0.5); border-color: rgba(139, 92, 246, 0.3); }
-
-        /* Custom Toggle Switch */
-        .toggle-checkbox:checked { right: 0; border-color: #8b5cf6; }
-        .toggle-checkbox:checked + .toggle-label { background-color: #8b5cf6; }
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+        .terminal-log { max-height: 300px; overflow-y: auto; scroll-behavior: smooth; font-family: monospace; }
+        .terminal-log p { border-left: 2px solid #6366f1; padding-left: 8px; margin-bottom: 6px; opacity: 0; animation: fadeIn 0.3s forwards; }
+        @keyframes fadeIn { to { opacity: 1; } }
         
         /* 3D Card Animations */
-        .playing-card { width: 90px; height: 130px; perspective: 1000px; margin: 0 -15px; transition: transform 0.2s; }
-        .playing-card:hover { transform: translateY(-10px); z-index: 10; }
-        .card-inner { width: 100%; height: 100%; position: relative; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); transform-style: preserve-3d; }
-        .playing-card.flipped .card-inner { transform: rotateY(180deg); }
-        .card-front, .card-back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 10px; box-shadow: -2px 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: bold; border: 2px solid rgba(255,255,255,0.1); }
-        .card-front { background: white; transform: rotateY(180deg); }
+        .card-container { perspective: 1000px; margin: 5px; }
+        .playing-card { width: 80px; height: 115px; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; }
+        .playing-card:hover:not(.locked) { transform: translateY(-10px) scale(1.05); box-shadow: 0 15px 25px rgba(99, 102, 241, 0.4); z-index: 20; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 24px; font-weight: bold; border: 2px solid rgba(255,255,255,0.1); box-shadow: -2px 4px 10px rgba(0,0,0,0.3); }
         .card-back { background: repeating-linear-gradient(45deg, #1e1b4b, #1e1b4b 10px, #312e81 10px, #312e81 20px); }
+        .card-front { background: white; transform: rotateY(180deg); }
         .card-red { color: #ef4444; } .card-black { color: #0f172a; }
-
-        /* 3D Dice Animations */
-        .scene { width: 120px; height: 120px; perspective: 600px; margin: 0 auto; }
-        .cube { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 1.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
-        .cube__face { position: absolute; width: 120px; height: 120px; background: white; border: 2px solid #e2e8f0; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 50px; box-shadow: inset 0 0 20px rgba(0,0,0,0.1); }
-        .cube__face--1  { transform: rotateY(  0deg) translateZ(60px); }
-        .cube__face--2  { transform: rotateY(180deg) translateZ(60px); }
-        .cube__face--3  { transform: rotateY( 90deg) translateZ(60px); }
-        .cube__face--4  { transform: rotateY(-90deg) translateZ(60px); }
-        .cube__face--5  { transform: rotateX( 90deg) translateZ(60px); }
-        .cube__face--6  { transform: rotateX(-90deg) translateZ(60px); }
+        .flipped { transform: rotateY(180deg); }
+        .locked { opacity: 0.5; pointer-events: none; }
         
-        .rolling { animation: rollCube 0.5s infinite linear; }
-        @keyframes rollCube { 
-            0% { transform: rotateX(0deg) rotateY(0deg); } 
-            100% { transform: rotateX(360deg) rotateY(360deg); } 
-        }
+        /* Deal Animation */
+        .deal-in { animation: deal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: translateY(-50px) scale(0.5); }
+        @keyframes deal { to { opacity: 1; transform: translateY(0) scale(1); } }
 
-        /* Result Animation */
-        .pop-in { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: scale(0.5); }
-        @keyframes popIn { to { opacity: 1; transform: scale(1); } }
+        /* UI Pop */
+        .pop-in { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body class="bg-[#0B0F19] text-slate-200 font-sans antialiased min-h-screen selection:bg-violet-500/30 p-4 md:p-8 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0B0F19] to-[#0B0F19]">
+<body class="bg-[#0B0F19] text-slate-200 font-sans antialiased min-h-screen p-4 md:p-8 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-[#0B0F19] to-[#0B0F19]">
 
-    <div class="max-w-7xl mx-auto space-y-8">
+    <div class="max-w-7xl mx-auto space-y-6">
         
-        <header class="flex flex-col sm:flex-row justify-between items-center glass-panel rounded-full px-6 py-4 shadow-xl gap-4 border-b border-white/5">
-            <div class="flex items-center space-x-4">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-violet-500 to-indigo-600 flex items-center justify-center shadow-[0_0_15px_rgba(139,92,246,0.5)]">
-                    <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                </div>
-                <h1 class="text-xl font-bold text-white tracking-wider">ARENA</h1>
-            </div>
-            
-            <div class="flex bg-black/40 p-1 rounded-full border border-white/10 w-full sm:w-72 relative">
-                <button id="btn-live" onclick="setMode('live')" class="flex-1 py-2.5 rounded-full text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg transition-all z-10">Live Stakes</button>
-                <button id="btn-practice" onclick="setMode('practice')" class="flex-1 py-2.5 rounded-full text-sm font-bold text-slate-400 hover:text-white transition-all z-10">Practice (Free)</button>
-            </div>
-
-            <a href="/wallet/portfolio" class="text-sm font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-6 py-2.5 rounded-full transition-all border border-white/5">
-                Back to Wallet
-            </a>
+        <header class="flex justify-between items-center glass-panel rounded-full px-6 py-4 shadow-xl border-b border-white/5">
+            <h1 class="text-xl font-bold text-white tracking-wider flex items-center gap-3">
+                <span class="p-2 bg-indigo-500/20 rounded-full text-indigo-400">⚔️</span> PVP ARENA
+            </h1>
+            <a href="/wallet/portfolio" class="text-sm font-semibold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-6 py-2.5 rounded-full transition-all border border-white/5">Return to Vault</a>
         </header>
 
         <% if (error) { %>
             <div class="bg-red-500/10 border border-red-500/30 text-red-400 p-4 rounded-2xl flex items-center gap-3 animate-pulse">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                <p class="font-medium"><%= error %></p>
-            </div>
-        <% } %>
-        <% if (success) { %>
-            <div class="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-2xl flex items-center gap-3">
-                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="font-medium"><%= success %></p>
+                <p class="font-medium">⚠️ <%= error %></p>
             </div>
         <% } %>
 
-        <div id="live-content" class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6" id="lobby-view">
             
-            <div class="lg:col-span-4 space-y-6">
-                <div class="glass-panel rounded-[2rem] p-8 relative overflow-hidden">
-                    <div class="absolute -top-20 -right-20 w-48 h-48 bg-violet-600/20 rounded-full blur-3xl pointer-events-none"></div>
-                    
-                    <h2 class="text-white text-xl font-bold mb-8 flex items-center gap-3">
-                        <span class="p-2 bg-violet-500/20 rounded-lg text-violet-400"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg></span>
-                        Host a Match
-                    </h2>
-                    
-                    <form action="/trade/host" method="POST" class="space-y-6 relative z-10">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Payment Network</label>
-                            <div class="grid grid-cols-2 gap-4">
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="chain" value="ETH" class="peer sr-only" onchange="validateBalance()" checked>
-                                    <div class="p-4 rounded-xl border border-white/5 bg-black/40 text-center text-sm font-semibold text-slate-400 peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10 peer-checked:text-indigo-400 transition-all">Ethereum</div>
-                                </label>
-                                <label class="cursor-pointer">
-                                    <input type="radio" name="chain" value="SOL" class="peer sr-only" onchange="validateBalance()">
-                                    <div class="p-4 rounded-xl border border-white/5 bg-black/40 text-center text-sm font-semibold text-slate-400 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 peer-checked:text-emerald-400 transition-all">Solana</div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Select Engine</label>
-                            <select id="game-select" name="game" onchange="toggleSettings()" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white font-medium focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none appearance-none transition-all">
-                                <option value="dice">🎯 Cryptographic Dice</option>
-                                <option value="blackjack">🃏 Automated Blackjack</option>
-                            </select>
-                        </div>
-
-                        <div id="dice-settings" class="bg-indigo-900/20 p-5 rounded-xl border border-indigo-500/20 transition-all">
-                            <label class="block text-xs font-bold text-indigo-300 mb-3 uppercase">Match Rounds</label>
-                            <select name="rounds" class="w-full bg-black/50 border border-white/5 rounded-lg p-3 text-white text-sm outline-none focus:border-indigo-500">
-                                <option value="1">Sudden Death (1 Roll)</option>
-                                <option value="3">Best of 3</option>
-                                <option value="5">Best of 5</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Stake Value (USD Equivalent)</label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg font-bold">$</span>
-                                <input type="number" id="stake-input" name="amountUSD" step="1" min="1" required placeholder="0.00" oninput="validateBalance()" class="w-full bg-black/40 border border-white/10 rounded-xl py-4 pl-8 pr-4 text-white text-xl font-bold focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none transition-all">
-                            </div>
-                            <p id="balance-error" class="text-red-400 text-xs mt-2 font-medium hidden">Insufficient funds.</p>
-                        </div>
-
-                        <div class="flex items-center justify-between p-4 bg-black/40 rounded-xl border border-white/5">
-                            <div>
-                                <h4 class="text-sm font-bold text-white">Private Match</h4>
-                                <p class="text-xs text-slate-400">Requires a key to join</p>
-                            </div>
-                            <div class="relative inline-block w-12 h-6 align-middle select-none transition duration-200 ease-in">
-                                <input type="checkbox" name="isPrivate" id="toggle" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all border-slate-600 bg-slate-300 top-0 left-0 z-10"/>
-                                <label for="toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-slate-700 cursor-pointer transition-colors"></label>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="host-btn" class="w-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-bold py-4 rounded-xl shadow-[0_10px_20px_-10px_rgba(139,92,246,0.5)] transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none">
-                            Lock Escrow & Host
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="lg:col-span-8 space-y-6">
+            <div class="lg:col-span-4 glass-panel rounded-[2rem] p-8 relative overflow-hidden">
+                <div class="absolute -top-20 -right-20 w-48 h-48 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
                 
-                <div class="glass-panel rounded-[2rem] p-8 min-h-[400px]">
-                    <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-4">
-                        <h2 class="text-white text-2xl font-bold">Global Order Book</h2>
-                        <span class="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1 rounded-full text-xs font-bold border border-emerald-500/20">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> LIVE
-                        </span>
+                <h2 class="text-white text-xl font-bold mb-6 flex items-center gap-2">Host Match</h2>
+                <form action="/trade/host" method="POST" class="space-y-6 relative z-10">
+                    
+                    <div class="grid grid-cols-2 gap-4 bg-black/40 p-2 rounded-xl border border-white/5">
+                        <label class="cursor-pointer text-center">
+                            <input type="radio" name="chain" value="ETH" class="peer sr-only" onchange="updateBalanceUI()" checked>
+                            <div class="py-2 rounded-lg text-sm font-bold text-slate-500 peer-checked:bg-indigo-500/20 peer-checked:text-indigo-400 transition-all">Ethereum</div>
+                        </label>
+                        <label class="cursor-pointer text-center">
+                            <input type="radio" name="chain" value="SOL" class="peer sr-only" onchange="updateBalanceUI()">
+                            <div class="py-2 rounded-lg text-sm font-bold text-slate-500 peer-checked:bg-emerald-500/20 peer-checked:text-emerald-400 transition-all">Solana</div>
+                        </label>
                     </div>
 
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-wider">Combat Engine</label>
+                        <select name="game" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white font-medium outline-none focus:border-indigo-500">
+                            <option value="hexa">🎴 Hexa-Guess (Memory/Bluff)</option>
+                            <option value="highcard">🃏 High Card (Sudden Death)</option>
+                            <option value="war">⚔️ Tactical War (Best of 3)</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-end mb-2">
+                            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider">Wager Amount</label>
+                            <span class="text-xs text-indigo-400 font-mono font-bold">Avail: <span id="display-bal">0.00</span></span>
+                        </div>
+                        <input type="number" id="stake-amt" name="amount" step="any" placeholder="0.00" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white text-lg font-bold outline-none mb-3">
+                        <div class="grid grid-cols-3 gap-2">
+                            <button type="button" onclick="setFraction(0.25)" class="bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300 transition-all">25%</button>
+                            <button type="button" onclick="setFraction(0.50)" class="bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300 transition-all">50%</button>
+                            <button type="button" onclick="setFraction(1.0)" class="bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 py-2 rounded-lg text-xs font-bold transition-all">MAX</button>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 p-3 bg-black/40 rounded-xl border border-white/5 cursor-pointer hover:bg-black/60 transition-colors">
+                            <input type="checkbox" name="isPrivate" class="w-4 h-4 accent-indigo-500 rounded bg-black">
+                            <span class="text-sm font-bold text-white">Private Room (Requires Key)</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 bg-black/40 rounded-xl border border-emerald-500/20 cursor-pointer hover:bg-emerald-950/30 transition-colors">
+                            <input type="checkbox" name="isPractice" class="w-4 h-4 accent-emerald-500 rounded bg-black">
+                            <span class="text-sm font-bold text-emerald-400">Practice Mode (No Risk PVP)</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-bold py-4 rounded-xl shadow-lg transition-transform hover:scale-[1.02]">
+                        Initialize Matrix
+                    </button>
+                </form>
+            </div>
+
+            <div class="lg:col-span-8 flex flex-col gap-6">
+                <div class="glass-panel rounded-3xl p-6">
+                    <form action="/trade/join" method="POST" class="flex gap-4">
+                        <input type="text" name="accessKey" required placeholder="Enter Private Access Key..." class="flex-1 bg-black/40 border border-white/10 rounded-xl p-4 text-white uppercase tracking-widest outline-none focus:border-indigo-500 font-mono">
+                        <button type="submit" class="bg-slate-800 hover:bg-slate-700 text-white font-bold px-8 rounded-xl transition-all">Join Private</button>
+                    </form>
+                </div>
+
+                <div class="glass-panel rounded-[2rem] p-8 flex-1">
+                    <h2 class="text-white text-2xl font-bold mb-6 flex items-center gap-3">
+                        Global Lobbies <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    </h2>
+                    
                     <% if (publicBets && publicBets.length > 0) { %>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <% publicBets.forEach(bet => { %>
-                                <div class="glass-card rounded-2xl p-6 relative overflow-hidden group flex flex-col justify-between h-full min-h-[200px]">
-                                    <div class="absolute -bottom-4 -right-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                        <span class="text-9xl font-black"><%= bet.hostChain === 'SOL' ? '◎' : 'Ξ' %></span>
-                                    </div>
-                                    
-                                    <div class="relative z-10 flex justify-between items-start mb-6">
-                                        <div class="space-y-2">
-                                            <span class="px-3 py-1 rounded-lg text-[10px] font-black tracking-widest uppercase <%= bet.hostChain === 'SOL' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400' %>">
-                                                <%= bet.hostChain %> Match
+                                <div class="bg-black/40 border border-white/5 hover:border-indigo-500/50 rounded-2xl p-6 transition-all group">
+                                    <div class="flex justify-between items-start mb-6">
+                                        <div>
+                                            <span class="px-2 py-1 rounded text-[10px] font-black tracking-widest uppercase <%= bet.isPractice ? 'bg-emerald-500/20 text-emerald-400' : 'bg-indigo-500/20 text-indigo-400' %>">
+                                                <%= bet.isPractice ? 'PRACTICE' : bet.hostChain + ' STAKES' %>
                                             </span>
-                                            <h3 class="text-white font-bold text-xl capitalize flex items-center gap-2">
-                                                <%= bet.game === 'dice' ? '🎯' : '🃏' %> <%= bet.game %>
-                                            </h3>
+                                            <h3 class="text-white font-bold text-xl mt-2 capitalize"><%= bet.game %></h3>
                                         </div>
-                                        <div class="text-right bg-black/40 px-4 py-2 rounded-xl border border-white/5">
-                                            <p class="text-emerald-400 font-black text-2xl">$<%= bet.amountUSD.toFixed(2) %></p>
-                                            <p class="text-[10px] font-bold text-slate-500 tracking-wider uppercase"><%= bet.cryptoAmount %> <%= bet.hostChain %></p>
+                                        <div class="text-right bg-black/50 px-3 py-1.5 rounded-lg border border-white/5">
+                                            <p class="text-lg font-black text-white"><%= bet.cryptoAmount %></p>
+                                            <p class="text-[10px] text-slate-500 font-bold"><%= bet.hostChain %></p>
                                         </div>
                                     </div>
-                                    
-                                    <form action="/trade/join" method="POST" class="relative z-10 mt-auto">
+                                    <form action="/trade/join" method="POST">
                                         <input type="hidden" name="betId" value="<%= bet.id %>">
-                                        <button type="submit" class="w-full bg-white/5 hover:bg-violet-600 border border-white/10 hover:border-violet-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-violet-500/25">
-                                            Challenge & Match Stake
-                                        </button>
+                                        <button type="submit" class="w-full bg-white/5 group-hover:bg-indigo-600 text-white font-bold py-3 rounded-xl transition-all">Challenge Host</button>
                                     </form>
                                 </div>
                             <% }) %>
                         </div>
                     <% } else { %>
                         <div class="flex flex-col items-center justify-center py-20 text-slate-500">
-                            <div class="w-24 h-24 bg-white/5 rounded-full flex items-center justify-center mb-4">
-                                <svg class="w-10 h-10 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                            </div>
-                            <p class="text-lg font-medium text-slate-400">Order book is empty.</p>
-                            <p class="text-sm">Be the first to host a match.</p>
+                            <svg class="w-12 h-12 mb-4 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                            <p class="text-lg font-medium">No open lobbies.</p>
                         </div>
                     <% } %>
                 </div>
-
-                <div class="glass-panel rounded-3xl p-6">
-                    <form action="/trade/join" method="POST" class="flex flex-col sm:flex-row gap-4 items-center">
-                        <div class="w-full flex-1">
-                            <input type="text" name="accessKey" required placeholder="Enter Private Access Key..." class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-violet-300 font-mono text-sm focus:border-violet-500 outline-none uppercase tracking-widest text-center sm:text-left">
-                        </div>
-                        <button type="submit" class="w-full sm:w-auto bg-slate-800 hover:bg-slate-700 text-white font-bold py-4 px-8 rounded-xl transition-all whitespace-nowrap">
-                            Join Private
-                        </button>
-                    </form>
-                </div>
             </div>
         </div>
 
-        <div id="practice-content" class="hidden">
-            <div class="glass-panel rounded-[2rem] p-8 text-center min-h-[600px] flex flex-col relative overflow-hidden">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/20 via-transparent to-transparent pointer-events-none"></div>
+        <div id="live-board" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <div class="lg:col-span-8 glass-panel rounded-[2rem] p-8 min-h-[600px] flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-900/10 via-transparent to-transparent pointer-events-none"></div>
                 
-                <div class="relative z-10 mb-8">
-                    <h2 class="text-emerald-400 text-3xl font-black tracking-tight mb-2 uppercase">Practice Simulator</h2>
-                    <p class="text-slate-400 text-sm max-w-lg mx-auto">Test your luck against the automated house. Fully simulated mechanics. Zero real funds at risk.</p>
-                </div>
-                
-                <div class="flex flex-wrap justify-center gap-4 mb-8 relative z-10" id="practice-controls">
-                    <button onclick="initPractice('blackjack')" class="group bg-black/40 border border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 px-8 py-4 rounded-xl text-white font-bold transition-all flex items-center gap-3">
-                        <span class="text-2xl group-hover:scale-125 transition-transform">🃏</span> Blackjack
-                    </button>
-                    <button onclick="initPractice('dice')" class="group bg-black/40 border border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 px-8 py-4 rounded-xl text-white font-bold transition-all flex items-center gap-3">
-                        <span class="text-2xl group-hover:scale-125 transition-transform">🎯</span> 3D Dice
-                    </button>
+                <div class="text-center z-10">
+                    <h2 id="game-title" class="text-2xl font-black text-white uppercase tracking-widest">ARENA</h2>
+                    <p id="game-status" class="text-indigo-400 font-bold mt-2 animate-pulse bg-black/40 inline-block px-4 py-1 rounded-full border border-indigo-500/30">Connecting to node...</p>
                 </div>
 
-                <div id="game-canvas" class="flex-1 bg-black/60 border border-white/5 rounded-3xl p-8 flex flex-col items-center justify-center relative z-10 shadow-inner">
-                    <div class="text-slate-500 flex flex-col items-center">
-                        <svg class="w-16 h-16 mb-4 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        <p class="font-medium">Select an engine above to initialize rendering.</p>
+                <div id="game-canvas" class="flex-1 flex flex-col items-center justify-center gap-8 z-10 w-full mt-8">
                     </div>
-                </div>
+
+                <div class="mt-8 text-center z-10 min-h-[60px]" id="action-prompt">
+                    </div>
+            </div>
+
+            <div class="lg:col-span-4 glass-panel rounded-[2rem] p-6 flex flex-col">
+                <h3 class="text-white font-bold mb-4 uppercase text-sm tracking-wider border-b border-white/10 pb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Event Stream
+                </h3>
+                <div id="log-container" class="terminal-log flex-1 bg-black/40 rounded-xl p-4 border border-white/5 shadow-inner">
+                    </div>
             </div>
         </div>
-
     </div>
 
     <script>
-        // 1. Data Injection for Client-Side Validation
-        const userBalances = {
-            ETH: <%= wallet.balances ? wallet.balances.eth : 0 %>,
-            SOL: <%= wallet.balances ? wallet.balances.sol : 0 %>
-        };
-        // Mock Rates mapping backend logic
-        const rates = { ETH: 3200, SOL: 140 };
+        // 1. Fractional Betting Logic
+        const myEthAddress = "<%= wallet.ethAddress %>";
+        const mySolAddress = "<%= wallet.solAddress %>";
+        const balances = { ETH: <%= wallet.balances ? wallet.balances.eth : 0 %>, SOL: <%= wallet.balances ? wallet.balances.sol : 0 %> };
 
-        function validateBalance() {
+        function updateBalanceUI() {
             const chain = document.querySelector('input[name="chain"]:checked').value;
-            const amountUSD = parseFloat(document.getElementById('stake-input').value) || 0;
-            const cryptoRequired = amountUSD / rates[chain];
-            const hasEnough = userBalances[chain] >= cryptoRequired;
+            document.getElementById('display-bal').innerText = balances[chain].toFixed(4) + ' ' + chain;
+            document.getElementById('stake-amt').value = ''; 
+        }
+        updateBalanceUI();
+
+        function setFraction(perc) {
+            const chain = document.querySelector('input[name="chain"]:checked').value;
+            document.getElementById('stake-amt').value = (balances[chain] * perc).toFixed(4);
+        }
+
+        // 2. Socket.io Core
+        const socket = io();
+        let currentBetId = null;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('join')) {
+            joinGame(urlParams.get('join'));
+        }
+
+        function joinGame(betId) {
+            currentBetId = betId;
+            document.getElementById('lobby-view').classList.add('hidden');
+            document.getElementById('live-board').classList.remove('hidden');
+            socket.emit('join_game', betId);
+        }
+
+        socket.on('game_error', (msg) => { alert(msg); window.location.href = '/wallet/trade'; });
+
+        // 3. State Router
+        socket.on('update_state', (game) => {
+            // Determine "me"
+            const myId = game.hostChain === 'SOL' ? mySolAddress : myEthAddress;
+            const me = game.players.find(p => p.id === myId);
+            const opponent = game.players.find(p => p.id !== myId);
+
+            // Update Logs
+            const logBox = document.getElementById('log-container');
+            logBox.innerHTML = game.logs.map(l => `<p class="text-emerald-400 text-xs">${l}</p>`).join('');
+            logBox.scrollTop = logBox.scrollHeight;
+
+            // Update Status Banner
+            const status = document.getElementById('game-status');
+            document.getElementById('game-title').innerText = `${game.game.toUpperCase()} PROTOCOL`;
             
-            const btn = document.getElementById('host-btn');
-            const errorMsg = document.getElementById('balance-error');
+            if (game.state === 'waiting') status.innerText = "WAITING FOR CHALLENGER...";
+            else if (game.state === 'resolving') status.innerText = "RESOLVING COMBAT...";
+            else if (game.state === 'finished') status.innerText = game.winner === myId ? "VICTORY ACHIEVED" : "DEFEAT";
+            else status.innerText = "ACTIVE COMBAT PHASE";
 
-            if (!hasEnough && amountUSD > 0) {
-                btn.disabled = true;
-                errorMsg.classList.remove('hidden');
-                errorMsg.innerText = `Insufficient funds. You need ${cryptoRequired.toFixed(4)} ${chain}.`;
-            } else {
-                btn.disabled = false;
-                errorMsg.classList.add('hidden');
-            }
-        }
+            if (!me) return;
 
-        // Run validation on load just in case
-        document.addEventListener("DOMContentLoaded", validateBalance);
+            // Route to correct renderer
+            if (game.game === 'hexa') renderHexa(game, me, opponent);
+            if (game.game === 'highcard') renderHighCard(game, me, opponent);
+            if (game.game === 'war') renderWar(game, me, opponent);
+        });
 
-        // 2. Tab Switching logic
-        function setMode(mode) {
-            const isLive = mode === 'live';
-            document.getElementById('btn-live').className = isLive 
-                ? 'flex-1 py-2.5 rounded-full text-sm font-bold bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg transition-all z-10' 
-                : 'flex-1 py-2.5 rounded-full text-sm font-bold text-slate-400 hover:text-white transition-all z-10';
-            document.getElementById('btn-practice').className = !isLive 
-                ? 'flex-1 py-2.5 rounded-full text-sm font-bold bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-lg transition-all z-10' 
-                : 'flex-1 py-2.5 rounded-full text-sm font-bold text-slate-400 hover:text-white transition-all z-10';
-            
-            document.getElementById('live-content').classList.toggle('hidden', !isLive);
-            document.getElementById('practice-content').classList.toggle('hidden', isLive);
-        }
-
-        function toggleSettings() {
-            const game = document.getElementById('game-select').value;
-            document.getElementById('dice-settings').style.display = game === 'dice' ? 'block' : 'none';
-        }
-
-        // ================= PRACTICE ARENA ENGINES =================
-        const canvas = document.getElementById('game-canvas');
-
-        function initPractice(game) {
-            if (game === 'dice') renderDiceBoard();
-            if (game === 'blackjack') renderBlackjackBoard();
-        }
-
-        // --- 3D DICE ENGINE ---
-        function renderDiceBoard() {
-            canvas.innerHTML = `
-                <div class="w-full flex flex-col md:flex-row justify-around items-center gap-12 mb-12">
-                    <div class="text-center bg-black/30 p-8 rounded-3xl border border-white/5 w-64 shadow-xl">
-                        <h3 class="text-indigo-400 font-bold text-xl mb-8 uppercase tracking-widest">You</h3>
-                        <div id="player-dice" class="scene"><div class="cube"><div class="cube__face cube__face--1">1</div><div class="cube__face cube__face--2">2</div><div class="cube__face cube__face--3">3</div><div class="cube__face cube__face--4">4</div><div class="cube__face cube__face--5">5</div><div class="cube__face cube__face--6">6</div></div></div>
-                        <p id="p-score" class="mt-8 text-4xl font-black text-white bg-black/50 py-2 rounded-xl border border-white/5">-</p>
-                    </div>
-                    
-                    <div class="text-center bg-black/30 p-8 rounded-3xl border border-white/5 w-64 shadow-xl">
-                        <h3 class="text-rose-400 font-bold text-xl mb-8 uppercase tracking-widest">House</h3>
-                        <div id="house-dice" class="scene"><div class="cube"><div class="cube__face cube__face--1">1</div><div class="cube__face cube__face--2">2</div><div class="cube__face cube__face--3">3</div><div class="cube__face cube__face--4">4</div><div class="cube__face cube__face--5">5</div><div class="cube__face cube__face--6">6</div></div></div>
-                        <p id="h-score" class="mt-8 text-4xl font-black text-white bg-black/50 py-2 rounded-xl border border-white/5">-</p>
-                    </div>
-                </div>
-                <div class="h-16 flex items-center justify-center mb-6">
-                    <h2 id="dice-result" class="text-3xl font-black uppercase tracking-wider"></h2>
-                </div>
-                <button id="roll-btn" onclick="executeRoll()" class="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold py-4 px-12 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-all transform hover:scale-105 text-lg">
-                    ROLL DICE
-                </button>
-            `;
-        }
-
-        // Maps numbers to 3D rotation angles for realistic landing
-        const rotations = {
-            1: "rotateX(0deg) rotateY(0deg)",
-            2: "rotateX(0deg) rotateY(-180deg)",
-            3: "rotateX(0deg) rotateY(-90deg)",
-            4: "rotateX(0deg) rotateY(90deg)",
-            5: "rotateX(-90deg) rotateY(0deg)",
-            6: "rotateX(90deg) rotateY(0deg)"
-        };
-
-        function executeRoll() {
-            const btn = document.getElementById('roll-btn');
-            const pDice = document.querySelector('#player-dice .cube');
-            const hDice = document.querySelector('#house-dice .cube');
-            const resultText = document.getElementById('dice-result');
-            
-            btn.disabled = true;
-            btn.classList.add('opacity-50', 'scale-95');
-            resultText.innerText = "";
-            resultText.classList.remove('pop-in');
-
-            // Add endless spinning animation
-            pDice.classList.add('rolling');
-            hDice.classList.add('rolling');
-
-            setTimeout(() => {
-                // Stop endless spin
-                pDice.classList.remove('rolling');
-                hDice.classList.remove('rolling');
-                
-                // Calculate random rolls
-                const pRoll = Math.floor(Math.random() * 6) + 1;
-                const hRoll = Math.floor(Math.random() * 6) + 1;
-                
-                // Apply specific face rotation via inline style for a smooth snap
-                pDice.style.transform = rotations[pRoll];
-                hDice.style.transform = rotations[hRoll];
-                
-                // Update UI scores
-                document.getElementById('p-score').innerText = pRoll;
-                document.getElementById('h-score').innerText = hRoll;
-
-                // Resolve
-                setTimeout(() => {
-                    if (pRoll > hRoll) { resultText.innerHTML = "<span class='text-emerald-400'>💰 YOU WIN 💰</span>"; }
-                    else if (hRoll > pRoll) { resultText.innerHTML = "<span class='text-rose-400'>💀 HOUSE WINS 💀</span>"; }
-                    else { resultText.innerHTML = "<span class='text-amber-400'>⚖️ DRAW ⚖️</span>"; }
-                    
-                    resultText.classList.add('pop-in');
-                    btn.disabled = false;
-                    btn.classList.remove('opacity-50', 'scale-95');
-                    btn.innerText = "ROLL AGAIN";
-                }, 500); // slight delay after snap
-            }, 1000); // 1 second spin duration
-        }
-
-
-        // --- BLACKJACK ENGINE ---
-        let deck = [], playerHand = [], houseHand = [];
-        
-        function getCardHTML(val, suit, hidden = false) {
-            const color = (suit === '♥' || suit === '♦') ? 'card-red' : 'card-black';
+        // --- Card Generator Helper ---
+        function getCardHTML(c, id, onClickFn, extraClass='') {
+            if (!c) return `<div class="playing-card ${extraClass}"><div class="card-back"></div></div>`;
+            const color = (c.s === '♥' || c.s === '♦') ? 'card-red' : 'card-black';
             return `
-            <div class="playing-card ${hidden ? '' : 'flipped'}">
-                <div class="card-inner">
+            <div class="card-container ${extraClass}" id="${id}" ${onClickFn ? `onclick="${onClickFn}"` : ''}>
+                <div class="playing-card flipped">
                     <div class="card-back"></div>
                     <div class="card-front ${color}">
-                        <div class="flex flex-col items-center">
-                            <span class="text-2xl leading-none">${val}</span>
-                            <span class="text-4xl leading-none mt-1">${suit}</span>
-                        </div>
+                        <span class="text-xl leading-none">${c.v}</span>
+                        <span class="text-4xl mt-1 leading-none">${c.s}</span>
                     </div>
                 </div>
             </div>`;
         }
+        function getHiddenCardHTML(id, onClickFn, extraClass='') {
+            return `
+            <div class="card-container ${extraClass}" id="${id}" ${onClickFn ? `onclick="${onClickFn}"` : ''}>
+                <div class="playing-card">
+                    <div class="card-back"></div>
+                    <div class="card-front card-black">?</div>
+                </div>
+            </div>`;
+        }
 
-        function renderBlackjackBoard() {
+        // ================= ENGINE 1: HEXA-GUESS =================
+        function renderHexa(game, me, opponent) {
+            const canvas = document.getElementById('game-canvas');
+            const prompt = document.getElementById('action-prompt');
+            
+            if (canvas.innerHTML.trim() === '') {
+                // Initialize board
+                let html = '<div class="flex flex-wrap justify-center gap-6 w-full max-w-lg">';
+                for(let i=0; i<6; i++) {
+                    html += getHiddenCardHTML(`hx-${i}`, `playMove('hide', ${i})`, `deal-in`);
+                }
+                html += '</div>';
+                canvas.innerHTML = html;
+            }
+
+            // Phase logic
+            if (me.data.hidden === undefined) {
+                prompt.innerHTML = `<h3 class="text-indigo-400 font-bold text-lg mb-2">PHASE 1: HIDE A CARD</h3><p class="text-slate-400 text-sm">Select one card to keep secret from your opponent.</p>`;
+                // Reset onclicks to hide
+                for(let i=0; i<6; i++) document.getElementById(`hx-${i}`).setAttribute('onclick', `playMove('hide', ${i})`);
+            } else if (me.data.guess === undefined) {
+                prompt.innerHTML = `<h3 class="text-rose-400 font-bold text-lg mb-2">PHASE 2: GUESS THEIR CARD</h3><p class="text-slate-400 text-sm">Find where the opponent hid their card.</p>`;
+                const myHidden = document.getElementById(`hx-${me.data.hidden} .playing-card`);
+                if(myHidden) myHidden.classList.add('locked', 'flipped');
+                if(myHidden) myHidden.querySelector('.card-front').innerHTML = '<span class="text-sm">YOURS</span>';
+                
+                // Set onclicks to guess
+                for(let i=0; i<6; i++) document.getElementById(`hx-${i}`).setAttribute('onclick', `playMove('guess', ${i})`);
+            } else {
+                prompt.innerHTML = `<p class="text-slate-400 font-bold uppercase tracking-widest bg-black/40 px-6 py-2 rounded-full border border-white/5">Waiting for opponent...</p>`;
+            }
+
+            if (game.state === 'resolving' && opponent && opponent.data.hidden !== undefined) {
+                const oppHidden = document.getElementById(`hx-${opponent.data.hidden} .playing-card`);
+                oppHidden.classList.add('flipped');
+                oppHidden.querySelector('.card-front').innerHTML = '<span class="text-sm text-rose-500">OPP</span>';
+                
+                const myGuess = document.getElementById(`hx-${me.data.guess} .playing-card`);
+                myGuess.classList.add('flipped');
+                myGuess.querySelector('.card-front').innerHTML = '<span class="text-sm">GUESS</span>';
+            }
+        }
+
+        // ================= ENGINE 2: HIGH CARD =================
+        function renderHighCard(game, me, opponent) {
+            const canvas = document.getElementById('game-canvas');
+            const prompt = document.getElementById('action-prompt');
+
+            let p1Card = me.data.card ? getCardHTML(me.data.card, 'hc-me', null, 'pop-in') : getHiddenCardHTML('hc-me-hidden', null, 'locked');
+            let p2Card = (opponent && opponent.data.card) ? (game.state === 'resolving' || game.state === 'finished' ? getCardHTML(opponent.data.card, 'hc-opp', null, 'pop-in') : getHiddenCardHTML('hc-opp-hidden', null, 'locked')) : getHiddenCardHTML('hc-opp-none', null, 'locked opacity-20');
+
             canvas.innerHTML = `
-                <div class="w-full max-w-2xl flex flex-col items-center gap-10">
-                    
-                    <div class="text-center w-full bg-black/20 p-6 rounded-3xl border border-white/5">
-                        <div class="flex items-center justify-center gap-3 mb-4">
-                            <h3 class="text-rose-400 font-bold uppercase tracking-widest">Dealer Hand</h3>
-                            <span id="dealer-score" class="bg-black/50 text-white font-mono px-3 py-1 rounded-lg">?</span>
-                        </div>
-                        <div id="dealer-cards" class="flex justify-center min-h-[130px] pl-[15px]"></div>
+                <div class="w-full flex justify-around items-center gap-8">
+                    <div class="text-center bg-black/40 p-6 rounded-3xl border border-indigo-500/20 w-48 shadow-lg">
+                        <h3 class="text-indigo-400 font-bold mb-6 tracking-widest uppercase">YOU</h3>
+                        <div class="flex justify-center h-[130px]">${p1Card}</div>
                     </div>
-                    
-                    <div class="h-16 flex items-center justify-center relative w-full">
-                        <h2 id="bj-result" class="text-3xl font-black uppercase tracking-wider absolute"></h2>
-                        <div id="bj-controls" class="flex gap-4 absolute">
-                            <button onclick="hitCard()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-10 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1">HIT</button>
-                            <button onclick="standHand()" class="bg-slate-600 hover:bg-slate-500 text-white font-bold py-3 px-10 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1">STAND</button>
-                        </div>
-                    </div>
-
-                    <div class="text-center w-full bg-black/20 p-6 rounded-3xl border border-indigo-500/20 shadow-[0_0_30px_rgba(99,102,241,0.05)]">
-                        <div class="flex items-center justify-center gap-3 mb-4">
-                            <h3 class="text-indigo-400 font-bold uppercase tracking-widest">Your Hand</h3>
-                            <span id="player-score" class="bg-indigo-500/20 text-indigo-300 font-mono font-bold px-3 py-1 rounded-lg border border-indigo-500/30">0</span>
-                        </div>
-                        <div id="player-cards" class="flex justify-center min-h-[130px] pl-[15px]"></div>
+                    <div class="text-2xl font-black text-slate-600 italic">VS</div>
+                    <div class="text-center bg-black/40 p-6 rounded-3xl border border-rose-500/20 w-48 shadow-lg">
+                        <h3 class="text-rose-400 font-bold mb-6 tracking-widest uppercase">OPP</h3>
+                        <div class="flex justify-center h-[130px]">${p2Card}</div>
                     </div>
                 </div>
             `;
-            startBlackjackRound();
-        }
 
-        function startBlackjackRound() {
-            document.getElementById('bj-result').innerText = '';
-            document.getElementById('bj-result').classList.remove('pop-in');
-            document.getElementById('bj-controls').style.display = 'flex';
-            
-            const suits = ['♠','♥','♦','♣'];
-            const vals = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-            deck = [];
-            for(let s of suits) for(let v of vals) deck.push({v, s, val: ['J','Q','K'].includes(v) ? 10 : v === 'A' ? 11 : parseInt(v)});
-            deck.sort(() => Math.random() - 0.5); 
-            
-            playerHand = [deck.pop(), deck.pop()];
-            houseHand = [deck.pop(), deck.pop()];
-            
-            updateBoardState(true);
-            
-            // Check instant blackjack
-            if(getHandScore(playerHand) === 21) {
-                endBlackjack("BLACKJACK! YOU WIN.", "emerald");
-            }
-        }
-
-        function updateBoardState(hideDealer = false) {
-            document.getElementById('player-cards').innerHTML = playerHand.map(c => getCardHTML(c.v, c.s)).join('');
-            
-            if (hideDealer) {
-                document.getElementById('dealer-cards').innerHTML = getCardHTML(houseHand[0].v, houseHand[0].s) + getCardHTML('?', '?', true);
-                document.getElementById('dealer-score').innerText = getHandScore([houseHand[0]]);
+            if (!me.data.card) {
+                prompt.innerHTML = `<button onclick="playMove('draw')" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-4 px-12 rounded-xl shadow-[0_0_20px_rgba(99,102,241,0.4)] transition-transform transform hover:-translate-y-1">DRAW CARD</button>`;
             } else {
-                document.getElementById('dealer-cards').innerHTML = houseHand.map(c => getCardHTML(c.v, c.s)).join('');
-                document.getElementById('dealer-score').innerText = getHandScore(houseHand);
+                prompt.innerHTML = `<p class="text-slate-400 font-bold uppercase tracking-widest bg-black/40 px-6 py-2 rounded-full border border-white/5">Awaiting opponent draw...</p>`;
             }
-            document.getElementById('player-score').innerText = getHandScore(playerHand);
         }
 
-        function getHandScore(hand) {
-            let score = hand.reduce((a, b) => a + b.val, 0);
-            let aces = hand.filter(c => c.v === 'A').length;
-            while(score > 21 && aces > 0) { score -= 10; aces--; }
-            return score;
+        // ================= ENGINE 3: TACTICAL WAR =================
+        function renderWar(game, me, opponent) {
+            const canvas = document.getElementById('game-canvas');
+            const prompt = document.getElementById('action-prompt');
+
+            // Render HUD
+            let html = `
+                <div class="w-full flex justify-between px-8 bg-black/40 py-4 rounded-2xl border border-white/5 mb-8">
+                    <div class="text-center"><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">ROUND</p><p class="text-2xl font-black text-white">${game.gameData.round}/3</p></div>
+                    <div class="text-center"><p class="text-[10px] text-indigo-400 font-bold uppercase tracking-widest">YOUR WINS</p><p class="text-2xl font-black text-white">${game.players[0].id === me.id ? game.gameData.p1Wins : game.gameData.p2Wins}</p></div>
+                    <div class="text-center"><p class="text-[10px] text-rose-400 font-bold uppercase tracking-widest">OPP WINS</p><p class="text-2xl font-black text-white">${game.players[0].id !== me.id ? game.gameData.p1Wins : game.gameData.p2Wins}</p></div>
+                </div>
+            `;
+
+            // Render Combat Zone (Played Cards)
+            let myPlayed = me.data.playedCard ? (game.state === 'resolving' ? getCardHTML(me.data.playedCard, 'w-my-p', null, 'pop-in') : getHiddenCardHTML('w-my-h', null, 'locked')) : getHiddenCardHTML('w-my-e', null, 'locked opacity-10');
+            let oppPlayed = (opponent && opponent.data.playedCard) ? (game.state === 'resolving' ? getCardHTML(opponent.data.playedCard, 'w-op-p', null, 'pop-in') : getHiddenCardHTML('w-op-h', null, 'locked')) : getHiddenCardHTML('w-op-e', null, 'locked opacity-10');
+
+            html += `
+                <div class="flex justify-center gap-12 items-center mb-8">
+                    <div class="flex flex-col items-center gap-2"><span class="text-xs font-bold text-indigo-400 uppercase tracking-widest">You Played</span>${myPlayed}</div>
+                    <div class="flex flex-col items-center gap-2"><span class="text-xs font-bold text-rose-400 uppercase tracking-widest">Opp Played</span>${oppPlayed}</div>
+                </div>
+            `;
+
+            // Render Hand
+            if (me.data.hand) {
+                html += `<div class="flex justify-center gap-4 mt-auto">`;
+                me.data.hand.forEach((c, idx) => {
+                    html += getCardHTML(c, `h-${idx}`, me.data.playedCard ? null : `playMove('play_card', ${idx})`, me.data.playedCard ? 'locked' : 'hover:-translate-y-4 deal-in');
+                });
+                html += `</div>`;
+            }
+
+            canvas.innerHTML = html;
+
+            if (!me.data.playedCard) {
+                prompt.innerHTML = `<p class="text-indigo-400 font-bold">Select a card from your hand to play this round.</p>`;
+            } else {
+                prompt.innerHTML = `<p class="text-slate-400 font-bold uppercase tracking-widest bg-black/40 px-6 py-2 rounded-full border border-white/5">Card locked. Waiting for opponent...</p>`;
+            }
         }
 
-        function hitCard() {
-            playerHand.push(deck.pop());
-            updateBoardState(true);
-            if(getHandScore(playerHand) > 21) endBlackjack("BUSTED! HOUSE WINS.", "rose");
-        }
-
-        function standHand() {
-            document.getElementById('bj-controls').style.display = 'none';
-            updateBoardState(false);
-            
-            const playDealer = setInterval(() => {
-                if(getHandScore(houseHand) < 17) {
-                    houseHand.push(deck.pop());
-                    updateBoardState(false);
-                } else {
-                    clearInterval(playDealer);
-                    const pScore = getHandScore(playerHand);
-                    const dScore = getHandScore(houseHand);
-                    
-                    if (dScore > 21 || pScore > dScore) endBlackjack("💰 YOU WIN 💰", "emerald");
-                    else if (dScore > pScore) endBlackjack("💀 HOUSE WINS 💀", "rose");
-                    else endBlackjack("⚖️ PUSH (DRAW) ⚖️", "amber");
-                }
-            }, 800);
-        }
-
-        function endBlackjack(msg, color) {
-            document.getElementById('bj-controls').style.display = 'none';
-            const resText = document.getElementById('bj-result');
-            resText.innerHTML = `<span class="text-${color}-400">${msg}</span>`;
-            resText.classList.add('pop-in');
-            
-            setTimeout(() => {
-                document.getElementById('bj-controls').innerHTML = `<button onclick="startBlackjackRound()" class="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold py-3 px-12 rounded-xl shadow-lg transition-transform transform hover:-translate-y-1">PLAY AGAIN</button>`;
-                document.getElementById('bj-controls').style.display = 'flex';
-            }, 1500);
+        // Generic move emitter
+        function playMove(action, payload = null) {
+            socket.emit('play_move', { betId: currentBetId, action, payload });
         }
     </script>
 </body>
