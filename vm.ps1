@@ -7,7 +7,7 @@ if (-not $isAdmin) {
     Exit
 }
 
-Write-Host "Starting QEMU VM Spoofing & Hardening Script..." -ForegroundColor Cyan
+Write-Host "Starting Enhanced QEMU VM Spoofing Script..." -ForegroundColor Cyan
 
 $Global:restartRequired = $false
 
@@ -15,8 +15,8 @@ function New-RestorePoint {
     Write-Host "`nCreating System Restore Point..." -ForegroundColor Yellow
     try {
         Enable-ComputerRestore -Drive $env:SystemDrive -ErrorAction SilentlyContinue
-        Checkpoint-Computer -Description "Before QEMU Spoofing Script" -RestorePointType "APPLICATION_INSTALL" -ErrorAction Stop
-        Write-Host "System Restore Point created successfully." -ForegroundColor Green
+        Checkpoint-Computer -Description "Before QEMU Spoofing" -RestorePointType "APPLICATION_INSTALL" -ErrorAction Stop
+        Write-Host "System Restore Point created." -ForegroundColor Green
     } catch {
         Write-Host "Could not create restore point." -ForegroundColor Yellow
     }
@@ -35,10 +35,9 @@ function Set-HardwareBiosSpoofing {
     Set-ItemProperty -Path $biosPath -Name "BaseBoardManufacturer" -Value "Dell Inc." -Force -ErrorAction SilentlyContinue
     Set-ItemProperty -Path $biosPath -Name "BaseBoardProduct" -Value "0XPS8940" -Force -ErrorAction SilentlyContinue
 
-    $sysInfoPath = "HKLM:\SYSTEM\CurrentControlSet\Control\SystemInformation"
-    Set-ItemProperty -Path $sysInfoPath -Name "SystemManufacturer" -Value "Dell Inc." -Force -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $sysInfoPath -Name "SystemProductName" -Value "XPS 8940" -Force -ErrorAction SilentlyContinue
-    Set-ItemProperty -Path $sysInfoPath -Name "BIOSVersion" -Value "2.12.0" -Force -ErrorAction SilentlyContinue
+    $sysInfo = "HKLM:\SYSTEM\CurrentControlSet\Control\SystemInformation"
+    Set-ItemProperty -Path $sysInfo -Name "SystemManufacturer" -Value "Dell Inc." -Force -ErrorAction SilentlyContinue
+    Set-ItemProperty -Path $sysInfo -Name "SystemProductName" -Value "XPS 8940" -Force -ErrorAction SilentlyContinue
 
     Write-Host "Hardware and BIOS spoofing completed." -ForegroundColor Green
 }
@@ -86,7 +85,7 @@ function Set-GPUSpoofing {
 function Set-AdvancedVMEvasion {
     Write-Host "`nApplying Advanced VM Evasion..." -ForegroundColor Cyan
 
-    $vmRegistryPaths = @(
+    $vmPaths = @(
         "HKLM:\SYSTEM\CurrentControlSet\Services\vmdebug",
         "HKLM:\SYSTEM\CurrentControlSet\Services\vmmouse",
         "HKLM:\SYSTEM\CurrentControlSet\Services\VMTools",
@@ -96,14 +95,14 @@ function Set-AdvancedVMEvasion {
         "HKLM:\SYSTEM\CurrentControlSet\Services\QEMU-GA"
     )
 
-    foreach ($path in $vmRegistryPaths) {
+    foreach ($path in $vmPaths) {
         if (Test-Path $path) {
             Remove-Item -Path $path -Recurse -Force -ErrorAction SilentlyContinue
         }
     }
 
     # Clean VM-related environment variables
-    $envVars = Get-ChildItem Env: | Where-Object { $_.Name -match "QEMU|VM|Virtual" -or $_.Value -match "QEMU|VM|Virtual" }
+    $envVars = Get-ChildItem Env: | Where-Object { $_.Name -match "QEMU|VM|Virtual" }
     foreach ($var in $envVars) {
         [System.Environment]::SetEnvironmentVariable($var.Name, $null, "Machine")
         [System.Environment]::SetEnvironmentVariable($var.Name, $null, "User")
@@ -128,35 +127,30 @@ function Set-MachineGuidSpoofing {
     try {
         $newGuid = [guid]::NewGuid().ToString()
         Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Cryptography" -Name "MachineGuid" -Value $newGuid -Force
-        Write-Host "Machine GUID changed successfully." -ForegroundColor Green
-    } catch {
-        Write-Host "Failed to change Machine GUID." -ForegroundColor Yellow
-    }
+        Write-Host "Machine GUID changed." -ForegroundColor Green
+    } catch {}
 }
 
 function Set-InstallDateSpoofing {
     Write-Host "`nSpoofing Install Date..." -ForegroundColor Cyan
     try {
         $randomDate = Get-Random -Minimum ([datetime]'2019-01-01').Ticks -Maximum (([datetime]'2024-12-31').Ticks) | ForEach-Object { [datetime]$_ }
-        $unixTimestamp = [int]($randomDate.ToUniversalTime() - [datetime]'1970-01-01').TotalSeconds
-
-        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "InstallDate" -Value $unixTimestamp -Force
+        $unixTime = [int]($randomDate.ToUniversalTime() - [datetime]'1970-01-01').TotalSeconds
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name "InstallDate" -Value $unixTime -Force
         Write-Host "Install date spoofed." -ForegroundColor Green
-    } catch {
-        Write-Host "Failed to spoof install date." -ForegroundColor Yellow
-    }
+    } catch {}
 }
 
-function Set-AntiAnalysisTechniques {
-    Write-Host "`nApplying Anti-Analysis Techniques..." -ForegroundColor Cyan
+function Set-AntiAnalysis {
+    Write-Host "`nApplying Anti-Analysis Settings..." -ForegroundColor Cyan
 
     Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting" -Name "Disabled" -Value 1 -Force -ErrorAction SilentlyContinue
     Set-ItemProperty -Path "HKLM:\SYSTEM\CurrentControlSet\Control\CrashControl" -Name "AutoReboot" -Value 0 -Force -ErrorAction SilentlyContinue
 
-    Write-Host "Anti-analysis techniques applied." -ForegroundColor Green
+    Write-Host "Anti-analysis settings applied." -ForegroundColor Green
 }
 
-function Set-MemoryProcessCleanup {
+function Set-MemoryCleanup {
     Write-Host "`nPerforming Memory and Process Cleanup..." -ForegroundColor Cyan
 
     try {
@@ -164,44 +158,43 @@ function Set-MemoryProcessCleanup {
         [DllImport("psapi.dll")]
         public static extern int EmptyWorkingSet(IntPtr hProcess);
 "@
-        Add-Type -MemberDefinition $signature -Name MemoryUtils -Namespace Cleanup -ErrorAction SilentlyContinue
-        [Cleanup.MemoryUtils]::EmptyWorkingSet([System.Diagnostics.Process]::GetCurrentProcess().Handle) | Out-Null
+        Add-Type -MemberDefinition $signature -Name MemClean -Namespace Utils -ErrorAction SilentlyContinue
+        [Utils.MemClean]::EmptyWorkingSet([System.Diagnostics.Process]::GetCurrentProcess().Handle) | Out-Null
     } catch {}
 
     Remove-Item "$env:TEMP\*qemu*", "$env:TEMP\*vm*" -Force -Recurse -ErrorAction SilentlyContinue
 
-    Write-Host "Memory and process cleanup completed." -ForegroundColor Green
+    Write-Host "Memory cleanup completed." -ForegroundColor Green
 }
 
 function Set-AdditionalSpoofing {
-    Write-Host "`nApplying Additional Spoofing Techniques..." -ForegroundColor Cyan
+    Write-Host "`nApplying Additional Spoofing..." -ForegroundColor Cyan
 
-    # Fake desktop shortcuts for realism
-    $desktopPath = [System.Environment]::GetFolderPath("Desktop")
-    $shortcuts = @(
-        @{ Name = "Google Chrome.lnk"; Target = "C:\Program Files\Google\Chrome\Application\chrome.exe" },
-        @{ Name = "Microsoft Word.lnk"; Target = "C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE" }
+    # Create realistic desktop shortcuts
+    $desktop = [System.Environment]::GetFolderPath("Desktop")
+    $apps = @(
+        @{Name="Google Chrome.lnk"; Target="C:\Program Files\Google\Chrome\Application\chrome.exe"},
+        @{Name="Microsoft Word.lnk"; Target="C:\Program Files\Microsoft Office\root\Office16\WINWORD.EXE"}
     )
 
-    foreach ($shortcut in $shortcuts) {
-        $shortcutPath = Join-Path $desktopPath $shortcut.Name
-        if (!(Test-Path $shortcutPath)) {
+    foreach ($app in $apps) {
+        $path = Join-Path $desktop $app.Name
+        if (!(Test-Path $path)) {
             try {
                 $WshShell = New-Object -ComObject WScript.Shell
-                $lnk = $WshShell.CreateShortcut($shortcutPath)
-                $lnk.TargetPath = $shortcut.Target
+                $lnk = $WshShell.CreateShortcut($path)
+                $lnk.TargetPath = $app.Target
                 $lnk.Save()
             } catch {}
         }
     }
 
-    # Clear DNS cache
     Clear-DnsClientCache -ErrorAction SilentlyContinue
 
-    Write-Host "Additional spoofing techniques applied." -ForegroundColor Green
+    Write-Host "Additional spoofing completed." -ForegroundColor Green
 }
 
-# ==================== EXECUTE EVERYTHING ====================
+# ==================== RUN ALL ====================
 
 New-RestorePoint
 Set-HardwareBiosSpoofing
@@ -212,15 +205,14 @@ Set-AdvancedVMEvasion
 Set-TimingPerformanceMasking
 Set-MachineGuidSpoofing
 Set-InstallDateSpoofing
-Set-AntiAnalysisTechniques
-Set-MemoryProcessCleanup
+Set-AntiAnalysis
+Set-MemoryCleanup
 Set-AdditionalSpoofing
 
-Write-Host "`nAll spoofing and hardening operations completed successfully." -ForegroundColor Green
+Write-Host "`nAll spoofing operations completed." -ForegroundColor Green
 
 if ($Global:restartRequired) {
-    Write-Host "Restarting computer to apply changes..." -ForegroundColor Yellow
     Restart-Computer -Force
 } else {
-    Write-Host "Script finished. A restart is recommended for full effect." -ForegroundColor Yellow
+    Write-Host "Restart recommended for full effect." -ForegroundColor Yellow
 }
