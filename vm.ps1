@@ -27,13 +27,6 @@ if (-not $isAdministrator) {
 
 Write-Host "Successfully running with Administrator privileges." -ForegroundColor Green
 
-# ===========================================================
-# WATERMARKED BY MINKI
-# Modified version: Automatic execution mode - ALL settings applied without any Y/N prompts.
-# MAC address spoofing blocks removed (both the one inside Set-AdvancedVMEvasion and the choice near the end).
-# Script runs everything automatically for VM hardening & anti-detection.
-# ===========================================================
-
 Add-Type @"
     using System;
     using System.Runtime.InteropServices;
@@ -64,13 +57,12 @@ function Get-YesNoChoice {
     )
     $defaultChoiceIndex = if ($Default -eq "Y") { 0 } else { 1 }
 
-    Write-Host "`n? [AUTO-APPLY by minki] " -ForegroundColor White -NoNewline
+    Write-Host "`n? [ACTION] " -ForegroundColor White -NoNewline
     Write-Host "$Question" -ForegroundColor Cyan
     if ($HelpMessage) {
         Write-Host "  > $HelpMessage" -ForegroundColor Gray
     }
-    Write-Host "  # [AUTO] Forcing Yes - all settings applied automatically (no prompts)" -ForegroundColor Green
-    $decision = 0  # Force Yes to run everything without user interaction
+    $decision = $Host.UI.PromptForChoice("", "", $choices, $defaultChoiceIndex)
     
     if ($SettingName) {
         $Global:UserChoices[$SettingName] = ($decision -eq 0)
@@ -191,6 +183,46 @@ function Set-EnhancedFirewallSettings {
 
 function Set-AdvancedVMEvasion {
     Write-Host "`n  # ================== APPLYING ADVANCED VM EVASION ==================" -ForegroundColor Magenta 
+
+Write-Host "  # [INFO] Applying MAC address spoofing..." -ForegroundColor Yellow
+
+$macSuccess = Set-RandomMacAddress
+
+if (-not $macSuccess) {
+    Write-Host "  # [INFO] Trying alternative MAC address approach..." -ForegroundColor Yellow
+    
+    $adapters = Get-NetAdapter | Where-Object Status -eq 'Up'
+    foreach ($adapter in $adapters) {
+        try {
+            $adapterInfo = Get-NetAdapter | Where-Object { $_.Name -eq $adapter.Name } | Select-Object -First 1
+            $adapterId = $adapterInfo.InterfaceGuid
+            
+            $macHex = ('{0:X}' -f (Get-Random -Maximum 0xFFFFFFFFFFFF)).PadLeft(12, "0") 
+            $macHex = $macHex -replace '^(.)(.)', ('$1' + (Get-Random -InputObject 'A','E','2','6')) -replace '\$', ''
+            
+            $registryPath = "HKLM:\SYSTEM\CurrentControlSet\Control\Class\{4D36E972-E325-11CE-BFC1-08002BE10318}"
+            
+            $netAdapters = Get-ChildItem -Path $registryPath -ErrorAction SilentlyContinue
+            foreach ($netAdapter in $netAdapters) {
+                try {
+                    $instanceId = (Get-ItemProperty -Path $netAdapter.PSPath -ErrorAction SilentlyContinue).NetCfgInstanceId
+                    if ($instanceId -eq $adapterId) {
+                        Set-ItemProperty -Path $netAdapter.PSPath -Name "NetworkAddress" -Value $macHex -Type String -Force
+                        Write-Host "  # [OK] Applied MAC address $macHex to adapter $($adapter.Name) via registry" -ForegroundColor Green
+                        
+                        $adapter | Restart-NetAdapter -ErrorAction SilentlyContinue
+                        break
+                    }
+                }
+                catch {
+                }
+            }
+        }
+        catch {
+            Write-Host "  # [WARNING] Could not set MAC address for $($adapter.Name): $_" -ForegroundColor Yellow
+        }
+    }
+}
     
     Write-Host "  # [INFO] Modifying WMI class information to hide VM artifacts..." -ForegroundColor Yellow
     
@@ -1672,6 +1704,11 @@ try {
 
     if (Get-YesNoChoice "Apply enhanced install date/time spoofing?" "Y" "Sets random installation dates and configures time synchronization." "InstallDate") {
         Set-EnhancedInstallDateTime
+        $Global:restartRequired = $true
+    }
+
+    if (Get-YesNoChoice "Apply MAC address randomization?" "Y" "Generates and applies non-VM-vendor MAC addresses to network adapters." "MACAddress") {
+        Set-RandomMacAddress
         $Global:restartRequired = $true
     }
 
