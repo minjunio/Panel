@@ -68,7 +68,7 @@
                 <p class="font-bold tracking-wide text-sm">⚠️ <%= error %></p>
             </div>
         <% } %>
-        <% if (success) { %>
+        <% if (typeof success !== 'undefined' && success) { %>
             <div class="bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 p-4 rounded-2xl flex items-center gap-3 shadow-lg shadow-emerald-500/10">
                 <p class="font-bold tracking-wide text-sm">✅ <%= success %></p>
             </div>
@@ -80,7 +80,7 @@
                 <div class="absolute -top-32 -left-32 w-64 h-64 bg-indigo-600/20 rounded-full blur-[80px] pointer-events-none"></div>
                 
                 <h2 class="text-white text-2xl font-black mb-6 flex items-center gap-2 relative z-10">Match Matrix</h2>
-                <form action="/trade/host" method="POST" class="space-y-6 relative z-10">
+                <form action="/trade/host" method="POST" class="space-y-6 relative z-10" id="host-form">
                     
                     <div class="grid grid-cols-2 gap-3 bg-black/50 p-2 rounded-2xl border border-white/5 shadow-inner">
                         <label class="cursor-pointer text-center">
@@ -114,14 +114,14 @@
                                 <input type="radio" name="matchMode" value="practice_pvp" class="mode-radio sr-only" onchange="toggleStakeVisibility()">
                                 <div class="flex items-center gap-4 p-4 bg-black/40 rounded-xl border border-white/5 transition-all">
                                     <span class="mode-icon text-xl transition-transform">🤝</span>
-                                    <div><p class="text-sm font-bold text-emerald-400">Practice PvP</p><p class="text-[10px] text-emerald-600/80">Invite a friend (0 Risk)</p></div>
+                                    <div><p class="text-sm font-bold text-emerald-400">Practice PvP</p><p class="text-[10px] text-emerald-600/80">Invite a friend (0 Risk – No amount needed)</p></div>
                                 </div>
                             </label>
                             <label class="cursor-pointer relative">
                                 <input type="radio" name="matchMode" value="practice_house" class="mode-radio sr-only" onchange="toggleStakeVisibility()">
                                 <div class="flex items-center gap-4 p-4 bg-black/40 rounded-xl border border-white/5 transition-all">
                                     <span class="mode-icon text-xl transition-transform">🤖</span>
-                                    <div><p class="text-sm font-bold text-emerald-400">House Simulator</p><p class="text-[10px] text-emerald-600/80">Play the AI Bot (0 Risk)</p></div>
+                                    <div><p class="text-sm font-bold text-emerald-400">House Simulator</p><p class="text-[10px] text-emerald-600/80">Play the AI Bot (0 Risk – No amount needed)</p></div>
                                 </div>
                             </label>
                         </div>
@@ -137,7 +137,8 @@
                         </select>
                     </div>
 
-                    <div id="stake-container" class="bg-black/30 p-4 rounded-xl border border-white/5 transition-opacity duration-300">
+                    <!-- Stake section – completely hidden for practice modes -->
+                    <div id="stake-container" class="bg-black/30 p-4 rounded-xl border border-white/5 transition-all duration-300">
                         <div class="flex justify-between items-end mb-3">
                             <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Wager</label>
                             <span class="text-[10px] text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">Avail: <span id="display-bal">0.00</span></span>
@@ -148,6 +149,12 @@
                             <button type="button" onclick="setFraction(0.50)" class="bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300">50%</button>
                             <button type="button" onclick="setFraction(1.0)" class="bg-indigo-500/20 hover:bg-indigo-500/40 text-indigo-300 py-2 rounded-lg text-xs font-black border border-indigo-500/30">MAX</button>
                         </div>
+                    </div>
+
+                    <!-- Practice mode notice (shown only for practice) -->
+                    <div id="practice-notice" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl text-center">
+                        <p class="text-sm font-bold">Practice Mode Active</p>
+                        <p class="text-[11px] mt-1 text-emerald-500/80">No funds required • Zero risk • Instant start</p>
                     </div>
 
                     <button type="submit" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-black text-sm sm:text-lg py-4 sm:py-5 rounded-2xl shadow-[0_10px_30px_-10px_rgba(99,102,241,0.6)] transition-all transform hover:scale-[1.02] border border-indigo-400/30 tracking-widest uppercase">
@@ -245,14 +252,19 @@
         function toggleStakeVisibility() {
             const mode = document.querySelector('input[name="matchMode"]:checked').value;
             const stakeContainer = document.getElementById('stake-container');
+            const practiceNotice = document.getElementById('practice-notice');
             const stakeInput = document.getElementById('stake-amt');
+
             if (mode.startsWith('practice')) {
-                stakeContainer.style.opacity = '0.35';
-                stakeContainer.style.pointerEvents = 'none';
+                // Fully hide stake section – no amount required for Practice PvP or House bot
+                stakeContainer.style.display = 'none';
+                practiceNotice.classList.remove('hidden');
                 stakeInput.value = '';
+                stakeInput.removeAttribute('name'); // prevent any accidental submission of amount
             } else {
-                stakeContainer.style.opacity = '1';
-                stakeContainer.style.pointerEvents = 'auto';
+                stakeContainer.style.display = 'block';
+                practiceNotice.classList.add('hidden');
+                stakeInput.setAttribute('name', 'amount');
                 updateBalanceUI();
             }
         }
@@ -281,11 +293,11 @@
             document.getElementById('hdr-sol').innerText = balances.SOL.toFixed(4);
         }
         updateBalanceUI();
+        toggleStakeVisibility(); // ensure correct state on load
 
         function setFraction(perc) {
             const chain = document.querySelector('input[name="chain"]:checked').value;
             const max = balances[chain] * perc;
-            // leave a small gas buffer
             const safe = chain === 'ETH' ? Math.max(0, max - 0.002) : Math.max(0, max - 0.01);
             document.getElementById('stake-amt').value = safe.toFixed(4);
         }
@@ -320,7 +332,7 @@
             // Logs
             const logBox = document.getElementById('log-container');
             logBox.innerHTML = game.logs.map(l => {
-                let txt = l.replace('HOUSE_BOT...', 'THE HOUSE ').replace('HOUSE_BOT', 'THE HOUSE');
+                let txt = l.replace(/HOUSE_BOT/g, 'THE HOUSE');
                 let cls = 'text-emerald-400';
                 if (txt.includes('Victor') || txt.includes('wins') || txt.includes('VICTORY')) cls = 'text-emerald-300';
                 if (txt.includes('DEFEAT') || txt.includes('failed') || txt.includes('Payout failed')) cls = 'text-rose-400';
@@ -535,7 +547,7 @@
             const canvas = document.getElementById('game-canvas');
             const prompt = document.getElementById('action-prompt');
 
-            const result = game.gameData.coinResult; // 'H' or 'T' or null
+            const result = game.gameData.coinResult;
             const showResult = game.state === 'resolving' || game.state === 'finished';
 
             canvas.innerHTML = `
