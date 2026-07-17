@@ -12,49 +12,65 @@
         ::-webkit-scrollbar-thumb { background: #6366f1; border-radius: 10px; }
         
         body { background: radial-gradient(circle at top right, #1e1b4b 0%, #0B0F19 40%, #0B0F19 100%); }
-        .glass-panel { background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
-        .terminal-log { max-height: 350px; overflow-y: auto; scroll-behavior: smooth; font-family: monospace; }
-        .terminal-log p { border-left: 2px solid #6366f1; padding-left: 10px; margin-bottom: 8px; opacity: 0; animation: fadeIn 0.3s forwards; background: rgba(0,0,0,0.2); padding-top: 4px; padding-bottom: 4px; border-radius: 0 4px 4px 0;}
+        .glass-panel { background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(24px); border: 1px solid rgba(255, 255, 255, 0.07); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.55); }
+        .terminal-log { max-height: 380px; overflow-y: auto; scroll-behavior: smooth; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+        .terminal-log p { border-left: 2px solid #6366f1; padding-left: 10px; margin-bottom: 7px; opacity: 0; animation: fadeIn 0.3s forwards; background: rgba(0,0,0,0.25); padding-top: 4px; padding-bottom: 4px; border-radius: 0 6px 6px 0;}
         @keyframes fadeIn { to { opacity: 1; } }
         
-        /* Responsive Card System */
-        .card-container { perspective: 1000px; margin: 4px; }
-        .playing-card { width: 65px; height: 95px; position: relative; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; flex-shrink: 0; }
-        @media (min-width: 640px) { .playing-card { width: 85px; height: 120px; } }
-        .playing-card:hover:not(.locked) { transform: translateY(-8px) scale(1.05); box-shadow: 0 20px 30px rgba(99, 102, 241, 0.4); z-index: 20; }
-        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; border: 2px solid rgba(255,255,255,0.15); box-shadow: -2px 4px 10px rgba(0,0,0,0.4); }
+        .card-container { perspective: 1000px; margin: 3px; }
+        .playing-card { width: 68px; height: 98px; position: relative; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; flex-shrink: 0; }
+        @media (min-width: 640px) { .playing-card { width: 88px; height: 124px; } }
+        .playing-card:hover:not(.locked) { transform: translateY(-10px) scale(1.06); box-shadow: 0 22px 35px rgba(99, 102, 241, 0.45); z-index: 20; }
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 20px; font-weight: 900; border: 2px solid rgba(255,255,255,0.12); box-shadow: -2px 5px 12px rgba(0,0,0,0.45); }
         @media (min-width: 640px) { .card-front, .card-back { font-size: 26px; border-radius: 12px; } }
         .card-back { background: repeating-linear-gradient(45deg, #1e1b4b, #1e1b4b 10px, #312e81 10px, #312e81 20px); }
         .card-front { background: #ffffff; transform: rotateY(180deg); }
         .card-red { color: #ef4444; } .card-black { color: #0f172a; }
         .flipped { transform: rotateY(180deg); }
-        .locked { opacity: 0.5; pointer-events: none; }
+        .locked { opacity: 0.55; pointer-events: none; }
         
-        .deal-in { animation: deal 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: translateY(-40px) scale(0.5) rotate(-5deg); }
+        .deal-in { animation: deal 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; transform: translateY(-45px) scale(0.45) rotate(-6deg); }
         @keyframes deal { to { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); } }
         .pop-in { animation: pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        @keyframes pop { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes pop { 0% { transform: scale(0.75); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .win-pulse { animation: winPulse 1.2s ease-in-out infinite; }
+        @keyframes winPulse { 0%,100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); } 50% { box-shadow: 0 0 0 12px rgba(16,185,129,0); } }
 
-        /* Custom Radio Toggle for Modes */
-        .mode-radio:checked + div { background: rgba(99, 102, 241, 0.2); border-color: rgba(99, 102, 241, 0.6); box-shadow: inset 0 0 15px rgba(99,102,241,0.2); }
-        .mode-radio:checked + div .mode-icon { color: #818cf8; transform: scale(1.1); }
+        .mode-radio:checked + div { background: rgba(99, 102, 241, 0.22); border-color: rgba(99, 102, 241, 0.65); box-shadow: inset 0 0 18px rgba(99,102,241,0.25); }
+        .mode-radio:checked + div .mode-icon { color: #818cf8; transform: scale(1.12); }
+
+        .rps-btn { transition: all 0.2s; }
+        .rps-btn:hover:not(:disabled) { transform: translateY(-4px) scale(1.05); }
+        .rps-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     </style>
 </head>
 <body class="text-slate-200 font-sans antialiased min-h-screen p-3 md:p-6 lg:p-8">
 
     <div class="max-w-7xl mx-auto space-y-6">
         
-        <header class="flex justify-between items-center glass-panel rounded-full px-5 py-3 border-b border-white/10">
+        <header class="flex flex-col sm:flex-row justify-between items-center gap-4 glass-panel rounded-full px-5 py-3.5 border-b border-white/10">
             <h1 class="text-lg md:text-xl font-black text-white tracking-widest flex items-center gap-2 md:gap-3 drop-shadow-md">
-                <span class="p-2 md:p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full text-white shadow-lg shadow-indigo-500/30 text-sm md:text-base leading-none">⚔️</span> 
+                <span class="p-2 md:p-2.5 bg-gradient-to-br from-indigo-500 to-violet-600 rounded-full text-white shadow-lg shadow-indigo-500/40 text-sm md:text-base leading-none">⚔️</span> 
                 <span class="hidden sm:inline">PVP ARENA</span><span class="sm:hidden">ARENA</span>
             </h1>
-            <a href="/wallet/portfolio" class="text-xs md:text-sm font-bold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 md:px-6 py-2.5 rounded-full transition-all border border-white/10 shadow-inner">Return to Vault</a>
+            <div class="flex items-center gap-3">
+                <div class="hidden sm:flex items-center gap-2 text-[11px] font-mono bg-black/40 px-3 py-1.5 rounded-full border border-white/10">
+                    <span class="text-indigo-400">ETH</span> <span id="hdr-eth">0.0000</span>
+                    <span class="text-slate-600">|</span>
+                    <span class="text-emerald-400">SOL</span> <span id="hdr-sol">0.0000</span>
+                </div>
+                <a href="/wallet/portfolio" class="text-xs md:text-sm font-bold text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 px-4 md:px-6 py-2.5 rounded-full transition-all border border-white/10 shadow-inner">Return to Vault</a>
+            </div>
         </header>
 
         <% if (error) { %>
             <div class="bg-red-500/10 border border-red-500/40 text-red-400 p-4 rounded-2xl flex items-center gap-3 animate-pulse shadow-lg shadow-red-500/10">
                 <p class="font-bold tracking-wide text-sm">⚠️ <%= error %></p>
+            </div>
+        <% } %>
+        <% if (success) { %>
+            <div class="bg-emerald-500/10 border border-emerald-500/40 text-emerald-400 p-4 rounded-2xl flex items-center gap-3 shadow-lg shadow-emerald-500/10">
+                <p class="font-bold tracking-wide text-sm">✅ <%= success %></p>
             </div>
         <% } %>
 
@@ -116,6 +132,8 @@
                             <option value="hexa">🎴 Hexa-Guess (Memory/Bluff)</option>
                             <option value="highcard">🃏 High Card (Sudden Death)</option>
                             <option value="war">⚔️ Tactical War (Best of 3)</option>
+                            <option value="coinflip">🪙 Coin Flip (Pure Luck)</option>
+                            <option value="rps">✊ Rock Paper Scissors</option>
                         </select>
                     </div>
 
@@ -124,7 +142,7 @@
                             <label class="block text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest">Wager</label>
                             <span class="text-[10px] text-indigo-400 font-mono font-bold bg-indigo-500/10 px-2 py-1 rounded border border-indigo-500/20">Avail: <span id="display-bal">0.00</span></span>
                         </div>
-                        <input type="number" id="stake-amt" name="amount" step="any" placeholder="0.000" class="w-full bg-black/60 border border-white/10 rounded-xl p-3 text-white text-lg font-black outline-none focus:border-indigo-500 mb-3 text-center">
+                        <input type="number" id="stake-amt" name="amount" step="any" min="0" placeholder="0.000" class="w-full bg-black/60 border border-white/10 rounded-xl p-3 text-white text-lg font-black outline-none focus:border-indigo-500 mb-3 text-center">
                         <div class="grid grid-cols-3 gap-2">
                             <button type="button" onclick="setFraction(0.25)" class="bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300">25%</button>
                             <button type="button" onclick="setFraction(0.50)" class="bg-white/5 hover:bg-white/10 py-2 rounded-lg text-xs font-bold text-slate-300">50%</button>
@@ -167,6 +185,7 @@
                                                 <%= bet.hostChain %> MATCH
                                             </span>
                                             <h3 class="text-white font-black text-lg sm:text-xl capitalize"><%= bet.game %></h3>
+                                            <p class="text-[10px] text-slate-500 font-mono"><%= bet.hostAddress.substring(0,6) %>...<%= bet.hostAddress.slice(-4) %></p>
                                         </div>
                                         <div class="text-right bg-black/60 px-4 py-2 rounded-xl border border-white/5 shadow-inner">
                                             <p class="text-xl font-black text-white leading-none"><%= bet.cryptoAmount %></p>
@@ -183,6 +202,7 @@
                     <% } else { %>
                         <div class="flex flex-col items-center justify-center py-16 text-slate-500 bg-black/20 rounded-3xl border border-dashed border-white/10 text-center px-4">
                             <p class="text-lg font-bold text-slate-400">No open stakes.</p>
+                            <p class="text-xs mt-2 text-slate-600">Deploy a public match or join with a private code.</p>
                         </div>
                     <% } %>
                 </div>
@@ -191,7 +211,7 @@
 
         <div id="live-board" class="hidden grid grid-cols-1 lg:grid-cols-12 gap-6">
             
-            <div class="lg:col-span-8 xl:col-span-9 glass-panel rounded-[2rem] p-4 sm:p-8 min-h-[500px] sm:min-h-[600px] flex flex-col justify-between relative overflow-hidden">
+            <div class="lg:col-span-8 xl:col-span-9 glass-panel rounded-[2rem] p-4 sm:p-8 min-h-[520px] sm:min-h-[620px] flex flex-col justify-between relative overflow-hidden">
                 <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-900/15 via-transparent to-transparent pointer-events-none"></div>
                 
                 <div class="text-center z-20 flex flex-col items-center mb-4">
@@ -199,14 +219,20 @@
                     <p id="game-status" class="text-indigo-300 text-xs sm:text-sm font-bold bg-black/60 px-5 py-1.5 rounded-full border border-indigo-500/30 shadow-lg tracking-wide">Connecting...</p>
                     
                     <div id="room-code-container" class="mt-4 hidden w-full max-w-sm"></div>
+                    
+                    <div id="player-pills" class="mt-3 flex flex-wrap justify-center gap-2 text-[10px] sm:text-xs font-mono"></div>
                 </div>
 
                 <div id="game-canvas" class="flex-1 flex flex-col items-center justify-center gap-6 z-10 w-full max-w-full overflow-hidden px-2"></div>
 
                 <div class="mt-6 text-center z-20 min-h-[80px] bg-black/40 p-4 rounded-2xl border border-white/5 backdrop-blur-md flex flex-col justify-center items-center" id="action-prompt"></div>
+                
+                <div class="mt-3 flex justify-center">
+                    <button onclick="leaveGame()" class="text-[10px] sm:text-xs font-bold text-slate-500 hover:text-red-400 bg-white/5 hover:bg-red-500/10 px-4 py-2 rounded-full border border-white/10 transition-all">LEAVE MATCH</button>
+                </div>
             </div>
 
-            <div class="lg:col-span-4 xl:col-span-3 glass-panel rounded-[2rem] p-5 sm:p-6 flex flex-col h-full max-h-[400px] lg:max-h-[600px]">
+            <div class="lg:col-span-4 xl:col-span-3 glass-panel rounded-[2rem] p-5 sm:p-6 flex flex-col h-full max-h-[420px] lg:max-h-[620px]">
                 <h3 class="text-white font-black mb-4 uppercase text-[10px] sm:text-xs tracking-widest border-b border-white/10 pb-3 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)] animate-pulse"></span> NETWORK LOGS
                 </h3>
@@ -221,7 +247,7 @@
             const stakeContainer = document.getElementById('stake-container');
             const stakeInput = document.getElementById('stake-amt');
             if (mode.startsWith('practice')) {
-                stakeContainer.style.opacity = '0.3';
+                stakeContainer.style.opacity = '0.35';
                 stakeContainer.style.pointerEvents = 'none';
                 stakeInput.value = '';
             } else {
@@ -250,13 +276,18 @@
         function updateBalanceUI() {
             const chain = document.querySelector('input[name="chain"]:checked').value;
             document.getElementById('display-bal').innerText = balances[chain].toFixed(4) + ' ' + chain;
-            document.getElementById('stake-amt').value = ''; 
+            document.getElementById('stake-amt').value = '';
+            document.getElementById('hdr-eth').innerText = balances.ETH.toFixed(4);
+            document.getElementById('hdr-sol').innerText = balances.SOL.toFixed(4);
         }
         updateBalanceUI();
 
         function setFraction(perc) {
             const chain = document.querySelector('input[name="chain"]:checked').value;
-            document.getElementById('stake-amt').value = (balances[chain] * perc).toFixed(4);
+            const max = balances[chain] * perc;
+            // leave a small gas buffer
+            const safe = chain === 'ETH' ? Math.max(0, max - 0.002) : Math.max(0, max - 0.01);
+            document.getElementById('stake-amt').value = safe.toFixed(4);
         }
 
         // ================= SOCKET.IO CORE =================
@@ -273,6 +304,12 @@
             socket.emit('join_game', betId);
         }
 
+        function leaveGame() {
+            if (confirm('Leave this match? You may forfeit.')) {
+                window.location.href = '/wallet/trade';
+            }
+        }
+
         socket.on('game_error', (msg) => { alert(msg); window.location.href = '/wallet/trade'; });
 
         socket.on('update_state', (game) => {
@@ -280,16 +317,19 @@
             const me = game.players.find(p => p.id === myId);
             const opponent = game.players.find(p => p.id !== myId);
 
-            // Print Logs
+            // Logs
             const logBox = document.getElementById('log-container');
             logBox.innerHTML = game.logs.map(l => {
-                // Filter out HOUSE_BOT address string logic
-                let txt = l.replace('HOUSE_BOT...', 'THE HOUSE ');
-                return `<p class="text-emerald-400 font-bold tracking-wide break-words">${txt}</p>`;
+                let txt = l.replace('HOUSE_BOT...', 'THE HOUSE ').replace('HOUSE_BOT', 'THE HOUSE');
+                let cls = 'text-emerald-400';
+                if (txt.includes('Victor') || txt.includes('wins') || txt.includes('VICTORY')) cls = 'text-emerald-300';
+                if (txt.includes('DEFEAT') || txt.includes('failed') || txt.includes('Payout failed')) cls = 'text-rose-400';
+                if (txt.includes('DRAW') || txt.includes('TIE') || txt.includes('STALEMATE')) cls = 'text-amber-300';
+                return `<p class="\( {cls} font-bold tracking-wide break-words"> \){txt}</p>`;
             }).join('');
             logBox.scrollTop = logBox.scrollHeight;
 
-            // Status Management
+            // Status
             const status = document.getElementById('game-status');
             document.getElementById('game-title').innerText = `${game.game.toUpperCase()} PROTOCOL`;
             
@@ -300,14 +340,27 @@
                 status.innerText = "RESOLVING COMBAT...";
                 status.classList.remove('animate-pulse');
             } else if (game.state === 'finished') {
-                status.innerText = game.winner === myId ? "VICTORY ACHIEVED" : (game.winner ? "DEFEAT" : "DRAW");
+                status.innerText = game.winner === myId ? "VICTORY ACHIEVED" : (game.winner ? (game.winner === 'HOUSE_BOT' ? "DEFEAT vs HOUSE" : "DEFEAT") : "DRAW");
                 status.classList.remove('animate-pulse');
+                if (game.winner === myId) status.classList.add('win-pulse');
             } else {
                 status.innerText = "ACTIVE COMBAT PHASE";
                 status.classList.remove('animate-pulse');
             }
 
-            // Room Code UI
+            // Player pills
+            const pills = document.getElementById('player-pills');
+            if (me) {
+                const oppLabel = game.isHouse ? 'HOUSE' : (opponent ? opponent.id.substring(0,6)+'...'+opponent.id.slice(-4) : '...');
+                pills.innerHTML = `
+                    <span class="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">YOU \( {myId.substring(0,6)}... \){myId.slice(-4)}</span>
+                    <span class="text-slate-600">vs</span>
+                    <span class="bg-rose-500/20 text-rose-300 px-3 py-1 rounded-full border border-rose-500/30">${oppLabel}</span>
+                    \( {game.cryptoAmount > 0 ? `<span class="bg-amber-500/20 text-amber-300 px-3 py-1 rounded-full border border-amber-500/30"> \){game.cryptoAmount} ${game.hostChain}</span>` : `<span class="bg-emerald-500/20 text-emerald-300 px-3 py-1 rounded-full border border-emerald-500/30">PRACTICE</span>`}
+                `;
+            }
+
+            // Room Code
             const roomCodeContainer = document.getElementById('room-code-container');
             if (game.state === 'waiting' && game.isPrivate && game.accessKey && !game.isHouse) {
                 roomCodeContainer.classList.remove('hidden');
@@ -316,9 +369,7 @@
                         <span class="text-[9px] sm:text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-2">Share this code to invite opponent</span>
                         <div class="flex items-center justify-center gap-2 sm:gap-4 w-full">
                             <code class="text-xl sm:text-2xl font-mono text-white font-black tracking-widest drop-shadow-md bg-black/50 px-3 py-1 sm:py-2 rounded-xl border border-white/10">${game.accessKey}</code>
-                            <button onclick="copyCode('${game.accessKey}', this)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl transition-all shadow-lg active:scale-95 text-xs sm:text-sm">
-                                COPY
-                            </button>
+                            <button onclick="copyCode('${game.accessKey}', this)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-3 py-1.5 sm:px-4 sm:py-2.5 rounded-xl transition-all shadow-lg active:scale-95 text-xs sm:text-sm">COPY</button>
                         </div>
                     </div>
                 `;
@@ -331,13 +382,15 @@
             if (game.game === 'hexa') renderHexa(game, me, opponent);
             if (game.game === 'highcard') renderHighCard(game, me, opponent);
             if (game.game === 'war') renderWar(game, me, opponent);
+            if (game.game === 'coinflip') renderCoinFlip(game, me, opponent);
+            if (game.game === 'rps') renderRPS(game, me, opponent);
         });
 
         function getCardHTML(c, id, onClickFn, extraClass='') {
             if (!c) return `<div class="playing-card ${extraClass}"><div class="card-back"></div></div>`;
             const color = (c.s === '♥' || c.s === '♦') ? 'card-red' : 'card-black';
             return `
-            <div class="card-container ${extraClass}" id="${id}" ${onClickFn ? `onclick="${onClickFn}"` : ''}>
+            <div class="card-container \( {extraClass}" id=" \){id}" \( {onClickFn ? `onclick=" \){onClickFn}"` : ''}>
                 <div class="playing-card flipped">
                     <div class="card-back"></div>
                     <div class="card-front ${color}">
@@ -349,7 +402,7 @@
         }
         function getHiddenCardHTML(id, onClickFn, extraClass='') {
             return `
-            <div class="card-container ${extraClass}" id="${id}" ${onClickFn ? `onclick="${onClickFn}"` : ''}>
+            <div class="card-container \( {extraClass}" id=" \){id}" \( {onClickFn ? `onclick=" \){onClickFn}"` : ''}>
                 <div class="playing-card">
                     <div class="card-back"></div>
                     <div class="card-front card-black font-black text-2xl sm:text-4xl text-slate-800">?</div>
@@ -366,7 +419,7 @@
             const canvas = document.getElementById('game-canvas');
             const prompt = document.getElementById('action-prompt');
             
-            if (canvas.innerHTML.trim() === '') {
+            if (canvas.innerHTML.trim() === '' || !canvas.querySelector('#hx-0')) {
                 let html = '<div class="flex flex-wrap justify-center items-center gap-2 sm:gap-4 w-full max-w-md mx-auto">';
                 for(let i=0; i<6; i++) html += getHiddenCardHTML(`hx-${i}`, `playMove('hide', ${i})`, `deal-in`);
                 html += '</div>';
@@ -375,27 +428,36 @@
 
             if (me.data.hidden === undefined) {
                 prompt.innerHTML = `<h3 class="text-indigo-400 font-black text-sm sm:text-lg mb-1 tracking-widest">PHASE 1: HIDE A CARD</h3><p class="text-slate-400 text-[10px] sm:text-xs font-bold">Select one card to keep secret.</p>`;
-                for(let i=0; i<6; i++) document.getElementById(`hx-${i}`).setAttribute('onclick', `playMove('hide', ${i})`);
+                for(let i=0; i<6; i++) {
+                    const el = document.getElementById(`hx-${i}`);
+                    if (el) el.setAttribute('onclick', `playMove('hide', ${i})`);
+                }
             } else if (me.data.guess === undefined) {
                 prompt.innerHTML = `<h3 class="text-rose-400 font-black text-sm sm:text-lg mb-1 tracking-widest">PHASE 2: GUESS TARGET</h3><p class="text-slate-400 text-[10px] sm:text-xs font-bold">Find where they hid their card.</p>`;
-                const myHidden = document.getElementById(`hx-${me.data.hidden} .playing-card`);
+                const myHidden = document.querySelector(`#hx-${me.data.hidden} .playing-card`);
                 if(myHidden) {
                     myHidden.classList.add('locked', 'flipped');
                     myHidden.querySelector('.card-front').innerHTML = '<span class="text-[10px] sm:text-sm font-black tracking-widest text-indigo-600">YOURS</span>';
                 }
-                for(let i=0; i<6; i++) document.getElementById(`hx-${i}`).setAttribute('onclick', `playMove('guess', ${i})`);
+                for(let i=0; i<6; i++) {
+                    const el = document.getElementById(`hx-${i}`);
+                    if (el) el.setAttribute('onclick', `playMove('guess', ${i})`);
+                }
             } else {
                 prompt.innerHTML = `<p class="text-slate-400 font-bold text-xs uppercase tracking-widest bg-black/40 px-4 py-2 rounded-full border border-white/5">Waiting for opponent...</p>`;
             }
 
             if (game.state === 'resolving' && opponent && opponent.data.hidden !== undefined) {
-                const oppHidden = document.getElementById(`hx-${opponent.data.hidden} .playing-card`);
-                oppHidden.classList.add('flipped');
-                oppHidden.querySelector('.card-front').innerHTML = '<span class="text-[10px] sm:text-sm font-black tracking-widest text-rose-500">OPP</span>';
-                
-                const myGuess = document.getElementById(`hx-${me.data.guess} .playing-card`);
-                myGuess.classList.add('flipped');
-                myGuess.querySelector('.card-front').innerHTML = '<span class="text-[8px] sm:text-[10px] font-black tracking-widest text-slate-800">GUESS</span>';
+                const oppHidden = document.querySelector(`#hx-${opponent.data.hidden} .playing-card`);
+                if (oppHidden) {
+                    oppHidden.classList.add('flipped');
+                    oppHidden.querySelector('.card-front').innerHTML = '<span class="text-[10px] sm:text-sm font-black tracking-widest text-rose-500">OPP</span>';
+                }
+                const myGuess = document.querySelector(`#hx-${me.data.guess} .playing-card`);
+                if (myGuess) {
+                    myGuess.classList.add('flipped');
+                    myGuess.querySelector('.card-front').innerHTML = '<span class="text-[8px] sm:text-[10px] font-black tracking-widest text-slate-800">GUESS</span>';
+                }
             }
         }
 
@@ -437,7 +499,7 @@
                 <div class="w-full max-w-md flex justify-between px-4 sm:px-8 bg-black/60 py-3 sm:py-4 rounded-2xl sm:rounded-3xl border border-indigo-500/20 shadow-inner mb-4 sm:mb-6">
                     <div class="text-center"><p class="text-[8px] sm:text-[10px] text-slate-400 font-black uppercase tracking-widest mb-1">ROUND</p><p class="text-xl sm:text-3xl font-black text-white leading-none">${game.gameData.round}/3</p></div>
                     <div class="text-center"><p class="text-[8px] sm:text-[10px] text-indigo-400 font-black uppercase tracking-widest mb-1">YOUR WINS</p><p class="text-xl sm:text-3xl font-black text-indigo-300 leading-none">${game.players[0].id === me.id ? game.gameData.p1Wins : game.gameData.p2Wins}</p></div>
-                    <div class="text-center"><p class="text-[8px] sm:text-[10px] text-rose-400 font-black uppercase tracking-widest mb-1">${game.isHouse ? 'HOUSE WINS' : 'OPP WINS'}</p><p class="text-xl sm:text-3xl font-black text-rose-300 leading-none">${game.players[0].id !== me.id ? game.gameData.p1Wins : game.gameData.p2Wins}</p></div>
+                    <div class="text-center"><p class="text-[8px] sm:text-[10px] text-rose-400 font-black uppercase tracking-widest mb-1">\( {game.isHouse ? 'HOUSE WINS' : 'OPP WINS'}</p><p class="text-xl sm:text-3xl font-black text-rose-300 leading-none"> \){game.players[0].id !== me.id ? game.gameData.p1Wins : game.gameData.p2Wins}</p></div>
                 </div>
             `;
 
@@ -447,7 +509,7 @@
             html += `
                 <div class="flex justify-center gap-6 sm:gap-12 items-center mb-6 w-full max-w-sm sm:max-w-md bg-black/30 p-4 sm:p-8 rounded-[2rem] sm:rounded-[3rem] border border-white/5">
                     <div class="flex flex-col items-center gap-3"><span class="text-[10px] sm:text-xs font-black text-indigo-400 uppercase tracking-widest bg-black px-3 py-1 rounded-full border border-indigo-500/30">You</span>${myPlayed}</div>
-                    <div class="flex flex-col items-center gap-3"><span class="text-[10px] sm:text-xs font-black text-rose-400 uppercase tracking-widest bg-black px-3 py-1 rounded-full border border-rose-500/30">${game.isHouse ? 'House' : 'Opp'}</span>${oppPlayed}</div>
+                    <div class="flex flex-col items-center gap-3"><span class="text-[10px] sm:text-xs font-black text-rose-400 uppercase tracking-widest bg-black px-3 py-1 rounded-full border border-rose-500/30">\( {game.isHouse ? 'House' : 'Opp'}</span> \){oppPlayed}</div>
                 </div>
             `;
 
@@ -465,6 +527,82 @@
                 prompt.innerHTML = `<p class="text-indigo-400 font-black tracking-widest text-xs sm:text-sm uppercase">Select a card to deploy</p>`;
             } else {
                 prompt.innerHTML = `<p class="text-slate-400 font-bold uppercase tracking-widest text-xs">Waiting for opponent...</p>`;
+            }
+        }
+
+        // ================= ENGINE 4: COIN FLIP =================
+        function renderCoinFlip(game, me, opponent) {
+            const canvas = document.getElementById('game-canvas');
+            const prompt = document.getElementById('action-prompt');
+
+            const result = game.gameData.coinResult; // 'H' or 'T' or null
+            const showResult = game.state === 'resolving' || game.state === 'finished';
+
+            canvas.innerHTML = `
+                <div class="flex flex-col items-center gap-6">
+                    <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-full bg-gradient-to-br from-amber-400 to-yellow-600 flex items-center justify-center text-5xl sm:text-6xl font-black text-black shadow-2xl border-4 border-amber-300/50 ${showResult ? 'pop-in' : 'animate-pulse'}">
+                        ${showResult ? (result === 'H' ? 'H' : 'T') : '?'}
+                    </div>
+                    <div class="flex gap-8 text-center">
+                        <div>
+                            <p class="text-[10px] text-indigo-400 font-bold uppercase mb-1">You</p>
+                            <p class="text-lg font-black">${me.data.ready ? 'READY' : '...'}</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-rose-400 font-bold uppercase mb-1">${game.isHouse ? 'HOUSE' : 'OPP'}</p>
+                            <p class="text-lg font-black">${(opponent && opponent.data.ready) ? 'READY' : '...'}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (!me.data.ready) {
+                prompt.innerHTML = `<button onclick="playMove('ready')" class="bg-amber-500 hover:bg-amber-400 text-black font-black text-sm sm:text-base py-3 sm:py-4 px-10 sm:px-16 rounded-xl shadow-lg transition-all transform hover:-translate-y-1 tracking-widest">FLIP THE COIN</button>`;
+            } else if (game.state !== 'finished') {
+                prompt.innerHTML = `<p class="text-slate-400 font-bold text-xs uppercase tracking-widest">Waiting for opponent to flip...</p>`;
+            } else {
+                prompt.innerHTML = `<p class="text-slate-300 font-bold text-sm">Match complete</p>`;
+            }
+        }
+
+        // ================= ENGINE 5: ROCK PAPER SCISSORS =================
+        function renderRPS(game, me, opponent) {
+            const canvas = document.getElementById('game-canvas');
+            const prompt = document.getElementById('action-prompt');
+
+            const choices = { rock: '✊', paper: '✋', scissors: '✌️' };
+            const myChoice = me.data.choice;
+            const oppChoice = (opponent && opponent.data.choice && (game.state === 'resolving' || game.state === 'finished')) ? opponent.data.choice : null;
+
+            canvas.innerHTML = `
+                <div class="w-full max-w-md flex justify-around items-center gap-4">
+                    <div class="text-center">
+                        <p class="text-[10px] text-indigo-400 font-black uppercase mb-3">YOU</p>
+                        <div class="text-6xl sm:text-7xl \( {myChoice ? 'pop-in' : 'opacity-30'}"> \){myChoice ? choices[myChoice] : '❔'}</div>
+                        <p class="mt-2 text-sm font-bold capitalize">${myChoice || '...'}</p>
+                    </div>
+                    <div class="text-2xl font-black text-slate-600">VS</div>
+                    <div class="text-center">
+                        <p class="text-[10px] text-rose-400 font-black uppercase mb-3">${game.isHouse ? 'HOUSE' : 'OPP'}</p>
+                        <div class="text-6xl sm:text-7xl \( {oppChoice ? 'pop-in' : 'opacity-30'}"> \){oppChoice ? choices[oppChoice] : '❔'}</div>
+                        <p class="mt-2 text-sm font-bold capitalize">${oppChoice || '...'}</p>
+                    </div>
+                </div>
+            `;
+
+            if (!myChoice) {
+                prompt.innerHTML = `
+                    <div class="flex gap-3 sm:gap-5">
+                        <button onclick="playMove('choose','rock')" class="rps-btn bg-white/10 hover:bg-indigo-600 border border-white/20 text-3xl sm:text-4xl w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center">✊</button>
+                        <button onclick="playMove('choose','paper')" class="rps-btn bg-white/10 hover:bg-indigo-600 border border-white/20 text-3xl sm:text-4xl w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center">✋</button>
+                        <button onclick="playMove('choose','scissors')" class="rps-btn bg-white/10 hover:bg-indigo-600 border border-white/20 text-3xl sm:text-4xl w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center">✌️</button>
+                    </div>
+                    <p class="text-[10px] text-slate-500 mt-3 font-bold uppercase tracking-widest">Choose your weapon</p>
+                `;
+            } else if (game.state !== 'finished') {
+                prompt.innerHTML = `<p class="text-slate-400 font-bold text-xs uppercase tracking-widest">Waiting for opponent...</p>`;
+            } else {
+                prompt.innerHTML = `<p class="text-slate-300 font-bold text-sm">Match complete</p>`;
             }
         }
     </script>
