@@ -16,7 +16,7 @@ const {
 const path = require('path');
 const crypto = require('crypto');
 
-// WebSockets integration
+// WebSockets
 const http = require('http');
 const { Server } = require('socket.io');
 
@@ -26,7 +26,7 @@ const io = new Server(server);
 
 const PORT = process.env.PORT || 3000;
 
-// --- Middleware Setup ---
+// --- Middleware ---
 const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET || 'tactical-override-key-999',
     resave: false,
@@ -41,21 +41,21 @@ app.use(express.json());
 app.use(sessionMiddleware);
 io.engine.use(sessionMiddleware);
 
-// --- Blockchain RPC Providers ---
+// --- RPC ---
 const ethProvider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
 const solConnection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
 
-// --- Global Memory State ---
-const activeBets = new Map();  // Public Order Book
-const liveGames = new Map();   // Active WebSocket PvP/Bot Sessions
+// --- State ---
+const activeBets = new Map();
+const liveGames = new Map();
 
-// --- Deck Generator ---
+// --- Fair Deck (crypto secure Fisher-Yates) ---
 function getShuffledDeck() {
     const suits = ['♠','♥','♦','♣'];
     const vals = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
     let deck = [];
-    for(let s of suits) {
-        for(let v of vals) {
+    for (let s of suits) {
+        for (let v of vals) {
             let weight = parseInt(v);
             if (v === 'J') weight = 11;
             if (v === 'Q') weight = 12;
@@ -64,10 +64,15 @@ function getShuffledDeck() {
             deck.push({ v, s, weight });
         }
     }
-    return deck.sort(() => Math.random() - 0.5);
+    // Fisher-Yates with crypto.randomInt
+    for (let i = deck.length - 1; i > 0; i--) {
+        const j = crypto.randomInt(0, i + 1);
+        [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
 }
 
-// --- Blockchain Helpers ---
+// --- Wallet helpers ---
 function deriveWalletsFromMnemonic(mnemonic) {
     const ethWallet = ethers.Wallet.fromPhrase(mnemonic);
     const seed = bip39.mnemonicToSeedSync(mnemonic);
@@ -102,11 +107,88 @@ async function fetchLiveBalances(ethAddress, solAddress) {
             return { eth: 0, sol: 0, usd: 0 };
         }
     };
-    return Promise.race([fetchPromise(), new Promise(r => setTimeout(() => r({ eth: 0, sol: 0, usd: 0 }), 1500))]);
+    return Promise.race([fetchPromise(), new Promise(r => setTimeout(() => r({ eth: 0, sol: 0, usd: 0 }), 1800))]);
+}
+
+// --- Real crypto transfer helpers ---
+async function transferToEscrow(userWallet, chain, amount, escrowAddress) {
+    if (chain === 'ETH') {
+        const wallet = new ethers.Wallet(userWallet.ethPrivateKey, ethProvider);
+        const value = ethers.parseEther(amount.toString());
+        const tx = await wallet.sendTransaction({ to: escrowAddress, value });
+        await tx.wait(1);
+        return tx.hash;
+    } else {
+        const fromKeypair = Keypair.fromSecretKey(Buffer.from(userWallet.solSecretKey, 'hex'));
+        const lamports = Math.floor(parseFloat(amount) * LAMPORTS_PER_SOL);
+        const transaction = new Transaction().add(SystemProgram.transfer({
+            fromPubkey: fromKeypair.publicKey,
+            toPubkey: new PublicKey(escrowAddress),
+            lamports
+        }));
+        const signature = await sendAndConfirmTransaction(solConnection, transaction, [fromKeypair], { commitment: 'confirmed' });
+        return signature;
+    }
+}
+
+async function payoutFromEscrow(game, winnerAddress) {
+    const total = parseFloat(game.cryptoAmount) * 2;
+    if (total <= 0) return null;
+
+    if (game.hostChain === 'ETH') {
+        const escrowWallet = new ethers.Wallet(game.escrowPrivateKey, ethProvider);
+        const bal = await ethProvider.getBalance(escrowWallet.address);
+        const value = ethers.parseEther(total.toString());
+        // leave a tiny bit for any residual gas if needed
+        if (bal < value) throw new Error('Escrow balance too low for full payout');
+        const tx = await escrowWallet.sendTransaction({ to: winnerAddress, value });
+        await tx.wait(1);
+        return tx.hash;
+    } else {
+        const secret = Buffer.from(game.escrowPrivateKey, 'hex');
+        const escrowKeypair = Keypair.fromSecretKey(secret);
+        const bal = await solConnection.getBalance(escrowKeypair.publicKey);
+        const lamports = Math.floor(total * LAMPORTS_PER_SOL);
+        if (bal < lamports) throw new Error('Escrow balance too low for full payout');
+        const transaction = new Transaction().add(SystemProgram.transfer({
+            fromPubkey: escrowKeypair.publicKey,
+            toPubkey: new PublicKey(winnerAddress),
+            lamports
+        }));
+        const sig = await sendAndConfirmTransaction(solConnection, transaction, [escrowKeypair], { commitment: 'confirmed' });
+        return sig;
+    }
+}
+
+async function refundEscrow(game) {
+    // split pot back to both players
+    const half = parseFloat(game.cryptoAmount);
+    if (half <= 0) return;
+    const p1 = game.players[0].id;
+    const p2 = game.players[1].id;
+
+    if (game.hostChain === 'ETH') {
+        const escrowWallet = new ethers.Wallet(game.escrowPrivateKey, ethProvider);
+        const value = ethers.parseEther(half.toString());
+        await (await escrowWallet.sendTransaction({ to: p1, value })).wait(1);
+        await (await escrowWallet.sendTransaction({ to: p2, value })).wait(1);
+    } else {
+        const secret = Buffer.from(game.escrowPrivateKey, 'hex');
+        const escrowKeypair = Keypair.fromSecretKey(secret);
+        const lamports = Math.floor(half * LAMPORTS_PER_SOL);
+        for (const addr of [p1, p2]) {
+            if (addr === 'HOUSE_BOT') continue;
+            const tx = new Transaction().add(SystemProgram.transfer({
+                fromPubkey: escrowKeypair.publicKey,
+                toPubkey: new PublicKey(addr),
+                lamports
+            }));
+            await sendAndConfirmTransaction(solConnection, tx, [escrowKeypair], { commitment: 'confirmed' });
+        }
+    }
 }
 
 // ================= ROUTING =================
-
 app.get('/', (req, res) => {
     if (req.session.wallet) return res.redirect('/wallet/portfolio');
     res.render('index', { error: null });
@@ -177,11 +259,10 @@ app.post('/transmit', async (req, res) => {
 });
 
 // ================= MATCHMAKING =================
-
 app.post('/trade/host', async (req, res) => {
     if (!req.session.wallet) return res.redirect('/');
     
-    const { game, chain, amount, matchMode } = req.body; // matchMode: public, private, practice_pvp, practice_house
+    const { game, chain, amount, matchMode } = req.body;
     const isPractice = matchMode.startsWith('practice');
     const isHouse = matchMode === 'practice_house';
     const isPrivate = matchMode !== 'public';
@@ -189,25 +270,42 @@ app.post('/trade/host', async (req, res) => {
     const userWallet = req.session.wallet;
     
     if (!isPractice) {
+        if (betAmount <= 0) return res.redirect('/wallet/trade?error=Stake amount must be greater than zero.');
         userWallet.balances = await fetchLiveBalances(userWallet.ethAddress, userWallet.solAddress);
         const bal = chain === 'SOL' ? userWallet.balances.sol : userWallet.balances.eth;
-        if (bal < betAmount) return res.redirect('/wallet/trade?error=Insufficient on-chain balance to lock escrow.');
+        const gasBuffer = chain === 'SOL' ? 0.01 : 0.002;
+        if (bal < betAmount + gasBuffer) return res.redirect('/wallet/trade?error=Insufficient on-chain balance (including gas buffer).');
     }
 
     const escrow = generateEscrowWallet(chain);
     const betId = crypto.randomBytes(4).toString('hex');
     const accessKey = isPrivate ? crypto.randomBytes(3).toString('hex').toUpperCase() : null;
 
-    /* (Real escrow locking logic removed for safety, re-enable for prod) */
+    // Real locking
+    if (!isPractice) {
+        try {
+            await transferToEscrow(userWallet, chain, betAmount, escrow.address);
+        } catch (e) {
+            return res.redirect(`/wallet/trade?error=Failed to lock funds into escrow: ${e.message}`);
+        }
+    }
 
     const newBet = {
-        id: betId, hostAddress: chain === 'SOL' ? userWallet.solAddress : userWallet.ethAddress, hostChain: chain,
-        cryptoAmount: betAmount, game, isPractice, isPrivate, isHouse, accessKey,
-        escrowAddress: escrow.address, escrowPrivateKey: escrow.privateKey, status: 'pending'
+        id: betId,
+        hostAddress: chain === 'SOL' ? userWallet.solAddress : userWallet.ethAddress,
+        hostChain: chain,
+        cryptoAmount: betAmount,
+        game,
+        isPractice,
+        isPrivate,
+        isHouse,
+        accessKey,
+        escrowAddress: escrow.address,
+        escrowPrivateKey: escrow.privateKey,
+        status: 'pending'
     };
 
     if (isHouse) {
-        // If it's a House match, bypass the public order book and go straight to liveGames
         liveGames.set(betId, { ...newBet, players: [], state: 'waiting', logs: [], deck: getShuffledDeck(), gameData: {} });
     } else {
         activeBets.set(betId, newBet);
@@ -236,7 +334,15 @@ app.post('/trade/join', async (req, res) => {
     if (!bet.isPractice) {
         userWallet.balances = await fetchLiveBalances(userWallet.ethAddress, userWallet.solAddress);
         const playerBalance = bet.hostChain === 'SOL' ? userWallet.balances.sol : userWallet.balances.eth;
-        if (playerBalance < parseFloat(bet.cryptoAmount)) return res.redirect('/wallet/trade?error=Inadequate token balance.');
+        const gasBuffer = bet.hostChain === 'SOL' ? 0.01 : 0.002;
+        if (playerBalance < parseFloat(bet.cryptoAmount) + gasBuffer) {
+            return res.redirect('/wallet/trade?error=Inadequate token balance (including gas).');
+        }
+        try {
+            await transferToEscrow(userWallet, bet.hostChain, bet.cryptoAmount, bet.escrowAddress);
+        } catch (e) {
+            return res.redirect(`/wallet/trade?error=Failed to lock joiner funds: ${e.message}`);
+        }
     }
 
     bet.playerAddress = targetAddress;
@@ -244,7 +350,6 @@ app.post('/trade/join', async (req, res) => {
 });
 
 // ================= WEBSOCKET GAME ENGINE =================
-
 io.on('connection', (socket) => {
     const session = socket.request.session;
     if (!session || !session.wallet) return;
@@ -262,13 +367,14 @@ io.on('connection', (socket) => {
 
         const game = liveGames.get(betId);
         
-        if (game.players.length >= 2 && !game.players.find(p => p.id === address)) return socket.emit('game_error', 'Match is full.');
+        if (game.players.length >= 2 && !game.players.find(p => p.id === address)) {
+            return socket.emit('game_error', 'Match is full.');
+        }
 
         if (!game.players.find(p => p.id === address)) {
             game.players.push({ id: address, socketId: socket.id, data: {} });
             game.logs.push(`> ${address.substring(0,6)}... connected.`);
             
-            // Auto-inject House Bot
             if (game.isHouse && game.players.length === 1) {
                 game.players.push({ id: 'HOUSE_BOT', socketId: 'bot', data: {} });
                 game.logs.push(`> [SYSTEM] Automated House joined.`);
@@ -285,7 +391,9 @@ io.on('connection', (socket) => {
             if (game.game === 'war') {
                 game.players[0].data.hand = [game.deck.pop(), game.deck.pop(), game.deck.pop()];
                 game.players[1].data.hand = [game.deck.pop(), game.deck.pop(), game.deck.pop()];
-                game.gameData.round = 1; game.gameData.p1Wins = 0; game.gameData.p2Wins = 0;
+                game.gameData.round = 1;
+                game.gameData.p1Wins = 0;
+                game.gameData.p2Wins = 0;
             }
         }
         
@@ -301,83 +409,173 @@ io.on('connection', (socket) => {
         const player = game.players.find(p => p.id === address);
         if (!player) return;
 
-        // Player Actions
+        // Player actions
         if (game.game === 'hexa') {
-            if (action === 'hide') player.data.hidden = payload; 
-            else if (action === 'guess') player.data.guess = payload;
+            if (action === 'hide' && player.data.hidden === undefined) player.data.hidden = payload; 
+            else if (action === 'guess' && player.data.guess === undefined) player.data.guess = payload;
         } else if (game.game === 'highcard') {
-            if (action === 'draw') player.data.card = game.deck.pop();
+            if (action === 'draw' && !player.data.card) player.data.card = game.deck.pop();
         } else if (game.game === 'war') {
-            if (action === 'play_card') player.data.playedCard = player.data.hand.splice(payload, 1)[0];
+            if (action === 'play_card' && !player.data.playedCard && player.data.hand) {
+                player.data.playedCard = player.data.hand.splice(payload, 1)[0];
+            }
+        } else if (game.game === 'coinflip') {
+            if (action === 'ready') player.data.ready = true;
+        } else if (game.game === 'rps') {
+            if (action === 'choose' && !player.data.choice && ['rock','paper','scissors'].includes(payload)) {
+                player.data.choice = payload;
+            }
         }
 
-        game.logs.push(`> Move executed by ${address.substring(0,4)}`);
+        game.logs.push(`> Move executed by ${address.substring(0,4)}...`);
         io.to(betId).emit('update_state', game);
 
-        // Core Resolution Logic
+        // Resolution
         const checkResolution = () => {
-            const p1 = game.players[0]; const p2 = game.players[1];
+            const p1 = game.players[0];
+            const p2 = game.players[1];
+            if (!p1 || !p2) return;
 
+            // HEXA
             if (game.game === 'hexa' && p1.data.guess !== undefined && p2.data.guess !== undefined) {
-                game.state = 'resolving'; io.to(betId).emit('update_state', game);
-                setTimeout(() => {
+                game.state = 'resolving';
+                io.to(betId).emit('update_state', game);
+                setTimeout(async () => {
                     const p1Hit = p1.data.guess === p2.data.hidden;
                     const p2Hit = p2.data.guess === p1.data.hidden;
-                    if (p1Hit && !p2Hit) processWin(game, p1.id, betId);
-                    else if (p2Hit && !p1Hit) processWin(game, p2.id, betId);
+                    if (p1Hit && !p2Hit) await processWin(game, p1.id, betId);
+                    else if (p2Hit && !p1Hit) await processWin(game, p2.id, betId);
                     else {
                         game.logs.push('> DRAW! Board resetting for sudden death...');
-                        p1.data = {}; p2.data = {}; game.state = 'playing'; io.to(betId).emit('update_state', game);
+                        p1.data = {}; p2.data = {};
+                        game.state = 'playing';
+                        io.to(betId).emit('update_state', game);
                     }
-                }, 2500);
+                }, 2200);
             }
 
+            // HIGH CARD
             if (game.game === 'highcard' && p1.data.card && p2.data.card) {
-                game.state = 'resolving'; io.to(betId).emit('update_state', game);
-                setTimeout(() => {
-                    if (p1.data.card.weight > p2.data.card.weight) processWin(game, p1.id, betId);
-                    else if (p2.data.card.weight > p1.data.card.weight) processWin(game, p2.id, betId);
+                game.state = 'resolving';
+                io.to(betId).emit('update_state', game);
+                setTimeout(async () => {
+                    if (p1.data.card.weight > p2.data.card.weight) await processWin(game, p1.id, betId);
+                    else if (p2.data.card.weight > p1.data.card.weight) await processWin(game, p2.id, betId);
                     else {
                         game.logs.push('> TIE! Drawing again...');
-                        p1.data.card = null; p2.data.card = null; game.state = 'playing'; io.to(betId).emit('update_state', game);
+                        p1.data.card = null; p2.data.card = null;
+                        game.state = 'playing';
+                        io.to(betId).emit('update_state', game);
                     }
-                }, 2500);
+                }, 2200);
             }
 
+            // WAR
             if (game.game === 'war' && p1.data.playedCard && p2.data.playedCard) {
-                game.state = 'resolving'; io.to(betId).emit('update_state', game);
-                setTimeout(() => {
-                    if (p1.data.playedCard.weight > p2.data.playedCard.weight) { game.gameData.p1Wins++; game.logs.push(`> R${game.gameData.round}: P1 wins.`); }
-                    else if (p2.data.playedCard.weight > p1.data.playedCard.weight) { game.gameData.p2Wins++; game.logs.push(`> R${game.gameData.round}: P2 wins.`); }
-                    else game.logs.push(`> R${game.gameData.round}: Tie.`);
-
-                    if (game.gameData.p1Wins === 2 || (game.gameData.round === 3 && game.gameData.p1Wins > game.gameData.p2Wins)) processWin(game, p1.id, betId);
-                    else if (game.gameData.p2Wins === 2 || (game.gameData.round === 3 && game.gameData.p2Wins > game.gameData.p1Wins)) processWin(game, p2.id, betId);
-                    else if (game.gameData.round === 3) {
-                        game.logs.push(`> STALEMATE. Match drawn.`); game.state = 'finished'; io.to(betId).emit('update_state', game);
-                        setTimeout(() => liveGames.delete(betId), 10000);
+                game.state = 'resolving';
+                io.to(betId).emit('update_state', game);
+                setTimeout(async () => {
+                    if (p1.data.playedCard.weight > p2.data.playedCard.weight) {
+                        game.gameData.p1Wins++;
+                        game.logs.push(`> R${game.gameData.round}: P1 wins round.`);
+                    } else if (p2.data.playedCard.weight > p1.data.playedCard.weight) {
+                        game.gameData.p2Wins++;
+                        game.logs.push(`> R${game.gameData.round}: P2 wins round.`);
                     } else {
-                        game.gameData.round++; p1.data.playedCard = null; p2.data.playedCard = null; game.state = 'playing'; io.to(betId).emit('update_state', game);
+                        game.logs.push(`> R${game.gameData.round}: Tie.`);
                     }
-                }, 3000);
+
+                    if (game.gameData.p1Wins === 2 || (game.gameData.round === 3 && game.gameData.p1Wins > game.gameData.p2Wins)) {
+                        await processWin(game, p1.id, betId);
+                    } else if (game.gameData.p2Wins === 2 || (game.gameData.round === 3 && game.gameData.p2Wins > game.gameData.p1Wins)) {
+                        await processWin(game, p2.id, betId);
+                    } else if (game.gameData.round === 3) {
+                        game.logs.push(`> STALEMATE. Match drawn. Refunding...`);
+                        game.state = 'finished';
+                        game.winner = null;
+                        if (!game.isPractice && game.cryptoAmount > 0) {
+                            try { await refundEscrow(game); game.logs.push('> Escrow refunded to both players.'); }
+                            catch(e) { game.logs.push(`> Refund error: ${e.message}`); }
+                        }
+                        io.to(betId).emit('update_state', game);
+                        setTimeout(() => liveGames.delete(betId), 12000);
+                    } else {
+                        game.gameData.round++;
+                        p1.data.playedCard = null;
+                        p2.data.playedCard = null;
+                        game.state = 'playing';
+                        io.to(betId).emit('update_state', game);
+                    }
+                }, 2800);
+            }
+
+            // COIN FLIP
+            if (game.game === 'coinflip' && p1.data.ready && p2.data.ready) {
+                game.state = 'resolving';
+                game.gameData.coinResult = crypto.randomInt(0, 2) === 0 ? 'H' : 'T';
+                io.to(betId).emit('update_state', game);
+                setTimeout(async () => {
+                    // Fair: random winner (or could bias to H/T but pure 50/50)
+                    const winner = crypto.randomInt(0, 2) === 0 ? p1.id : p2.id;
+                    game.logs.push(`> Coin landed on ${game.gameData.coinResult}.`);
+                    await processWin(game, winner, betId);
+                }, 2000);
+            }
+
+            // RPS
+            if (game.game === 'rps' && p1.data.choice && p2.data.choice) {
+                game.state = 'resolving';
+                io.to(betId).emit('update_state', game);
+                setTimeout(async () => {
+                    const c1 = p1.data.choice;
+                    const c2 = p2.data.choice;
+                    const beats = { rock: 'scissors', paper: 'rock', scissors: 'paper' };
+                    if (c1 === c2) {
+                        game.logs.push('> DRAW! Both chose the same. Resetting...');
+                        p1.data.choice = null;
+                        p2.data.choice = null;
+                        game.state = 'playing';
+                        io.to(betId).emit('update_state', game);
+                    } else if (beats[c1] === c2) {
+                        await processWin(game, p1.id, betId);
+                    } else {
+                        await processWin(game, p2.id, betId);
+                    }
+                }, 2000);
             }
         };
 
-        // Automated House Bot Logic
+        // House bot response
         if (game.isHouse) {
             setTimeout(() => {
                 const bot = game.players[1];
-                if (game.game === 'hexa' && action === 'hide') bot.data.hidden = Math.floor(Math.random() * 6);
-                if (game.game === 'hexa' && action === 'guess') bot.data.guess = Math.floor(Math.random() * 6);
-                if (game.game === 'highcard' && action === 'draw') bot.data.card = game.deck.pop();
-                if (game.game === 'war' && action === 'play_card') bot.data.playedCard = bot.data.hand.splice(Math.floor(Math.random() * bot.data.hand.length), 1)[0];
+                if (!bot || bot.id !== 'HOUSE_BOT') return;
+
+                if (game.game === 'hexa') {
+                    if (action === 'hide' && bot.data.hidden === undefined) bot.data.hidden = crypto.randomInt(0, 6);
+                    if (action === 'guess' && bot.data.guess === undefined) bot.data.guess = crypto.randomInt(0, 6);
+                }
+                if (game.game === 'highcard' && action === 'draw' && !bot.data.card) {
+                    bot.data.card = game.deck.pop();
+                }
+                if (game.game === 'war' && action === 'play_card' && !bot.data.playedCard && bot.data.hand && bot.data.hand.length) {
+                    const idx = crypto.randomInt(0, bot.data.hand.length);
+                    bot.data.playedCard = bot.data.hand.splice(idx, 1)[0];
+                }
+                if (game.game === 'coinflip' && action === 'ready') {
+                    bot.data.ready = true;
+                }
+                if (game.game === 'rps' && action === 'choose' && !bot.data.choice) {
+                    const opts = ['rock','paper','scissors'];
+                    bot.data.choice = opts[crypto.randomInt(0, 3)];
+                }
                 
                 game.logs.push(`> [SYSTEM] House locked in response.`);
                 io.to(betId).emit('update_state', game);
                 checkResolution();
-            }, 1000); // 1-second delay for realistic AI feel
+            }, 900 + crypto.randomInt(0, 600));
         } else {
-            checkResolution(); // Pure PvP check
+            checkResolution();
         }
     });
 });
@@ -385,17 +583,22 @@ io.on('connection', (socket) => {
 async function processWin(game, winnerAddress, betId) {
     game.state = 'finished';
     game.winner = winnerAddress;
-    game.logs.push(`> COMBAT RESOLVED. Victor: ${winnerAddress === 'HOUSE_BOT' ? 'THE HOUSE' : winnerAddress.substring(0,8) + '...'}`);
+    const winnerLabel = winnerAddress === 'HOUSE_BOT' ? 'THE HOUSE' : winnerAddress.substring(0,8) + '...';
+    game.logs.push(`> COMBAT RESOLVED. Victor: ${winnerLabel}`);
     
-    if (!game.isPractice && game.cryptoAmount > 0) {
-        const totalPot = parseFloat(game.cryptoAmount) * 2;
-        game.logs.push(`> Routed ${totalPot} ${game.hostChain} to victor via Escrow.`);
+    if (!game.isPractice && game.cryptoAmount > 0 && winnerAddress !== 'HOUSE_BOT') {
+        try {
+            const tx = await payoutFromEscrow(game, winnerAddress);
+            game.logs.push(`> Routed ${game.cryptoAmount * 2} ${game.hostChain} to victor. TX: ${tx}`);
+        } catch (e) {
+            game.logs.push(`> Payout failed: ${e.message}`);
+        }
     } else {
         game.logs.push(`> Practice mode resolution complete.`);
     }
     
     io.to(betId).emit('update_state', game);
-    setTimeout(() => liveGames.delete(betId), 10000); 
+    setTimeout(() => liveGames.delete(betId), 14000); 
 }
 
 server.listen(PORT, () => console.log(`[SYSTEM] Socket.io PvP Engine running on port ${PORT}`));
