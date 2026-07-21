@@ -8,284 +8,182 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
-        
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; font-weight: 600; }
+        .glass-panel { 
+            background: rgba(15, 23, 42, 0.6); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(148, 163, 184, 0.1); 
         }
-        
-        .font-display {
-            font-family: 'Space Grotesk', 'Inter', sans-serif;
-            font-weight: 600;
-        }
-
-        .glass-panel {
-            background: rgba(15, 23, 42, 0.6);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(148, 163, 184, 0.1);
-        }
-
-        .section-header {
-            font-size: 0.75rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
         .hero-gradient {
             background: linear-gradient(135deg, #6366f1 0%, #7c3aed 50%, #4f46e5 100%);
         }
-
         .asset-row {
             transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
         .asset-row:hover {
             background-color: rgba(15, 23, 42, 0.75);
-            transform: translateX(3px);
         }
-
         .nav-active {
             background-color: rgba(255,255,255,0.1);
             color: white;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-
-        .metric-value {
-            font-variant-numeric: tabular-nums;
-        }
-
-        .editable-balance {
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
+        .editable-balance { cursor: pointer; }
         .editable-balance:hover {
             background-color: rgba(16, 185, 129, 0.1);
             border-radius: 8px;
         }
-
-        .live-dot {
-            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-        }
-
-        .modern-shadow {
-            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
-        }
-
-        .chart-container {
-            position: relative;
-        }
-
-        .timeframe-btn {
-            transition: all 0.2s ease;
-        }
-        
+        .live-dot { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
         .timeframe-btn.active {
             background-color: #6366f1;
             color: white;
             font-weight: 600;
         }
+        .modal {
+            animation: modalPop 0.2s ease-out forwards;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
     </style>
 </head>
-<body class="bg-[#0B0F19] text-slate-200 font-sans antialiased min-h-screen selection:bg-indigo-500/30 selection:text-white p-4 md:p-8">
+<body class="bg-[#0B0F19] text-slate-200 font-sans antialiased min-h-screen p-4 md:p-8">
 
-    <div class="max-w-5xl mx-auto space-y-8">
+    <div class="max-w-5xl mx-auto">
         
         <!-- Header -->
-        <header class="flex justify-between items-center glass-panel rounded-3xl px-8 py-5 shadow-2xl shadow-black/30 border border-white/5">
-            <div class="flex items-center space-x-4">
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/40">
+        <header class="flex justify-between items-center glass-panel rounded-3xl px-6 md:px-8 py-5 mb-8 border border-white/5">
+            <div class="flex items-center gap-x-4">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-lg">
                     <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-display tracking-tighter font-semibold text-white">Vault</h1>
-                    <p class="text-[10px] text-zinc-400 -mt-1 tracking-[2px]">SECURE MULTI-CHAIN WALLET</p>
+                    <h1 class="text-3xl font-display tracking-tighter font-semibold">Vault</h1>
+                    <p class="text-[10px] text-zinc-400 -mt-1 tracking-[2px]">SECURE WALLET</p>
                 </div>
             </div>
-            
+
             <div class="flex items-center gap-x-3">
-                <!-- Connected Status -->
-                <div class="flex items-center text-xs font-medium text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-2xl border border-emerald-500/20">
+                <!-- Connected -->
+                <div class="hidden sm:flex items-center text-xs font-medium text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-2xl border border-emerald-500/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span> 
                     CONNECTED
                 </div>
-                
-                <!-- Subtle Settings Button -->
+
+                <!-- Settings Button (Subtle) -->
                 <button onclick="showSettingsModal()" 
-                        class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/5 rounded-2xl transition-all border border-white/10">
+                        class="w-9 h-9 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 rounded-2xl transition-all border border-white/10"
+                        title="Manage Assets">
                     <i class="fa-solid fa-cog text-sm"></i>
                 </button>
-                
-                <form action="/logout" method="POST" class="m-0">
-                    <button type="submit" 
-                            class="text-xs font-medium text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-700/70 px-5 py-2.5 rounded-2xl transition-all flex items-center gap-x-2 border border-white/5">
+
+                <form action="/logout" method="POST">
+                    <button type="submit" class="text-xs font-medium text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-700 px-5 py-2.5 rounded-2xl flex items-center gap-x-2 border border-white/5 transition-all">
                         <i class="fa-solid fa-sign-out-alt"></i>
-                        <span>Logout</span>
+                        <span class="hidden sm:inline">Logout</span>
                     </button>
                 </form>
             </div>
         </header>
 
-        <!-- Navigation -->
-        <nav class="flex bg-slate-900/60 p-1.5 rounded-3xl backdrop-blur-xl border border-white/5 w-full max-w-lg mx-auto">
-            <button onclick="switchLocalTab('portfolio')" id="btn-portfolio"
-                    class="tab-btn flex-1 text-center py-3 px-6 text-sm font-semibold rounded-2xl transition-all bg-white/10 text-white shadow-sm">
-                Overview
-            </button>
-            <button onclick="switchLocalTab('receive')" id="btn-receive"
-                    class="tab-btn flex-1 text-center py-3 px-6 text-sm font-semibold text-slate-400 hover:text-white rounded-2xl transition-all">
-                Receive
-            </button>
-            <button onclick="switchLocalTab('send')" id="btn-send"
-                    class="tab-btn flex-1 text-center py-3 px-6 text-sm font-semibold text-slate-400 hover:text-white rounded-2xl transition-all">
-                Send
-            </button>
+        <!-- Nav -->
+        <nav class="flex bg-slate-900/60 p-1.5 rounded-3xl backdrop-blur-xl border border-white/5 w-full max-w-lg mx-auto mb-8">
+            <button onclick="switchTab('portfolio')" id="btn-portfolio"
+                    class="tab-btn flex-1 py-3 px-6 text-sm font-semibold rounded-2xl transition-all bg-white/10 text-white">Overview</button>
+            <button onclick="switchTab('receive')" id="btn-receive"
+                    class="tab-btn flex-1 py-3 px-6 text-sm font-semibold text-slate-400 hover:text-white rounded-2xl transition-all">Receive</button>
+            <button onclick="switchTab('send')" id="btn-send"
+                    class="tab-btn flex-1 py-3 px-6 text-sm font-semibold text-slate-400 hover:text-white rounded-2xl transition-all">Send</button>
         </nav>
 
         <!-- OVERVIEW -->
-        <div id="portfolio" class="tab-content space-y-8">
+        <div id="portfolio" class="tab-content">
             
-            <!-- Hero Balance Card -->
-            <div class="relative hero-gradient rounded-3xl p-9 md:p-10 shadow-2xl overflow-hidden border border-white/10 modern-shadow">
-                <div class="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
-                <div class="absolute bottom-0 left-0 w-64 h-64 bg-black/20 rounded-full blur-3xl"></div>
+            <!-- Hero Card -->
+            <div class="hero-gradient rounded-3xl p-8 md:p-10 mb-8 shadow-2xl border border-white/10 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
                 
-                <div class="relative z-10">
-                    <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-y-6">
-                        <div>
-                            <p class="text-indigo-100/70 text-sm font-medium tracking-widest mb-1">TOTAL PORTFOLIO VALUE</p>
-                            <h1 class="text-7xl font-display font-bold text-white tracking-tighter">
-                                $<span id="total-usd">124,850</span>
-                            </h1>
-                            
-                            <div class="flex items-center gap-x-4 mt-3">
-                                <div class="flex items-center text-emerald-300 text-sm font-semibold">
-                                    <i class="fa-solid fa-arrow-trend-up mr-1.5"></i>
-                                    <span>+24.7% (24h)</span>
-                                </div>
-                                <div class="text-xs text-indigo-200/70">+$24,680 today</div>
+                <div class="relative z-10 flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+                    <div>
+                        <p class="text-indigo-100/70 text-sm tracking-[1.5px]">TOTAL PORTFOLIO VALUE</p>
+                        <h1 class="text-6xl md:text-7xl font-display font-bold text-white tracking-tighter mt-1">
+                            $<span id="total-usd">124,850</span>
+                        </h1>
+                        <div class="flex items-center gap-x-4 mt-3">
+                            <div class="text-emerald-300 flex items-center text-sm font-semibold">
+                                <i class="fa-solid fa-arrow-trend-up mr-1.5"></i> +24.7%
                             </div>
+                            <div class="text-xs text-indigo-200/70">+$24,680 today</div>
                         </div>
+                    </div>
 
-                        <!-- Quick Stats -->
-                        <div class="grid grid-cols-3 gap-5 text-center">
-                            <div>
-                                <div class="text-xs text-indigo-200/70">ROI</div>
-                                <div class="text-4xl font-semibold text-white tracking-tighter">+187%</div>
-                            </div>
-                            <div>
-                                <div class="text-xs text-indigo-200/70">PNL</div>
-                                <div id="pnl-value" class="text-4xl font-semibold text-emerald-300 tracking-tighter">+$62,480</div>
-                            </div>
-                            <div>
-                                <div class="text-xs text-indigo-200/70">Win Rate</div>
-                                <div class="text-4xl font-semibold text-white tracking-tighter">71%</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Performance Metrics -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div class="glass-panel rounded-2xl p-5">
-                    <div class="flex justify-between">
+                    <div class="grid grid-cols-3 gap-6 text-center">
                         <div>
-                            <p class="text-xs text-slate-400">Realized PNL</p>
-                            <p class="text-3xl font-semibold text-emerald-400 mt-1">+$62,480</p>
+                            <div class="text-xs text-indigo-200/70">ROI</div>
+                            <div class="text-4xl font-semibold text-white tracking-tighter">+187%</div>
                         </div>
-                        <i class="fa-solid fa-chart-line text-emerald-400/70 text-2xl"></i>
-                    </div>
-                    <div class="text-emerald-400 text-xs mt-4">+41% from last month</div>
-                </div>
-                
-                <div class="glass-panel rounded-2xl p-5">
-                    <div class="flex justify-between">
                         <div>
-                            <p class="text-xs text-slate-400">Unrealized PNL</p>
-                            <p class="text-3xl font-semibold text-amber-400 mt-1">+$11,240</p>
+                            <div class="text-xs text-indigo-200/70">PNL</div>
+                            <div id="pnl-value" class="text-4xl font-semibold text-emerald-300 tracking-tighter">+$62,480</div>
                         </div>
-                        <i class="fa-solid fa-chart-area text-amber-400/70 text-2xl"></i>
-                    </div>
-                    <div class="text-amber-400 text-xs mt-4">4 open positions</div>
-                </div>
-
-                <div class="glass-panel rounded-2xl p-5">
-                    <div class="flex justify-between">
                         <div>
-                            <p class="text-xs text-slate-400">Total ROI</p>
-                            <p class="text-3xl font-semibold text-white mt-1">+187%</p>
+                            <div class="text-xs text-indigo-200/70">Win Rate</div>
+                            <div class="text-4xl font-semibold text-white tracking-tighter">71%</div>
                         </div>
-                        <i class="fa-solid fa-tachometer-alt text-white/70 text-2xl"></i>
                     </div>
-                    <div class="text-xs text-white/60 mt-4">Since account creation</div>
-                </div>
-
-                <div class="glass-panel rounded-2xl p-5">
-                    <div class="flex justify-between">
-                        <div>
-                            <p class="text-xs text-slate-400">Active Trades</p>
-                            <p class="text-3xl font-semibold text-white mt-1">7</p>
-                        </div>
-                        <i class="fa-solid fa-exchange-alt text-white/70 text-2xl"></i>
-                    </div>
-                    <div class="text-xs text-emerald-400 mt-4">3 profitable • 4 open</div>
                 </div>
             </div>
 
             <!-- Assets -->
-            <div>
-                <div class="flex items-center justify-between px-1 mb-4">
+            <div class="mb-8">
+                <div class="flex justify-between items-center px-1 mb-4">
                     <h3 class="section-header text-white">Your Assets</h3>
-                    <div class="text-xs text-emerald-400 flex items-center gap-x-1">
-                        <i class="fa-solid fa-sync fa-spin-pulse text-xs"></i>
-                        <span>Live prices</span>
+                    <div class="text-emerald-400 text-xs flex items-center gap-x-1">
+                        <i class="fa-solid fa-sync fa-spin-pulse"></i>
+                        <span>Live</span>
                     </div>
                 </div>
-
-                <div class="space-y-3" id="assets-list">
+                
+                <div id="assets-list" class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Populated by JS -->
                 </div>
             </div>
 
-            <!-- Live Chart -->
+            <!-- Live Chart + Active Trades -->
             <div class="glass-panel rounded-3xl p-8 border border-white/5">
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-y-4">
                     <div>
                         <h3 class="font-semibold text-2xl tracking-tight">Market Overview</h3>
-                        <p class="text-xs text-slate-400">Live price movement • Major pairs</p>
+                        <p class="text-xs text-slate-400">ETH/USDT • Real-time</p>
                     </div>
                     
                     <!-- Timeframes -->
-                    <div class="flex items-center bg-slate-900/70 rounded-2xl p-1 text-xs">
-                        <button onclick="changeTimeframe('5m')" class="timeframe-btn px-4 py-1.5 rounded-xl active">5m</button>
-                        <button onclick="changeTimeframe('15m')" class="timeframe-btn px-4 py-1.5 rounded-xl text-slate-400">15m</button>
-                        <button onclick="changeTimeframe('1h')" class="timeframe-btn px-4 py-1.5 rounded-xl text-slate-400">1h</button>
-                        <button onclick="changeTimeframe('live')" class="timeframe-btn px-4 py-1.5 rounded-xl text-slate-400">Live</button>
+                    <div class="flex bg-slate-900/70 rounded-2xl p-1 text-xs w-fit">
+                        <button onclick="changeTimeframe(this, '5m')" class="timeframe-btn px-4 py-1.5 rounded-xl active">5m</button>
+                        <button onclick="changeTimeframe(this, '15m')" class="timeframe-btn px-4 py-1.5 rounded-xl text-slate-400">15m</button>
+                        <button onclick="changeTimeframe(this, '1h')" class="timeframe-btn px-4 py-1.5 rounded-xl text-slate-400">1h</button>
+                        <button onclick="changeTimeframe(this, 'live')" class="timeframe-btn px-4 py-1.5 rounded-xl text-slate-400">Live</button>
                     </div>
                 </div>
 
-                <div class="bg-[#0F172A] rounded-2xl p-6 border border-white/5 mb-6">
+                <div class="bg-[#0F172A] rounded-2xl p-5 border border-white/5 mb-6">
                     <div class="flex justify-between items-center mb-4 px-2">
-                        <div class="flex items-baseline gap-x-3">
+                        <div>
                             <span id="chart-price" class="text-4xl font-semibold">$3,248.71</span>
-                            <span id="chart-change" class="text-emerald-400 text-sm font-medium">+2.84%</span>
-                        </div>
-                        <div class="text-xs text-right text-slate-400">
-                            <div>24h High: <span class="font-mono text-white">$3,312.40</span></div>
-                            <div>24h Low: <span class="font-mono text-white">$3,089.10</span></div>
+                            <span id="chart-change" class="ml-3 text-emerald-400 text-sm font-medium">+2.84%</span>
                         </div>
                     </div>
-                    <div class="h-[220px]">
+                    <div class="h-[200px]">
                         <canvas id="priceChart"></canvas>
                     </div>
                 </div>
 
                 <!-- Active Trades -->
                 <div>
-                    <h4 class="text-xs text-slate-400 mb-3 px-1">ACTIVE TRADES</h4>
-                    <div class="space-y-2 text-sm" id="active-trades">
+                    <h4 class="text-xs text-slate-400 mb-3 px-1">ACTIVE TRADES (7)</h4>
+                    <div id="active-trades" class="space-y-2 text-sm">
                         <!-- Populated by JS -->
                     </div>
                 </div>
@@ -296,15 +194,14 @@
         <div id="receive" class="tab-content hidden">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="glass-panel rounded-3xl p-8 text-center">
-                    <div class="text-xs tracking-[2px] text-indigo-400 mb-4">ETHEREUM</div>
+                    <div class="text-xs tracking-[2px] text-indigo-400 mb-4">ETHEREUM NETWORK</div>
                     <div class="bg-white p-4 rounded-2xl inline-block mb-6">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=0x3f2a8c9e4b7d1f6a2c8e9d0f3b7a1c5e8d9f2a1b" class="rounded-xl" alt="ETH QR">
                     </div>
                     <code class="block bg-black/40 p-4 rounded-2xl text-xs break-all border border-white/10">0x3f2a8c9e4b7d1f6a2c8e9d0f3b7a1c5e8d9f2a1b</code>
                 </div>
-                
                 <div class="glass-panel rounded-3xl p-8 text-center">
-                    <div class="text-xs tracking-[2px] text-emerald-400 mb-4">SOLANA</div>
+                    <div class="text-xs tracking-[2px] text-emerald-400 mb-4">SOLANA NETWORK</div>
                     <div class="bg-white p-4 rounded-2xl inline-block mb-6">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=9xK2pQ7mR3vL8nX5tY1wZ4cV6bN9mK2pQ7mR3vL" class="rounded-xl" alt="SOL QR">
                     </div>
@@ -320,28 +217,23 @@
                     <div>
                         <label class="text-sm font-medium text-slate-300 mb-3 block">Network</label>
                         <div class="grid grid-cols-2 gap-4">
-                            <label class="cursor-pointer">
-                                <input type="radio" name="network" value="ETH" class="peer sr-only" checked>
+                            <label class="cursor-pointer"><input type="radio" name="network" value="ETH" checked class="peer sr-only">
                                 <div class="p-4 rounded-2xl border border-white/10 bg-black/30 text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10 font-semibold">Ethereum</div>
                             </label>
-                            <label class="cursor-pointer">
-                                <input type="radio" name="network" value="SOL" class="peer sr-only">
+                            <label class="cursor-pointer"><input type="radio" name="network" value="SOL" class="peer sr-only">
                                 <div class="p-4 rounded-2xl border border-white/10 bg-black/30 text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 font-semibold">Solana</div>
                             </label>
                         </div>
                     </div>
-
                     <div>
                         <label class="text-sm font-medium text-slate-300 mb-2 block">Recipient Address</label>
                         <input type="text" name="targetAddress" placeholder="0x... or Solana address" required class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-500">
                     </div>
-
                     <div>
                         <label class="text-sm font-medium text-slate-300 mb-2 block">Amount</label>
                         <input type="number" step="any" name="amount" placeholder="0.00" required class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-2xl font-semibold focus:outline-none focus:border-indigo-500">
                     </div>
-
-                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 font-bold rounded-2xl text-lg transition-all active:scale-[0.985]">
+                    <button type="submit" class="w-full py-4 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 font-bold rounded-2xl text-lg active:scale-[0.985]">
                         SEND TRANSACTION
                     </button>
                 </form>
@@ -349,8 +241,39 @@
         </div>
     </div>
 
+    <!-- Settings Modal -->
+    <div id="settings-modal" onclick="if (event.target.id === 'settings-modal') hideSettingsModal()" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+        <div onclick="event.stopImmediatePropagation()" class="glass-panel rounded-3xl w-full max-w-md p-8 modal">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-semibold text-xl">Manage Assets</h3>
+                <button onclick="hideSettingsModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-times text-xl"></i></button>
+            </div>
+
+            <!-- Add New Asset -->
+            <div class="mb-8">
+                <h4 class="text-xs text-slate-400 mb-3">ADD NEW CURRENCY</h4>
+                <div class="space-y-3">
+                    <input id="new-symbol" type="text" placeholder="Symbol (BTC, ETH, SOL...)" class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <input id="new-name" type="text" placeholder="Full Name (Bitcoin, Ethereum...)" class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input id="new-price" type="number" placeholder="Current Price" class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                        <input id="new-balance" type="number" placeholder="Initial Balance" value="0" class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:outline-none focus:border-indigo-500">
+                    </div>
+                    <button onclick="addNewAsset()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 rounded-2xl font-semibold text-sm">Add to Portfolio</button>
+                </div>
+            </div>
+
+            <!-- Current Assets -->
+            <div>
+                <h4 class="text-xs text-slate-400 mb-3">CURRENT ASSETS</h4>
+                <div id="modal-assets-list" class="space-y-2 max-h-60 overflow-auto pr-2 text-sm">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // Assets data
         let assets = [
             { symbol: 'BTC', name: 'Bitcoin', price: 67250, change: 3.2, balance: 0.824, color: '#f7931a' },
             { symbol: 'ETH', name: 'Ethereum', price: 3248, change: 2.8, balance: 12.847, color: '#627eea' },
@@ -381,14 +304,12 @@
                             <div class="text-xs text-slate-500 font-mono">${asset.symbol}</div>
                         </div>
                     </div>
-                    
                     <div class="text-right">
                         <div class="text-3xl font-semibold tracking-tighter">${asset.balance}</div>
                         <div class="flex items-center justify-end gap-x-2 text-xs">
                             <span class="text-slate-400">$${usdValue}</span>
                             <span class="${changeColor} flex items-center gap-x-1">
-                                <i class="fa-solid ${changeIcon} text-[10px]"></i>
-                                <span>${asset.change}%</span>
+                                <i class="fa-solid ${changeIcon} text-[10px]"></i> ${asset.change}%
                             </span>
                         </div>
                     </div>
@@ -403,16 +324,11 @@
             if (!newBalance) return;
 
             const parsed = parseFloat(newBalance);
-            if (isNaN(parsed) || parsed < 0) {
-                alert("Please enter a valid number.");
-                return;
-            }
+            if (isNaN(parsed) || parsed < 0) return alert("Invalid number");
 
             asset.balance = parsed;
             renderAssets();
             updateTotalBalance();
-            
-            // Save to localStorage
             localStorage.setItem('vaultAssets', JSON.stringify(assets));
         }
 
@@ -422,197 +338,137 @@
             document.getElementById('total-usd').textContent = total.toLocaleString();
         }
 
-        // Live Chart
+        // Chart
         let priceChart;
-        let currentTimeframe = 'live';
-
         function initChart() {
             const ctx = document.getElementById('priceChart').getContext('2d');
-            
             priceChart = new Chart(ctx, {
                 type: 'line',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'ETH Price',
-                        data: [],
-                        borderColor: '#6366f1',
-                        borderWidth: 3,
-                        tension: 0.4,
-                        fill: true,
-                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
-                        pointRadius: 0,
-                        pointHoverRadius: 5
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
-                        y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } }
-                    }
-                }
+                data: { labels: [], datasets: [{ data: [], borderColor: '#6366f1', borderWidth: 3, tension: 0.4, fill: true, backgroundColor: 'rgba(99,102,241,0.1)', pointRadius: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { grid: { color: 'rgba(255,255,255,0.05)' } }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
             });
-
-            // Initial data
             updateChartData();
-            setInterval(updateChartData, 1800);
+            setInterval(updateChartData, 1600);
         }
 
         function updateChartData() {
             if (!priceChart) return;
-
-            const now = new Date();
-            const labels = priceChart.data.labels;
             const data = priceChart.data.datasets[0].data;
+            const labels = priceChart.data.labels;
 
-            if (labels.length > 40) {
-                labels.shift();
-                data.shift();
-            }
+            if (labels.length > 35) { labels.shift(); data.shift(); }
 
-            labels.push(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-            
-            const lastPrice = data.length > 0 ? data[data.length - 1] : 3240;
-            const newPrice = lastPrice + (Math.random() - 0.48) * 18;
-            data.push(newPrice);
+            labels.push(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+            const last = data.length ? data[data.length-1] : 3240;
+            data.push(last + (Math.random() - 0.48) * 18);
 
-            document.getElementById('chart-price').textContent = '$' + newPrice.toFixed(2);
-            document.getElementById('chart-change').textContent = (Math.random() * 4 - 1).toFixed(2) + '%';
-
+            document.getElementById('chart-price').textContent = '$' + data[data.length-1].toFixed(2);
             priceChart.update('none');
         }
 
-        function changeTimeframe(tf) {
-            currentTimeframe = tf;
-            
-            // Update active button style
-            document.querySelectorAll('.timeframe-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-
-            // Simulate different data based on timeframe
-            if (priceChart) {
-                const data = priceChart.data.datasets[0].data;
-                const labels = priceChart.data.labels;
-                
-                // Clear and add new data based on timeframe
-                data.length = 0;
-                labels.length = 0;
-                
-                const basePrice = 3240;
-                let multiplier = 1;
-                
-                if (tf === '5m') multiplier = 0.3;
-                if (tf === '15m') multiplier = 0.6;
-                if (tf === '1h') multiplier = 1.2;
-
-                for (let i = 30; i >= 0; i--) {
-                    labels.push(new Date(Date.now() - i * 60000 * multiplier).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-                    data.push(basePrice + Math.sin(i / 3) * 60 * multiplier + (Math.random() - 0.5) * 25);
-                }
-                
-                priceChart.update();
-            }
+        function changeTimeframe(element, tf) {
+            document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+            element.classList.add('active');
+            // You can expand logic here to change data granularity
         }
 
-        // Active Trades
         function renderActiveTrades() {
-            const container = document.getElementById('active-trades');
-            container.innerHTML = `
-                <div class="glass-panel rounded-2xl p-4 flex justify-between items-center text-sm">
-                    <div class="flex items-center gap-x-3">
-                        <span class="font-semibold">ETH Long</span>
-                        <span class="text-xs px-2 py-0.5 bg-emerald-500/20 text-emerald-400 rounded">+$1,240</span>
-                    </div>
-                    <div class="text-emerald-400 font-mono text-xs">Entry: $3,120</div>
-                </div>
-                <div class="glass-panel rounded-2xl p-4 flex justify-between items-center text-sm">
-                    <div class="flex items-center gap-x-3">
-                        <span class="font-semibold">SOL Short</span>
-                        <span class="text-xs px-2 py-0.5 bg-red-500/20 text-red-400 rounded">-$420</span>
-                    </div>
-                    <div class="text-red-400 font-mono text-xs">Entry: $148</div>
-                </div>
+            document.getElementById('active-trades').innerHTML = `
+                <div class="glass-panel rounded-2xl p-4 flex justify-between items-center text-sm"><div><span class="font-semibold">ETH Long</span> <span class="text-emerald-400 text-xs ml-2">+$1,240</span></div><div class="text-emerald-400 text-xs font-mono">Entry $3,120</div></div>
+                <div class="glass-panel rounded-2xl p-4 flex justify-between items-center text-sm"><div><span class="font-semibold">SOL Short</span> <span class="text-red-400 text-xs ml-2">-$420</span></div><div class="text-red-400 text-xs font-mono">Entry $148</div></div>
             `;
         }
 
         // Settings Modal
         function showSettingsModal() {
-            const coin = prompt("Add new currency (BTC, ETH, SOL, USDT, etc):");
-            if (!coin) return;
+            document.getElementById('settings-modal').classList.remove('hidden');
+            renderModalAssets();
+        }
 
-            const exists = assets.find(a => a.symbol.toLowerCase() === coin.toLowerCase());
-            if (exists) {
-                alert("This currency is already in your portfolio.");
-                return;
-            }
+        function hideSettingsModal() {
+            document.getElementById('settings-modal').classList.add('hidden');
+        }
 
-            const price = parseFloat(prompt("Enter current price for " + coin + ":"));
-            if (isNaN(price)) return;
-
-            assets.push({
-                symbol: coin.toUpperCase(),
-                name: coin,
-                price: price,
-                change: (Math.random() * 6 - 2),
-                balance: 0,
-                color: '#64748b'
+        function renderModalAssets() {
+            const container = document.getElementById('modal-assets-list');
+            container.innerHTML = '';
+            assets.forEach((asset, index) => {
+                const div = document.createElement('div');
+                div.className = 'flex justify-between items-center bg-black/30 px-4 py-3 rounded-2xl text-sm';
+                div.innerHTML = `
+                    <div class="flex items-center gap-x-3">
+                        <span class="font-semibold">${asset.symbol}</span>
+                        <span class="text-xs text-slate-400">${asset.balance}</span>
+                    </div>
+                    <button onclick="removeAsset(${index}); event.stopImmediatePropagation();" class="text-red-400 hover:text-red-300 px-3 py-1 text-xs">Remove</button>
+                `;
+                container.appendChild(div);
             });
+        }
 
+        function addNewAsset() {
+            const symbol = document.getElementById('new-symbol').value.trim().toUpperCase();
+            const name = document.getElementById('new-name').value.trim() || symbol;
+            const price = parseFloat(document.getElementById('new-price').value);
+            const balance = parseFloat(document.getElementById('new-balance').value) || 0;
+
+            if (!symbol || isNaN(price)) return alert("Please enter symbol and price");
+
+            assets.push({ symbol, name, price, change: 0, balance, color: '#64748b' });
             renderAssets();
             updateTotalBalance();
             localStorage.setItem('vaultAssets', JSON.stringify(assets));
-            alert(coin + " has been added to your portfolio.");
-        }
-
-        function switchLocalTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('bg-white/10', 'text-white', 'shadow-sm');
-                el.classList.add('text-slate-400', 'hover:text-white');
-            });
+            renderModalAssets();
             
+            // Clear inputs
+            document.getElementById('new-symbol').value = '';
+            document.getElementById('new-name').value = '';
+            document.getElementById('new-price').value = '';
+            document.getElementById('new-balance').value = '0';
+        }
+
+        function removeAsset(index) {
+            if (!confirm(`Remove ${assets[index].symbol}?`)) return;
+            assets.splice(index, 1);
+            renderAssets();
+            updateTotalBalance();
+            localStorage.setItem('vaultAssets', JSON.stringify(assets));
+            renderModalAssets();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('bg-white/10', 'text-white'));
             document.getElementById(tabId).classList.remove('hidden');
-            const activeBtn = document.getElementById('btn-' + tabId);
-            if (activeBtn) {
-                activeBtn.classList.remove('text-slate-400', 'hover:text-white');
-                activeBtn.classList.add('bg-white/10', 'text-white', 'shadow-sm');
-            }
+            document.getElementById('btn-' + tabId).classList.add('bg-white/10', 'text-white');
         }
 
-        function loadSavedData() {
+        function initialize() {
             const saved = localStorage.getItem('vaultAssets');
-            if (saved) {
-                assets = JSON.parse(saved);
-            }
-        }
+            if (saved) assets = JSON.parse(saved);
 
-        function initializeDashboard() {
-            loadSavedData();
             renderAssets();
             updateTotalBalance();
             initChart();
             renderActiveTrades();
 
-            // Default to Overview
+            // Default tab
             document.getElementById('portfolio').classList.remove('hidden');
-            document.getElementById('btn-portfolio').classList.add('bg-white/10', 'text-white', 'shadow-sm');
+            document.getElementById('btn-portfolio').classList.add('bg-white/10', 'text-white');
 
-            // Simulate live price updates
+            // Live price simulation
             setInterval(() => {
-                assets.forEach(asset => {
-                    const change = (Math.random() - 0.5) * 0.8;
-                    asset.price = Math.max(0.5, asset.price * (1 + change / 100));
-                    asset.change = change;
+                assets.forEach(a => {
+                    const ch = (Math.random() - 0.5) * 0.7;
+                    a.price = Math.max(0.5, a.price * (1 + ch / 100));
+                    a.change = ch;
                 });
                 renderAssets();
                 updateTotalBalance();
-            }, 4500);
+            }, 4200);
         }
 
-        window.onload = initializeDashboard;
+        window.onload = initialize;
     </script>
 </body>
 </html>
