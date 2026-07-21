@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vault • Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(148, 163, 184, 0.1); }
+        .section-header { font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+        .editable-balance {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .editable-balance:hover {
+            background-color: rgba(16, 185, 129, 0.1);
+            border-radius: 8px;
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+        .live-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+</head>
+<body class="bg-zinc-950 text-zinc-200">
+
+    <div class="max-w-6xl mx-auto p-6 md:p-8">
+        
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center gap-x-3">
+                <div class="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-black text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-semibold tracking-tight">Vault <span class="text-emerald-400">Admin</span></h1>
+                    <p class="text-xs text-zinc-500 -mt-1">SYSTEM CONTROL PANEL</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-x-4">
+                <div class="flex items-center gap-x-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-2xl text-sm">
+                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
+                    <span class="font-medium">Admin Connected</span>
+                </div>
+                <form action="/logout" method="POST">
+                    <button class="px-5 py-2 text-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl transition-colors">
+                        <i class="fa-solid fa-sign-out-alt mr-2"></i> Logout
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Overview Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            
+            <!-- Total Portfolio -->
+            <div class="glass rounded-3xl p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <p class="section-header text-emerald-400">Total Portfolio</p>
+                        <h2 class="text-5xl font-semibold tracking-tighter mt-2">$<span id="total-usd">0.00</span></h2>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-emerald-400 text-xs px-3 py-1 bg-emerald-500/10 rounded-full inline-block">+12.4%</div>
+                    </div>
+                </div>
+                <div class="text-xs text-zinc-400">24h Change • +$1,284.32</div>
+            </div>
+
+            <!-- PNL -->
+            <div class="glass rounded-3xl p-6">
+                <p class="section-header text-amber-400 mb-1">Realized PNL</p>
+                <div class="flex items-baseline gap-x-2">
+                    <h3 id="pnl-value" class="text-4xl font-semibold text-emerald-400">+$4,872.50</h3>
+                </div>
+                <div class="mt-4 text-xs text-zinc-400 flex items-center gap-x-2">
+                    <span>Win Rate: <span class="font-mono text-white">68%</span></span>
+                    <span class="text-zinc-600">•</span>
+                    <span>Trades: <span class="font-mono text-white">147</span></span>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="glass rounded-3xl p-6">
+                <p class="section-header text-violet-400 mb-4">System Stats</p>
+                <div class="space-y-3 text-sm">
+                    <div class="flex justify-between"><span class="text-zinc-400">Active Sessions</span> <span class="font-mono">23</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-400">Total Volume (24h)</span> <span class="font-mono">$184.2k</span></div>
+                    <div class="flex justify-between"><span class="text-zinc-400">Uptime</span> <span class="font-mono text-emerald-400">99.98%</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Editable Assets -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-4 px-1">
+                <h3 class="section-header text-white">Admin Balances <span class="text-xs text-zinc-500 font-normal">(Double-click to edit)</span></h3>
+                <button onclick="resetBalances()" class="text-xs px-4 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 flex items-center gap-x-2">
+                    <i class="fa-solid fa-undo text-xs"></i> <span>Reset</span>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <!-- ETH Card -->
+                <div onclick="editBalance('eth')" class="glass rounded-3xl p-6 cursor-pointer hover:border-emerald-500/30 border border-transparent transition-all group">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-x-4">
+                            <div class="w-12 h-12 bg-[#627EEA]/10 rounded-2xl flex items-center justify-center border border-[#627EEA]/20">
+                                <i class="fa-brands fa-ethereum text-[#627EEA] text-3xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-xl">Ethereum</div>
+                                <div class="text-xs text-zinc-500 font-mono">ETH • Mainnet</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div id="eth-balance" class="editable-balance text-3xl font-semibold tracking-tight group-hover:text-emerald-400">12.847</div>
+                            <div class="text-xs text-zinc-400">$<span id="eth-usd">41,110</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SOL Card -->
+                <div onclick="editBalance('sol')" class="glass rounded-3xl p-6 cursor-pointer hover:border-emerald-500/30 border border-transparent transition-all group">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-x-4">
+                            <div class="w-12 h-12 bg-[#14F195]/10 rounded-2xl flex items-center justify-center border border-[#14F195]/20">
+                                <i class="fa-solid fa-infinity text-[#14F195] text-3xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-xl">Solana</div>
+                                <div class="text-xs text-zinc-500 font-mono">SOL • Mainnet</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div id="sol-balance" class="editable-balance text-3xl font-semibold tracking-tight group-hover:text-emerald-400">184.392</div>
+                            <div class="text-xs text-zinc-400">$<span id="sol-usd">25,815</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trading Section -->
+        <div class="glass rounded-3xl p-8">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl font-semibold">Live Trading Simulator</h3>
+                    <p class="text-xs text-zinc-400">Real-time price movement • Admin testing environment</p>
+                </div>
+                <div class="flex items-center gap-x-2 text-xs">
+                    <div class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center gap-x-1.5">
+                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full live-dot"></div>
+                        <span>LIVE</span>
+                    </div>
+                    <div class="text-zinc-400">ETH/USDT</div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 mb-6">
+                <canvas id="priceChart" height="90"></canvas>
+            </div>
+
+            <!-- Trade Controls -->
+            <div class="grid grid-cols-2 gap-4">
+                <button onclick="simulateTrade('buy')" 
+                        class="bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-x-2 transition-all active:scale-[0.985]">
+                    <i class="fa-solid fa-arrow-up"></i>
+                    <span>BUY 0.5 ETH</span>
+                </button>
+                <button onclick="simulateTrade('sell')" 
+                        class="bg-red-600 hover:bg-red-500 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-x-2 transition-all active:scale-[0.985]">
+                    <i class="fa-solid fa-arrow-down"></i>
+                    <span>SELL 0.5 ETH</span>
+                </button>
+            </div>
+            <p class="text-center text-[10px] text-zinc-500 mt-3">All trades are simulated in admin mode</p>
+        </div>
+
+    </div>
+
+    <script>
+        // Editable Balances
+        let balances = {
+            eth: 12.847,
+            sol: 184.392
+        };
+
+        function updateDisplayedBalances() {
+            document.getElementById('eth-balance').textContent = balances.eth.toFixed(3);
+            document.getElementById('eth-usd').textContent = (balances.eth * 3200).toFixed(0);
+            
+            document.getElementById('sol-balance').textContent = balances.sol.toFixed(3);
+            document.getElementById('sol-usd').textContent = (balances.sol * 140).toFixed(0);
+            
+            const totalUSD = (balances.eth * 3200) + (balances.sol * 140);
+            document.getElementById('total-usd').textContent = totalUSD.toFixed(2);
+        }
+
+        function editBalance(coin) {
+            const current = balances[coin];
+            const newValue = prompt(`Edit ${coin.toUpperCase()} balance:\n\nCurrent: ${current}`, current);
+            
+            if (newValue === null) return;
+            
+            const parsed = parseFloat(newValue);
+            if (isNaN(parsed) || parsed < 0) {
+                alert("Please enter a valid positive number.");
+                return;
+            }
+            
+            balances[coin] = parsed;
+            updateDisplayedBalances();
+            localStorage.setItem('adminBalances', JSON.stringify(balances));
+            showToast(`${coin.toUpperCase()} balance updated successfully`);
+        }
+
+        function resetBalances() {
+            if (!confirm("Reset all admin balances to default values?")) return;
+            balances = { eth: 12.847, sol: 184.392 };
+            localStorage.removeItem('adminBalances');
+            updateDisplayedBalances();
+            showToast("Balances have been reset");
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 bg-zinc-900 border border-emerald-500/30 text-emerald-400 px-6 py-3 rounded-2xl text-sm flex items-center gap-x-3 shadow-xl z-50`;
+            toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> <span>${message}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.transition = 'all 0.3s ease'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2200);
+        }
+
+        // Live Price Chart
+        let priceChart;
+        let priceData = [];
+        let labels = [];
+
+        function initPriceChart() {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            const now = Date.now();
+            
+            for (let i = 30; i >= 0; i--) {
+                labels.push(new Date(now - i * 60000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                priceData.push(3200 + Math.sin(i / 3) * 80 + (Math.random() - 0.5) * 40);
+            }
+            
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'ETH Price',
+                        data: priceData,
+                        borderColor: '#10b981',
+                        borderWidth: 3,
+                        tension: 0.35,
+                        fill: true,
+                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#64748b', font: { size: 10 } } },
+                        y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#64748b', font: { size: 10 } } }
+                    }
+                }
+            });
+            
+            setInterval(updateLivePrice, 1800);
+        }
+
+        function updateLivePrice() {
+            if (!priceChart) return;
+            
+            const lastPrice = priceData[priceData.length - 1];
+            const change = (Math.random() - 0.48) * 18;
+            const newPrice = Math.max(2800, Math.min(3600, lastPrice + change));
+            
+            priceData.shift();
+            priceData.push(newPrice);
+            labels.shift();
+            labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+            
+            priceChart.data.labels = labels;
+            priceChart.data.datasets[0].data = priceData;
+            priceChart.update('none');
+            
+            // Occasionally update PNL
+            if (Math.random() < 0.3) {
+                const pnlEl = document.getElementById('pnl-value');
+                const currentPNL = parseFloat(pnlEl.textContent.replace(/[^0-9.-]+/g, ""));
+                const newPNL = currentPNL + (Math.random() * 120 - 40);
+                pnlEl.textContent = (newPNL > 0 ? '+' : '') + newPNL.toFixed(2);
+            }
+        }
+
+        function simulateTrade(type) {
+            const amount = 0.5;
+            
+            if (type === 'buy') {
+                balances.eth += amount;
+                showToast(`Bought ${amount} ETH successfully`);
+            } else {
+                if (balances.eth < amount) {
+                    alert("Not enough ETH balance for this trade.");
+                    return;
+                }
+                balances.eth -= amount;
+                showToast(`Sold ${amount} ETH successfully`);
+            }
+            
+            updateDisplayedBalances();
+            localStorage.setItem('adminBalances', JSON.stringify(balances));
+            
+            const el = document.getElementById('eth-balance');
+            el.style.transition = 'none';
+            el.style.color = type === 'buy' ? '#10b981' : '#ef4444';
+            setTimeout(() => {
+                el.style.transition = 'color 0.4s ease';
+                el.style.color = '';
+            }, 600);
+        }
+
+        function loadSavedBalances() {
+            const saved = localStorage.getItem('adminBalances');
+            if (saved) {
+                balances = JSON.parse(saved);
+            }
+            updateDisplayedBalances();
+        }
+
+        function initializeAdminDashboard() {
+            loadSavedBalances();
+            initPriceChart();
+            
+            setInterval(() => {
+                const total = (balances.eth * 3200) + (balances.sol * 140);
+                const totalEl = document.getElementById('total-usd');
+                if (totalEl) totalEl.textContent = total.toFixed(2);
+            }, 5000);
+        }
+
+        window.onload = initializeAdminDashboard;
+    </script>
+</body>
+</html>
