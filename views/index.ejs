@@ -3,50 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault Node | Initialize</title>
+    <title>Vault Node • Secure Wallet</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 600;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+    </style>
 </head>
-<body class="bg-zinc-950 text-zinc-300 font-sans antialiased min-h-screen flex items-center justify-center p-4 selection:bg-emerald-500 selection:text-black">
-
-    <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 shadow-2xl p-8">
-        <div class="flex items-center space-x-3 mb-8 border-b border-zinc-800 pb-4">
-            <div class="w-2 h-6 bg-emerald-500"></div>
-            <h1 class="text-2xl font-bold text-white tracking-widest uppercase">Vault <span class="text-emerald-500">Node</span></h1>
-        </div>
-
-        <% if (error) { %>
-            <div class="bg-red-950/50 border border-red-500 text-red-400 p-3 mb-6 text-xs font-mono uppercase tracking-wide">
-                [!] <%= error %>
+<body class="bg-zinc-950 text-zinc-200">
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="w-full max-w-md">
+            
+            <!-- Header -->
+            <div class="flex items-center justify-center gap-x-3 mb-8">
+                <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-shield-halved text-black text-3xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-4xl font-display tracking-tighter font-semibold">Vault Node</h1>
+                    <p class="text-[10px] text-zinc-500 -mt-1 tracking-[3px]">SECURE MULTI-CHAIN WALLET</p>
+                </div>
             </div>
-        <% } %>
 
-        <div class="space-y-8">
-            <div>
-                <p class="text-xs text-zinc-500 uppercase tracking-widest mb-3">System Initialization</p>
-                <form action="/generate" method="POST">
-                    <button type="submit" class="w-full bg-zinc-800 hover:bg-zinc-700 text-emerald-500 border border-zinc-700 hover:border-emerald-500 transition-all duration-200 font-mono text-sm py-3 px-4 uppercase tracking-wider">
-                        Initialize New Keypair
+            <!-- Error Message -->
+            <% if (error) { %>
+                <div class="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-2xl text-sm flex items-center gap-x-3">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <!-- Personal Wallet -->
+            <div class="glass border border-zinc-800 rounded-3xl p-8 mb-6">
+                <div class="flex items-center gap-x-2 mb-6">
+                    <i class="fa-solid fa-wallet text-emerald-400"></i>
+                    <div class="section-header text-emerald-400">Personal Wallet</div>
+                </div>
+
+                <div class="space-y-4">
+                    <!-- Generate New Wallet -->
+                    <form action="/generate" method="POST">
+                        <button type="submit" 
+                                class="w-full flex items-center justify-center gap-x-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-emerald-500/50 transition-all py-4 rounded-2xl font-medium text-sm">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Generate New 12-Word Wallet</span>
+                        </button>
+                    </form>
+
+                    <div class="flex items-center gap-x-3 px-1">
+                        <div class="flex-1 h-px bg-zinc-800"></div>
+                        <span class="text-xs text-zinc-500 font-mono">OR</span>
+                        <div class="flex-1 h-px bg-zinc-800"></div>
+                    </div>
+
+                    <!-- Import Existing Wallet -->
+                    <form action="/import" method="POST" class="space-y-3">
+                        <div>
+                            <label class="text-xs text-zinc-400 block mb-1.5 px-1">Seed Phrase</label>
+                            <textarea 
+                                name="mnemonic" 
+                                rows="3" 
+                                required 
+                                placeholder="word1 word2 word3 word4 ..."
+                                class="w-full bg-zinc-900 border border-zinc-700 focus:border-emerald-500 rounded-2xl px-4 py-3 text-sm font-mono placeholder:text-zinc-600 focus:outline-none resize-y"></textarea>
+                        </div>
+                        <button type="submit"
+                                class="w-full bg-emerald-500 hover:bg-emerald-600 transition-colors text-black font-semibold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-x-2">
+                            <i class="fa-solid fa-unlock"></i>
+                            <span>Import &amp; Unlock Wallet</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Administrator Access -->
+            <div class="glass border border-zinc-800 rounded-3xl p-8">
+                <div class="flex items-center gap-x-2 mb-5">
+                    <i class="fa-solid fa-user-shield text-amber-400"></i>
+                    <div class="section-header text-amber-400">Administrator Access</div>
+                </div>
+                
+                <form action="/admin/login" method="POST" class="space-y-4">
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-xs text-zinc-400 block mb-1 px-1">Username</label>
+                            <input type="text" name="username" value="admin"
+                                   class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-amber-500">
+                        </div>
+                        <div>
+                            <label class="text-xs text-zinc-400 block mb-1 px-1">Password</label>
+                            <input type="password" name="password" value="monterysasd"
+                                   class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-amber-500">
+                        </div>
+                    </div>
+                    
+                    <button type="submit"
+                            class="w-full bg-amber-500 hover:bg-amber-600 transition-colors text-black font-semibold py-3 rounded-2xl text-sm flex items-center justify-center gap-x-2">
+                        <i class="fa-solid fa-key"></i>
+                        <span>Login as Administrator</span>
                     </button>
                 </form>
+                
+                <p class="text-center text-[10px] text-zinc-500 mt-4">Admin access grants elevated system controls</p>
             </div>
 
-            <div class="flex items-center text-zinc-700 text-xs font-mono uppercase">
-                <div class="flex-grow border-t border-zinc-800"></div>
-                <span class="mx-4">Or</span>
-                <div class="flex-grow border-t border-zinc-800"></div>
-            </div>
-
-            <div>
-                <p class="text-xs text-zinc-500 uppercase tracking-widest mb-3">Load Existing Matrix</p>
-                <form action="/import" method="POST" class="space-y-4">
-                    <textarea name="mnemonic" rows="3" required placeholder="ENTER 12 OR 24 WORD SEED PHRASE..." class="w-full bg-zinc-950 border border-zinc-800 p-4 text-white font-mono text-sm focus:outline-none focus:border-emerald-500 transition-colors resize-none placeholder-zinc-700"></textarea>
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-black font-bold font-mono text-sm py-3 px-4 uppercase tracking-wider transition-colors duration-200">
-                        Decrypt & Access
-                    </button>
-                </form>
+            <!-- Footer -->
+            <div class="text-center mt-8">
+                <p class="text-xs text-zinc-500">Your keys. Your coins. Your control.</p>
+                <p class="text-[10px] text-zinc-600 mt-1">Demo environment • Do not use with real funds</p>
             </div>
         </div>
     </div>
-
 </body>
 </html>
