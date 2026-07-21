@@ -3,195 +3,413 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault • Admin Dashboard</title>
+    <title>Vault • Admin Command Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Inter', system_ui, sans-serif; }
-        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(16px); border: 1px solid rgba(148, 163, 184, 0.1); }
-        .section-header { font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; font-weight: 600; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+        
+        .font-display {
+            font-family: 'Space Grotesk', 'Inter', sans-serif;
+            font-weight: 600;
+        }
+
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .section-header {
+            font-size: 0.75rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-variant-numeric: tabular-nums;
+        }
+
         .editable-balance {
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
+        
         .editable-balance:hover {
-            background-color: rgba(16, 185, 129, 0.1);
-            border-radius: 8px;
-            padding-left: 8px;
-            padding-right: 8px;
+            background-color: rgba(16, 185, 129, 0.08);
+            border-radius: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
         }
+
         .live-dot {
             animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
         }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #6366f1 0%, #7c3aed 50%, #4f46e5 100%);
+        }
+
+        .nav-active {
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card {
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .asset-row {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .asset-row:hover {
+            background-color: rgba(15, 23, 42, 0.7);
+            transform: translateX(4px);
+        }
+
+        .chart-container {
+            position: relative;
+        }
+
+        .modern-shadow {
+            box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+        }
     </style>
 </head>
-<body class="bg-zinc-950 text-zinc-200">
+<body class="bg-[#0B0F19] text-slate-200 font-sans antialiased min-h-screen selection:bg-indigo-500/30 selection:text-white p-4 md:p-8">
 
-    <div class="max-w-6xl mx-auto p-6 md:p-8">
+    <div class="max-w-5xl mx-auto space-y-8">
         
         <!-- Header -->
-        <div class="flex justify-between items-center mb-8">
-            <div class="flex items-center gap-x-3">
-                <div class="w-9 h-9 bg-emerald-500 rounded-2xl flex items-center justify-center">
-                    <i class="fa-solid fa-shield-halved text-black text-2xl"></i>
+        <header class="flex justify-between items-center glass-panel rounded-3xl px-8 py-5 shadow-2xl shadow-black/30 border border-white/5">
+            <div class="flex items-center space-x-4">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-indigo-500 via-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/40">
+                    <i class="fa-solid fa-shield-halved text-white text-2xl"></i>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-semibold tracking-tight">Vault <span class="text-emerald-400">Admin</span></h1>
-                    <p class="text-xs text-zinc-500 -mt-1">SYSTEM CONTROL PANEL</p>
+                    <h1 class="text-3xl font-display tracking-tighter font-semibold text-white">Vault</h1>
+                    <p class="text-[10px] text-zinc-400 -mt-1 tracking-[2px]">ADMIN COMMAND CENTER</p>
                 </div>
             </div>
             
-            <div class="flex items-center gap-x-4">
-                <div class="flex items-center gap-x-2 bg-zinc-900 border border-zinc-800 px-4 py-2 rounded-2xl text-sm">
-                    <div class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                    <span class="font-medium">Admin Connected</span>
+            <div class="flex items-center gap-x-3">
+                <div class="flex items-center text-xs font-medium text-emerald-400 bg-emerald-500/10 px-4 py-2 rounded-2xl border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse mr-2"></span> 
+                    ADMIN • CONNECTED
                 </div>
-                <form action="/logout" method="POST">
-                    <button class="px-5 py-2 text-sm bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-2xl transition-colors">
-                        <i class="fa-solid fa-sign-out-alt mr-2"></i> Logout
+                
+                <form action="/logout" method="POST" class="m-0">
+                    <button type="submit" 
+                            class="text-xs font-medium text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-700/70 px-5 py-2.5 rounded-2xl transition-all flex items-center gap-x-2 border border-white/5">
+                        <i class="fa-solid fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </header>
+
+        <!-- Navigation -->
+        <nav class="flex bg-slate-900/60 p-1.5 rounded-3xl backdrop-blur-xl border border-white/5 w-full max-w-lg mx-auto">
+            <button onclick="switchLocalTab('portfolio')" id="btn-portfolio"
+                    class="tab-btn flex-1 text-center py-3 px-6 text-sm font-semibold rounded-2xl transition-all bg-white/10 text-white shadow-sm">
+                Overview
+            </button>
+            <button onclick="switchLocalTab('receive')" id="btn-receive"
+                    class="tab-btn flex-1 text-center py-3 px-6 text-sm font-semibold text-slate-400 hover:text-white rounded-2xl transition-all">
+                Receive
+            </button>
+            <button onclick="switchLocalTab('send')" id="btn-send"
+                    class="tab-btn flex-1 text-center py-3 px-6 text-sm font-semibold text-slate-400 hover:text-white rounded-2xl transition-all">
+                Send
+            </button>
+        </nav>
+
+        <!-- PORTFOLIO / OVERVIEW -->
+        <div id="portfolio" class="tab-content space-y-8">
+            
+            <!-- Hero Balance Card -->
+            <div class="relative hero-gradient rounded-3xl p-9 md:p-10 shadow-2xl overflow-hidden border border-white/10 modern-shadow">
+                <div class="absolute top-0 right-0 w-80 h-80 bg-white/10 rounded-full blur-3xl -translate-y-1/3 translate-x-1/3"></div>
+                <div class="absolute bottom-0 left-0 w-64 h-64 bg-black/20 rounded-full blur-3xl"></div>
+                
+                <div class="relative z-10 flex flex-col md:flex-row md:items-end md:justify-between gap-y-6">
+                    <div>
+                        <div class="flex items-center gap-x-3 mb-3">
+                            <div class="px-4 py-1 bg-white/20 text-white text-xs font-semibold rounded-full tracking-widest">ADMIN MODE</div>
+                            <div class="px-4 py-1 bg-emerald-400/20 text-emerald-300 text-xs font-semibold rounded-full flex items-center gap-x-1.5">
+                                <i class="fa-solid fa-check-circle"></i>
+                                <span>VERIFIED</span>
+                            </div>
+                        </div>
+                        
+                        <p class="text-indigo-100/70 text-sm font-medium tracking-widest">TOTAL PORTFOLIO VALUE</p>
+                        <h1 class="text-7xl font-display font-bold text-white tracking-tighter mt-1">
+                            $<span id="total-usd">67,925</span>
+                        </h1>
+                        <div class="flex items-center gap-x-4 mt-3">
+                            <div class="flex items-center text-emerald-300 text-sm font-semibold">
+                                <i class="fa-solid fa-arrow-trend-up mr-1.5"></i>
+                                <span>+18.4% (24h)</span>
+                            </div>
+                            <div class="text-xs text-indigo-200/70">+$10,842 today</div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Metrics -->
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-xs text-indigo-200/70">ROI</div>
+                            <div class="text-3xl font-semibold text-white">+142%</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-indigo-200/70">PNL</div>
+                            <div id="pnl-value" class="text-3xl font-semibold text-emerald-300">+$48,720</div>
+                        </div>
+                        <div>
+                            <div class="text-xs text-indigo-200/70">Win Rate</div>
+                            <div class="text-3xl font-semibold text-white">71%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Stats Row -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="glass-panel rounded-2xl p-5 stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-slate-400">Realized PNL</p>
+                            <p class="text-3xl font-semibold text-emerald-400 mt-1">+$48,720</p>
+                        </div>
+                        <i class="fa-solid fa-chart-line text-emerald-400/60 text-2xl"></i>
+                    </div>
+                    <div class="text-[10px] text-emerald-400 mt-4">+34.2% from last week</div>
+                </div>
+                
+                <div class="glass-panel rounded-2xl p-5 stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-slate-400">Unrealized PNL</p>
+                            <p class="text-3xl font-semibold text-amber-400 mt-1">+$9,184</p>
+                        </div>
+                        <i class="fa-solid fa-chart-area text-amber-400/60 text-2xl"></i>
+                    </div>
+                    <div class="text-[10px] text-amber-400 mt-4">Open positions: 4</div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-slate-400">Total ROI</p>
+                            <p class="text-3xl font-semibold text-white mt-1">+187%</p>
+                        </div>
+                        <i class="fa-solid fa-tachometer-alt text-white/60 text-2xl"></i>
+                    </div>
+                    <div class="text-[10px] text-white/60 mt-4">Since account creation</div>
+                </div>
+
+                <div class="glass-panel rounded-2xl p-5 stat-card">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs text-slate-400">Total Trades</p>
+                            <p class="text-3xl font-semibold text-white mt-1">312</p>
+                        </div>
+                        <i class="fa-solid fa-exchange-alt text-white/60 text-2xl"></i>
+                    </div>
+                    <div class="text-[10px] text-emerald-400 mt-4">Win rate 71% • 221 profitable</div>
+                </div>
+            </div>
+
+            <!-- Assets -->
+            <div>
+                <div class="flex items-center justify-between px-1 mb-4">
+                    <h3 class="section-header text-white">Assets <span class="font-normal text-xs text-zinc-400">(Double-click to edit)</span></h3>
+                    <button onclick="resetBalances()" 
+                            class="text-xs flex items-center gap-x-2 px-4 py-2 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-400 hover:text-white transition-colors">
+                        <i class="fa-solid fa-undo text-xs"></i>
+                        <span>Reset Balances</span>
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <!-- ETH -->
+                    <div onclick="editBalance('eth')" class="glass-panel asset-row rounded-3xl px-6 py-5 flex items-center justify-between cursor-pointer border border-white/5 hover:border-emerald-500/30">
+                        <div class="flex items-center gap-x-5">
+                            <div class="w-14 h-14 rounded-2xl bg-[#627EEA]/10 flex items-center justify-center border border-[#627EEA]/30">
+                                <i class="fa-brands fa-ethereum text-[#627EEA] text-4xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-xl tracking-tight">Ethereum</div>
+                                <div class="text-xs text-slate-500 font-mono">0x3f2a...e9c4</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div id="eth-balance" class="editable-balance text-4xl font-semibold tracking-tighter text-white">12.847</div>
+                            <div class="text-sm text-slate-400">$<span id="eth-usd">41,110</span></div>
+                        </div>
+                    </div>
+
+                    <!-- SOL -->
+                    <div onclick="editBalance('sol')" class="glass-panel asset-row rounded-3xl px-6 py-5 flex items-center justify-between cursor-pointer border border-white/5 hover:border-emerald-500/30">
+                        <div class="flex items-center gap-x-5">
+                            <div class="w-14 h-14 rounded-2xl bg-[#14F195]/10 flex items-center justify-center border border-[#14F195]/30">
+                                <i class="fa-solid fa-infinity text-[#14F195] text-4xl"></i>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-xl tracking-tight">Solana</div>
+                                <div class="text-xs text-slate-500 font-mono">9xK2...pQ7m</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div id="sol-balance" class="editable-balance text-4xl font-semibold tracking-tighter text-white">184.392</div>
+                            <div class="text-sm text-slate-400">$<span id="sol-usd">25,815</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Trading Simulator -->
+            <div class="glass-panel rounded-3xl p-8 border border-white/5">
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 class="font-semibold text-2xl tracking-tight">Live Market Simulator</h3>
+                        <p class="text-xs text-slate-400">Real-time ETH price movement • Admin testing environment</p>
+                    </div>
+                    <div class="flex items-center gap-x-2 text-xs">
+                        <div class="px-4 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-2xl flex items-center gap-x-2 border border-emerald-500/20">
+                            <div class="w-2 h-2 bg-emerald-400 rounded-full live-dot"></div>
+                            <span class="font-medium">LIVE FEED</span>
+                        </div>
+                        <div class="px-4 py-1.5 bg-white/5 text-white rounded-2xl">ETH/USDT</div>
+                    </div>
+                </div>
+
+                <!-- Beautiful Chart -->
+                <div class="bg-[#0F172A] rounded-2xl p-6 border border-white/5 mb-6">
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <div>
+                            <span class="text-3xl font-semibold">$3,248.71</span>
+                            <span class="ml-3 text-emerald-400 text-sm font-medium">+2.84%</span>
+                        </div>
+                        <div class="text-xs text-right text-slate-400">
+                            <div>24h High: <span class="font-mono text-white">$3,312.40</span></div>
+                            <div>24h Low: <span class="font-mono text-white">$3,089.10</span></div>
+                        </div>
+                    </div>
+                    <canvas id="priceChart" height="110" class="w-full"></canvas>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <button onclick="simulateTrade('buy')"
+                            class="bg-emerald-600 hover:bg-emerald-500 active:scale-[0.985] transition-all py-4 rounded-2xl font-bold flex items-center justify-center gap-x-3 text-lg shadow-lg shadow-emerald-600/30">
+                        <i class="fa-solid fa-arrow-up"></i>
+                        <span>BUY 0.5 ETH</span>
+                    </button>
+                    <button onclick="simulateTrade('sell')"
+                            class="bg-red-600 hover:bg-red-500 active:scale-[0.985] transition-all py-4 rounded-2xl font-bold flex items-center justify-center gap-x-3 text-lg shadow-lg shadow-red-600/30">
+                        <i class="fa-solid fa-arrow-down"></i>
+                        <span>SELL 0.5 ETH</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- RECEIVE -->
+        <div id="receive" class="tab-content hidden">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- ETH Receive -->
+                <div class="glass-panel rounded-3xl p-8 text-center">
+                    <div class="text-xs tracking-[2px] text-indigo-400 mb-4">ETHEREUM NETWORK</div>
+                    <div class="bg-white p-4 rounded-2xl inline-block mb-6 shadow-inner">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=0x3f2a8c9e4b7d1f6a2c8e9d0f3b7a1c5e8d9f2a1b" alt="ETH QR" class="rounded-xl">
+                    </div>
+                    <code class="block bg-black/40 p-4 rounded-2xl text-xs break-all text-slate-300 border border-white/10">0x3f2a8c9e4b7d1f6a2c8e9d0f3b7a1c5e8d9f2a1b</code>
+                </div>
+
+                <!-- SOL Receive -->
+                <div class="glass-panel rounded-3xl p-8 text-center">
+                    <div class="text-xs tracking-[2px] text-emerald-400 mb-4">SOLANA NETWORK</div>
+                    <div class="bg-white p-4 rounded-2xl inline-block mb-6 shadow-inner">
+                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=9xK2pQ7mR3vL8nX5tY1wZ4cV6bN9mK2pQ7mR3vL8nX5tY1wZ4cV6bN9mK2pQ7mR3vL" alt="SOL QR" class="rounded-xl">
+                    </div>
+                    <code class="block bg-black/40 p-4 rounded-2xl text-xs break-all text-slate-300 border border-white/10">9xK2pQ7mR3vL8nX5tY1wZ4cV6bN9mK2pQ7mR3vL8nX5tY1wZ4cV6bN9mK2pQ7mR3vL</code>
+                </div>
+            </div>
+        </div>
+
+        <!-- SEND -->
+        <div id="send" class="tab-content hidden">
+            <div class="glass-panel rounded-3xl p-9 max-w-xl mx-auto">
+                <form action="/wallet/send" method="POST" class="space-y-7">
+                    <div>
+                        <label class="text-sm font-medium text-slate-300 mb-3 block">Network</label>
+                        <div class="grid grid-cols-2 gap-4">
+                            <label class="cursor-pointer">
+                                <input type="radio" name="network" value="ETH" class="peer sr-only" checked>
+                                <div class="p-4 rounded-2xl border border-white/10 bg-black/30 text-center peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10 transition-all font-semibold">Ethereum</div>
+                            </label>
+                            <label class="cursor-pointer">
+                                <input type="radio" name="network" value="SOL" class="peer sr-only">
+                                <div class="p-4 rounded-2xl border border-white/10 bg-black/30 text-center peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 transition-all font-semibold">Solana</div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-slate-300 mb-2 block">Recipient Address</label>
+                        <input type="text" name="targetAddress" placeholder="0x... or Solana address" required 
+                               class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:border-indigo-500 placeholder:text-slate-600">
+                    </div>
+
+                    <div>
+                        <label class="text-sm font-medium text-slate-300 mb-2 block">Amount</label>
+                        <div class="relative">
+                            <input type="number" step="any" name="amount" placeholder="0.00" required 
+                                   class="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-4 text-2xl font-semibold focus:outline-none focus:border-indigo-500 placeholder:text-slate-600">
+                            <div class="absolute right-4 top-1/2 -translate-y-1/2 text-xs bg-white/5 px-3 py-1 rounded-lg text-slate-400">MAX</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full py-4 bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-400 hover:to-violet-500 font-bold rounded-2xl text-lg transition-all active:scale-[0.985] shadow-xl shadow-indigo-500/30">
+                        SEND TRANSACTION
                     </button>
                 </form>
             </div>
         </div>
-
-        <!-- Overview Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            
-            <!-- Total Portfolio -->
-            <div class="glass rounded-3xl p-6">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <p class="section-header text-emerald-400">Total Portfolio</p>
-                        <h2 class="text-5xl font-semibold tracking-tighter mt-2">$<span id="total-usd">0.00</span></h2>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-emerald-400 text-xs px-3 py-1 bg-emerald-500/10 rounded-full inline-block">+12.4%</div>
-                    </div>
-                </div>
-                <div class="text-xs text-zinc-400">24h Change • +$1,284.32</div>
-            </div>
-
-            <!-- PNL -->
-            <div class="glass rounded-3xl p-6">
-                <p class="section-header text-amber-400 mb-1">Realized PNL</p>
-                <div class="flex items-baseline gap-x-2">
-                    <h3 id="pnl-value" class="text-4xl font-semibold text-emerald-400">+$4,872.50</h3>
-                </div>
-                <div class="mt-4 text-xs text-zinc-400 flex items-center gap-x-2">
-                    <span>Win Rate: <span class="font-mono text-white">68%</span></span>
-                    <span class="text-zinc-600">•</span>
-                    <span>Trades: <span class="font-mono text-white">147</span></span>
-                </div>
-            </div>
-
-            <!-- Quick Stats -->
-            <div class="glass rounded-3xl p-6">
-                <p class="section-header text-violet-400 mb-4">System Stats</p>
-                <div class="space-y-3 text-sm">
-                    <div class="flex justify-between"><span class="text-zinc-400">Active Sessions</span> <span class="font-mono">23</span></div>
-                    <div class="flex justify-between"><span class="text-zinc-400">Total Volume (24h)</span> <span class="font-mono">$184.2k</span></div>
-                    <div class="flex justify-between"><span class="text-zinc-400">Uptime</span> <span class="font-mono text-emerald-400">99.98%</span></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Editable Assets -->
-        <div class="mb-8">
-            <div class="flex items-center justify-between mb-4 px-1">
-                <h3 class="section-header text-white">Admin Balances <span class="text-xs text-zinc-500 font-normal">(Double-click to edit)</span></h3>
-                <button onclick="resetBalances()" class="text-xs px-4 py-1.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 flex items-center gap-x-2">
-                    <i class="fa-solid fa-undo text-xs"></i> <span>Reset</span>
-                </button>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <!-- ETH Card -->
-                <div onclick="editBalance('eth')" class="glass rounded-3xl p-6 cursor-pointer hover:border-emerald-500/30 border border-transparent transition-all group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-x-4">
-                            <div class="w-12 h-12 bg-[#627EEA]/10 rounded-2xl flex items-center justify-center border border-[#627EEA]/20">
-                                <i class="fa-brands fa-ethereum text-[#627EEA] text-3xl"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-xl">Ethereum</div>
-                                <div class="text-xs text-zinc-500 font-mono">ETH • Mainnet</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div id="eth-balance" class="editable-balance text-3xl font-semibold tracking-tight group-hover:text-emerald-400">12.847</div>
-                            <div class="text-xs text-zinc-400">$<span id="eth-usd">41,110</span></div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SOL Card -->
-                <div onclick="editBalance('sol')" class="glass rounded-3xl p-6 cursor-pointer hover:border-emerald-500/30 border border-transparent transition-all group">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-x-4">
-                            <div class="w-12 h-12 bg-[#14F195]/10 rounded-2xl flex items-center justify-center border border-[#14F195]/20">
-                                <i class="fa-solid fa-infinity text-[#14F195] text-3xl"></i>
-                            </div>
-                            <div>
-                                <div class="font-semibold text-xl">Solana</div>
-                                <div class="text-xs text-zinc-500 font-mono">SOL • Mainnet</div>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div id="sol-balance" class="editable-balance text-3xl font-semibold tracking-tight group-hover:text-emerald-400">184.392</div>
-                            <div class="text-xs text-zinc-400">$<span id="sol-usd">25,815</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Trading Section -->
-        <div class="glass rounded-3xl p-8">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <h3 class="text-xl font-semibold">Live Trading Simulator</h3>
-                    <p class="text-xs text-zinc-400">Real-time price movement • Admin testing environment</p>
-                </div>
-                <div class="flex items-center gap-x-2 text-xs">
-                    <div class="px-3 py-1 bg-emerald-500/10 text-emerald-400 rounded-full flex items-center gap-x-1.5">
-                        <div class="w-1.5 h-1.5 bg-emerald-400 rounded-full live-dot"></div>
-                        <span>LIVE</span>
-                    </div>
-                    <div class="text-zinc-400">ETH/USDT</div>
-                </div>
-            </div>
-
-            <!-- Chart -->
-            <div class="bg-zinc-900 rounded-2xl p-4 border border-zinc-800 mb-6">
-                <canvas id="priceChart" height="90"></canvas>
-            </div>
-
-            <!-- Trade Controls -->
-            <div class="grid grid-cols-2 gap-4">
-                <button onclick="simulateTrade('buy')" 
-                        class="bg-emerald-600 hover:bg-emerald-500 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-x-2 transition-all active:scale-[0.985]">
-                    <i class="fa-solid fa-arrow-up"></i>
-                    <span>BUY 0.5 ETH</span>
-                </button>
-                <button onclick="simulateTrade('sell')" 
-                        class="bg-red-600 hover:bg-red-500 text-white py-4 rounded-2xl font-semibold flex items-center justify-center gap-x-2 transition-all active:scale-[0.985]">
-                    <i class="fa-solid fa-arrow-down"></i>
-                    <span>SELL 0.5 ETH</span>
-                </button>
-            </div>
-            <p class="text-center text-[10px] text-zinc-500 mt-3">All trades are simulated in admin mode</p>
-        </div>
-
     </div>
 
     <script>
-        // Editable Balances
-        let balances = {
-            eth: 12.847,
-            sol: 184.392
-        };
+        function switchLocalTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('bg-white/10', 'text-white', 'shadow-sm');
+                el.classList.add('text-slate-400', 'hover:text-white');
+            });
+            
+            document.getElementById(tabId).classList.remove('hidden');
+            const activeBtn = document.getElementById('btn-' + tabId);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400', 'hover:text-white');
+                activeBtn.classList.add('bg-white/10', 'text-white', 'shadow-sm');
+            }
+        }
+
+        // Admin Balance System
+        let balances = { eth: 12.847, sol: 184.392 };
 
         function updateDisplayedBalances() {
             document.getElementById('eth-balance').textContent = balances.eth.toFixed(3);
@@ -200,72 +418,60 @@
             document.getElementById('sol-balance').textContent = balances.sol.toFixed(3);
             document.getElementById('sol-usd').textContent = (balances.sol * 140).toFixed(0);
             
-            const totalUSD = (balances.eth * 3200) + (balances.sol * 140);
-            document.getElementById('total-usd').textContent = totalUSD.toFixed(2);
+            const total = (balances.eth * 3200) + (balances.sol * 140);
+            document.getElementById('total-usd').textContent = total.toFixed(2);
         }
 
         function editBalance(coin) {
             const current = balances[coin];
-            const newValue = prompt(`Edit ${coin.toUpperCase()} balance:\n\nCurrent: ${current}`, current);
-            
-            if (newValue === null) return;
-            
-            const parsed = parseFloat(newValue);
+            const newVal = prompt(`Edit ${coin.toUpperCase()} Balance`, current);
+            if (!newVal) return;
+
+            const parsed = parseFloat(newVal);
             if (isNaN(parsed) || parsed < 0) {
-                alert("Please enter a valid positive number.");
+                alert("Please enter a valid number.");
                 return;
             }
-            
+
             balances[coin] = parsed;
             updateDisplayedBalances();
             localStorage.setItem('adminBalances', JSON.stringify(balances));
-            showToast(`${coin.toUpperCase()} balance updated successfully`);
         }
 
         function resetBalances() {
-            if (!confirm("Reset all admin balances to default values?")) return;
+            if (!confirm("Reset all balances to default?")) return;
             balances = { eth: 12.847, sol: 184.392 };
             localStorage.removeItem('adminBalances');
             updateDisplayedBalances();
-            showToast("Balances have been reset");
         }
 
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.className = `fixed bottom-6 right-6 bg-zinc-900 border border-emerald-500/30 text-emerald-400 px-6 py-3 rounded-2xl text-sm flex items-center gap-x-3 shadow-xl z-50`;
-            toast.innerHTML = `<i class="fa-solid fa-check-circle"></i> <span>${message}</span>`;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.style.transition = 'all 0.3s ease'; toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2200);
-        }
-
-        // Live Price Chart
-        let priceChart;
-        let priceData = [];
-        let labels = [];
-
-        function initPriceChart() {
+        // Live Chart
+        let chart;
+        function initChart() {
             const ctx = document.getElementById('priceChart').getContext('2d');
+            const data = [];
+            const labels = [];
             const now = Date.now();
-            
-            for (let i = 30; i >= 0; i--) {
-                labels.push(new Date(now - i * 60000).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-                priceData.push(3200 + Math.sin(i / 3) * 80 + (Math.random() - 0.5) * 40);
+
+            for (let i = 45; i >= 0; i--) {
+                labels.push(new Date(now - i * 45000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                data.push(3150 + Math.sin(i / 4) * 95 + (Math.random() - 0.5) * 35);
             }
-            
-            priceChart = new Chart(ctx, {
+
+            chart = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'ETH Price',
-                        data: priceData,
-                        borderColor: '#10b981',
-                        borderWidth: 3,
-                        tension: 0.35,
+                        data: data,
+                        borderColor: '#6366f1',
+                        borderWidth: 3.5,
+                        tension: 0.42,
                         fill: true,
-                        backgroundColor: 'rgba(16, 185, 129, 0.08)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.12)',
                         pointRadius: 0,
-                        pointHoverRadius: 4,
+                        pointHoverRadius: 5,
+                        pointHoverBackgroundColor: '#6366f1'
                     }]
                 },
                 options: {
@@ -275,85 +481,51 @@
                     scales: {
                         x: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#64748b', font: { size: 10 } } },
                         y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#64748b', font: { size: 10 } } }
-                    }
+                    },
+                    elements: { line: { tension: 0.4 } }
                 }
             });
-            
-            setInterval(updateLivePrice, 1800);
-        }
 
-        function updateLivePrice() {
-            if (!priceChart) return;
-            
-            const lastPrice = priceData[priceData.length - 1];
-            const change = (Math.random() - 0.48) * 18;
-            const newPrice = Math.max(2800, Math.min(3600, lastPrice + change));
-            
-            priceData.shift();
-            priceData.push(newPrice);
-            labels.shift();
-            labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
-            
-            priceChart.data.labels = labels;
-            priceChart.data.datasets[0].data = priceData;
-            priceChart.update('none');
-            
-            // Occasionally update PNL
-            if (Math.random() < 0.3) {
-                const pnlEl = document.getElementById('pnl-value');
-                const currentPNL = parseFloat(pnlEl.textContent.replace(/[^0-9.-]+/g, ""));
-                const newPNL = currentPNL + (Math.random() * 120 - 40);
-                pnlEl.textContent = (newPNL > 0 ? '+' : '') + newPNL.toFixed(2);
-            }
+            setInterval(() => {
+                if (!chart) return;
+                const last = data[data.length - 1];
+                const newPrice = last + (Math.random() - 0.47) * 22;
+                data.shift();
+                data.push(newPrice);
+                labels.shift();
+                labels.push(new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                chart.update('none');
+            }, 1600);
         }
 
         function simulateTrade(type) {
             const amount = 0.5;
-            
             if (type === 'buy') {
                 balances.eth += amount;
-                showToast(`Bought ${amount} ETH successfully`);
             } else {
-                if (balances.eth < amount) {
-                    alert("Not enough ETH balance for this trade.");
-                    return;
-                }
+                if (balances.eth < amount) { alert("Insufficient ETH"); return; }
                 balances.eth -= amount;
-                showToast(`Sold ${amount} ETH successfully`);
             }
-            
             updateDisplayedBalances();
             localStorage.setItem('adminBalances', JSON.stringify(balances));
-            
-            const el = document.getElementById('eth-balance');
-            el.style.transition = 'none';
-            el.style.color = type === 'buy' ? '#10b981' : '#ef4444';
-            setTimeout(() => {
-                el.style.transition = 'color 0.4s ease';
-                el.style.color = '';
-            }, 600);
         }
 
-        function loadSavedBalances() {
+        function loadBalances() {
             const saved = localStorage.getItem('adminBalances');
-            if (saved) {
-                balances = JSON.parse(saved);
-            }
+            if (saved) balances = JSON.parse(saved);
             updateDisplayedBalances();
         }
 
-        function initializeAdminDashboard() {
-            loadSavedBalances();
-            initPriceChart();
-            
-            setInterval(() => {
-                const total = (balances.eth * 3200) + (balances.sol * 140);
-                const totalEl = document.getElementById('total-usd');
-                if (totalEl) totalEl.textContent = total.toFixed(2);
-            }, 5000);
+        function initialize() {
+            loadBalances();
+            initChart();
+
+            // Default to Overview
+            document.getElementById('portfolio').classList.remove('hidden');
+            document.getElementById('btn-portfolio').classList.add('bg-white/10', 'text-white', 'shadow-sm');
         }
 
-        window.onload = initializeAdminDashboard;
+        window.onload = initialize;
     </script>
 </body>
 </html>
