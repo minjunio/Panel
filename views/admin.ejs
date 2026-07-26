@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin • Minjun Seoyeon Blog</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; }
+        .admin-header { background: linear-gradient(to right, #0f172a, #1e1135); }
+        .post-row { transition: background-color .1s ease; }
+        .post-row:hover { background-color: #f8fafc; }
+        .preview-box { font-size: 13.5px; line-height: 1.65; }
+        .preview-box h1, .preview-box h2, .preview-box h3 { font-family: Georgia, serif; margin-top: 1em; }
+    </style>
+</head>
+<body class="bg-zinc-100">
+    <% if (!loggedIn) { %>
+    <!-- LOGIN SCREEN -->
+    <div class="min-h-screen flex items-center justify-center p-6">
+        <div class="w-full max-w-md">
+            <!-- Logo -->
+            <div class="flex justify-center mb-8">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-11 h-11 bg-rose-600 rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-lock text-white text-2xl"></i>
+                    </div>
+                    <div class="text-center">
+                        <div class="font-semibold text-3xl tracking-tighter">minjun seoyeon</div>
+                        <div class="text-[10px] text-zinc-400 -mt-1 tracking-[1.5px]">ADMIN PANEL</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-zinc-200 shadow-xl shadow-zinc-200/60 rounded-3xl p-9">
+                <div class="text-center mb-7">
+                    <h1 class="text-2xl font-semibold tracking-tight">Welcome back, Minjun</h1>
+                    <p class="text-sm text-zinc-500 mt-1">Sign in to manage your Korea stories</p>
+                </div>
+
+                <% if (error) { %>
+                    <div class="mb-5 px-4 py-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-2xl flex gap-x-2 items-start">
+                        <i class="fa-solid fa-exclamation-circle mt-0.5"></i>
+                        <span><%= error %></span>
+                    </div>
+                <% } %>
+
+                <form action="/login" method="POST" class="space-y-5">
+                    <div>
+                        <label class="text-xs font-medium tracking-widest text-zinc-500 block mb-1.5 px-1">PASSWORD</label>
+                        <input type="password" name="password" required
+                               class="w-full border border-zinc-300 focus:border-rose-400 transition px-5 h-12 rounded-2xl text-lg outline-none"
+                               placeholder="Enter admin password">
+                    </div>
+                    
+                    <button type="submit"
+                            class="w-full h-12 bg-zinc-900 hover:bg-black active:bg-zinc-950 transition text-white font-semibold rounded-2xl flex items-center justify-center gap-x-2">
+                        <span>Sign in to dashboard</span>
+                    </button>
+                </form>
+
+                <div class="mt-8 text-center">
+                    <p class="text-[10px] text-zinc-400">This area is private. Please keep your password safe.</p>
+                </div>
+            </div>
+            
+            <div class="text-center mt-6">
+                <a href="/" class="text-xs text-zinc-400 hover:text-zinc-600 flex items-center justify-center gap-x-1.5">
+                    <i class="fa-solid fa-arrow-left text-xs"></i> 
+                    <span>Back to public blog</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <% } else { %>
+    <!-- ADMIN DASHBOARD -->
+    <div class="min-h-screen flex flex-col">
+        <!-- Top bar -->
+        <div class="admin-header text-white px-8 py-4 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-x-4">
+                <div class="flex items-center gap-x-3">
+                    <div class="w-8 h-8 bg-white/10 backdrop-blur rounded-2xl flex items-center justify-center">
+                        <i class="fa-solid fa-pen-nib text-white"></i>
+                    </div>
+                    <div>
+                        <span class="font-semibold tracking-tighter text-xl">Admin Dashboard</span>
+                    </div>
+                </div>
+                <div class="px-3 py-px text-xs bg-white/10 text-white/70 rounded-2xl">Minjun Seoyeon Blog</div>
+            </div>
+            
+            <div class="flex items-center gap-x-3">
+                <a href="/" target="_blank" 
+                   class="text-xs flex items-center gap-x-2 px-4 h-9 rounded-3xl border border-white/30 hover:bg-white/10 transition">
+                    <i class="fa-solid fa-external-link-alt"></i>
+                    <span>View Live Blog</span>
+                </a>
+                
+                <form action="/logout" method="POST">
+                    <button type="submit" 
+                            class="flex items-center gap-x-2 px-5 h-9 text-sm rounded-3xl bg-white/10 hover:bg-white/20 active:bg-white/30 transition text-white/90">
+                        <i class="fa-solid fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="flex-1 max-w-screen-2xl mx-auto w-full px-8 pt-8 pb-12">
+            
+            <!-- Success / Error banners -->
+            <% if (success) { %>
+                <div class="mb-6 px-5 py-3.5 bg-emerald-100 border border-emerald-200 text-emerald-700 text-sm rounded-2xl flex items-center gap-x-3">
+                    <i class="fa-solid fa-check-circle text-emerald-600"></i>
+                    <span><%= success %></span>
+                </div>
+            <% } %>
+            <% if (error) { %>
+                <div class="mb-6 px-5 py-3.5 bg-red-100 border border-red-200 text-red-600 text-sm rounded-2xl flex items-center gap-x-3">
+                    <i class="fa-solid fa-exclamation-triangle"></i>
+                    <span><%= error %></span>
+                </div>
+            <% } %>
+
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+                
+                <!-- NEW / EDIT POST FORM -->
+                <div class="xl:col-span-7 bg-white border border-zinc-200 shadow-sm rounded-3xl p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 id="form-title" class="font-semibold text-2xl tracking-tight">Write a new story</h2>
+                            <p class="text-xs text-zinc-400">Posts will appear instantly on the public blog</p>
+                        </div>
+                        <button type="button" onclick="resetForm()" 
+                                class="text-xs px-4 h-8 rounded-2xl border flex items-center gap-x-2 hover:bg-zinc-50">
+                            <i class="fa-solid fa-undo"></i>
+                            <span>Clear form</span>
+                        </button>
+                    </div>
+
+                    <form id="post-form" action="/admin/posts" method="POST" class="space-y-5">
+                        <input type="hidden" id="post-id" name="id">
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <!-- Title -->
+                            <div class="md:col-span-2">
+                                <label class="text-xs font-semibold tracking-widest text-zinc-500 px-1">STORY TITLE</label>
+                                <input type="text" id="title" name="title" required
+                                       class="mt-1.5 w-full border border-zinc-300 focus:border-rose-400 px-5 h-11 rounded-2xl outline-none text-lg"
+                                       placeholder="The most beautiful temple I visited this month...">
+                            </div>
+                            
+                            <!-- Category -->
+                            <div>
+                                <label class="text-xs font-semibold tracking-widest text-zinc-500 px-1">CATEGORY</label>
+                                <select id="category" name="category" class="mt-1.5 w-full border border-zinc-300 focus:border-rose-400 px-5 h-11 rounded-2xl outline-none bg-white">
+                                    <option value="Travel">Travel</option>
+                                    <option value="Nature">Nature</option>
+                                    <option value="Food">Food</option>
+                                    <option value="Culture">Culture</option>
+                                    <option value="Personal">Personal</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Image URL -->
+                            <div>
+                                <label class="text-xs font-semibold tracking-widest text-zinc-500 px-1">IMAGE URL</label>
+                                <input type="url" id="imageUrl" name="imageUrl" 
+                                       oninput="updateImagePreview()"
+                                       class="mt-1.5 w-full border border-zinc-300 focus:border-rose-400 px-5 h-11 rounded-2xl outline-none text-sm"
+                                       placeholder="https://picsum.photos/id/1015/1200/630">
+                            </div>
+                        </div>
+
+                        <!-- Content -->
+                        <div>
+                            <div class="flex justify-between items-end mb-1.5 px-1">
+                                <label class="text-xs font-semibold tracking-widest text-zinc-500">STORY CONTENT (Markdown supported)</label>
+                                <span class="text-[10px] text-emerald-600">Live preview on the right →</span>
+                            </div>
+                            <textarea id="content" name="content" rows="13" required
+                                      oninput="updateMarkdownPreview()"
+                                      class="w-full border border-zinc-300 focus:border-rose-400 px-5 py-4 rounded-2xl font-mono text-sm outline-none resize-y"
+                                      placeholder="Write your beautiful story here... You can use **bold**, lists, and even add images with ![description](url)"></textarea>
+                        </div>
+
+                        <div class="flex gap-x-3 pt-2">
+                            <button type="submit" id="submit-btn"
+                                    class="flex-1 h-12 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition text-white font-semibold rounded-2xl flex items-center justify-center gap-x-2 text-base">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span id="submit-text">Publish New Story</span>
+                            </button>
+                            
+                            <button type="button" onclick="cancelEdit()" id="cancel-edit-btn"
+                                    class="hidden px-7 h-12 border border-zinc-300 hover:bg-zinc-50 font-medium rounded-2xl text-sm">
+                                Cancel Edit
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- LIVE PREVIEW -->
+                <div class="xl:col-span-5 bg-white border border-zinc-200 shadow-sm rounded-3xl p-6 flex flex-col">
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <div class="text-xs uppercase tracking-widest font-semibold text-zinc-400">LIVE PREVIEW</div>
+                        <div id="preview-image-badge" class="hidden text-[10px] px-3 py-px bg-zinc-100 text-zinc-500 rounded">Image loaded</div>
+                    </div>
+                    
+                    <!-- Image Preview -->
+                    <div id="image-preview-wrapper" class="mb-5 rounded-2xl overflow-hidden border border-zinc-100 bg-zinc-50 aspect-video flex items-center justify-center">
+                        <img id="image-preview" class="max-h-full hidden w-full object-cover" alt="Preview">
+                        <div id="image-preview-placeholder" class="text-center text-xs text-zinc-400 px-6">
+                            <i class="fa-regular fa-image text-3xl mb-2 block text-zinc-300"></i>
+                            <span>Image preview will appear here</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-1 overflow-auto preview-box border border-zinc-100 bg-zinc-50 p-5 rounded-2xl text-zinc-700" id="markdown-preview">
+                        <div class="text-xs text-zinc-400 italic">Start typing in the content box to see a live markdown preview...</div>
+                    </div>
+                </div>
+
+                <!-- EXISTING POSTS LIST -->
+                <div class="xl:col-span-12 mt-4">
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <div>
+                            <span class="font-semibold text-xl tracking-tight">Your published stories</span>
+                            <span class="ml-3 text-xs px-3 py-px bg-zinc-200 text-zinc-500 rounded-2xl"><%= posts.length %> total</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white border border-zinc-200 rounded-3xl overflow-hidden">
+                        <% if (posts.length === 0) { %>
+                            <div class="px-8 py-12 text-center text-zinc-400">
+                                No posts yet. Publish your first beautiful story above!
+                            </div>
+                        <% } else { %>
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b text-left text-xs text-zinc-400">
+                                        <th class="px-8 py-4 font-normal">Title</th>
+                                        <th class="px-4 py-4 font-normal w-28">Category</th>
+                                        <th class="px-4 py-4 font-normal w-24">Date</th>
+                                        <th class="px-4 py-4 font-normal w-20 text-center">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% posts.forEach(function(post) { %>
+                                        <tr class="post-row border-b last:border-none">
+                                            <td class="px-8 py-5 font-medium pr-6">
+                                                <%= post.title %>
+                                                <div class="text-[10px] text-zinc-400 font-normal line-clamp-1 mt-0.5"><%= post.excerpt %></div>
+                                            </td>
+                                            <td class="px-4 py-5">
+                                                <span class="inline-block text-xs px-3 py-px bg-zinc-100 text-zinc-600 rounded-xl"><%= post.category %></span>
+                                            </td>
+                                            <td class="px-4 py-5 text-xs text-zinc-400 tabular-nums"><%= post.date %></td>
+                                            <td class="px-4 py-5">
+                                                <div class="flex items-center justify-center gap-x-1">
+                                                    <button onclick="editPost(<%= post.id %>)" 
+                                                            class="px-3 py-1 text-xs hover:bg-amber-100 text-amber-600 rounded-xl flex items-center gap-x-1 transition">
+                                                        <i class="fa-solid fa-edit"></i>
+                                                        <span class="hidden xl:inline text-xs">Edit</span>
+                                                    </button>
+                                                    <button onclick="deletePost(<%= post.id %>, '<%= post.title.replace(/'/g, "\\'") %>')" 
+                                                            class="px-3 py-1 text-xs hover:bg-red-100 text-red-500 rounded-xl flex items-center gap-x-1 transition">
+                                                        <i class="fa-solid fa-trash"></i>
+                                                        <span class="hidden xl:inline text-xs">Delete</span>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <% } %>
+
+    <script>
+        function initTailwind() {
+            // Already using CDN
+        }
+
+        // Live image preview
+        function updateImagePreview() {
+            const url = document.getElementById('imageUrl').value.trim();
+            const img = document.getElementById('image-preview');
+            const placeholder = document.getElementById('image-preview-placeholder');
+            const badge = document.getElementById('preview-image-badge');
+            
+            if (url && url.startsWith('http')) {
+                img.src = url;
+                img.classList.remove('hidden');
+                img.classList.add('block');
+                placeholder.style.display = 'none';
+                badge.classList.remove('hidden');
+                badge.classList.add('inline-block');
+            } else {
+                img.classList.add('hidden');
+                placeholder.style.display = 'block';
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Live markdown preview
+        function updateMarkdownPreview() {
+            const textarea = document.getElementById('content');
+            const preview = document.getElementById('markdown-preview');
+            
+            if (!textarea.value.trim()) {
+                preview.innerHTML = `<div class="text-xs text-zinc-400 italic">Start typing in the content box to see a live markdown preview...</div>`;
+                return;
+            }
+            
+            try {
+                preview.innerHTML = marked.parse(textarea.value);
+            } catch (e) {
+                preview.innerHTML = textarea.value.replace(/\n/g, '<br>');
+            }
+        }
+
+        // Edit existing post
+        let editingPostId = null;
+
+        async function editPost(postId) {
+            try {
+                const res = await fetch('/api/posts');
+                const posts = await res.json();
+                const post = posts.find(p => p.id === postId);
+                if (!post) return alert("Post not found");
+                
+                document.getElementById('post-id').value = post.id;
+                document.getElementById('title').value = post.title;
+                document.getElementById('category').value = post.category;
+                document.getElementById('imageUrl').value = post.imageUrl || '';
+                document.getElementById('content').value = post.content;
+                
+                document.getElementById('form-title').innerHTML = 'Edit story';
+                document.getElementById('submit-text').innerHTML = 'Update Story';
+                document.getElementById('submit-btn').classList.remove('bg-rose-600', 'hover:bg-rose-700');
+                document.getElementById('submit-btn').classList.add('bg-amber-600', 'hover:bg-amber-700');
+                document.getElementById('cancel-edit-btn').classList.remove('hidden');
+                
+                editingPostId = postId;
+                
+                updateImagePreview();
+                updateMarkdownPreview();
+                
+                document.getElementById('post-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } catch (e) {
+                alert("Failed to load post for editing.");
+            }
+        }
+
+        function cancelEdit() {
+            resetForm();
+        }
+
+        function resetForm() {
+            const form = document.getElementById('post-form');
+            form.reset();
+            form.action = '/admin/posts';
+            document.getElementById('post-id').value = '';
+            
+            document.getElementById('form-title').innerHTML = 'Write a new story';
+            document.getElementById('submit-text').innerHTML = 'Publish New Story';
+            document.getElementById('submit-btn').classList.remove('bg-amber-600', 'hover:bg-amber-700');
+            document.getElementById('submit-btn').classList.add('bg-rose-600', 'hover:bg-rose-700');
+            document.getElementById('cancel-edit-btn').classList.add('hidden');
+            
+            editingPostId = null;
+            
+            document.getElementById('image-preview').classList.add('hidden');
+            document.getElementById('image-preview-placeholder').style.display = 'block';
+            document.getElementById('markdown-preview').innerHTML = `<div class="text-xs text-zinc-400 italic">Start typing in the content box to see a live markdown preview...</div>`;
+            document.getElementById('preview-image-badge').classList.add('hidden');
+        }
+
+        // Delete post
+        async function deletePost(postId, title) {
+            if (!confirm(`Delete "${title}"?\nThis cannot be undone.`)) return;
+            
+            try {
+                const res = await fetch(`/admin/posts/${postId}`, { method: 'DELETE' });
+                const data = await res.json();
+                
+                if (data.success) {
+                    const rows = document.querySelectorAll('tbody tr');
+                    rows.forEach(row => {
+                        if (row.innerHTML.includes(`editPost(${postId})`)) {
+                            row.style.transition = 'all .2s';
+                            row.style.opacity = '0';
+                            setTimeout(() => row.remove(), 180);
+                        }
+                    });
+                    
+                    showToast('Story deleted successfully', true);
+                } else {
+                    alert('Failed to delete post');
+                }
+            } catch (err) {
+                alert('Network error while deleting');
+            }
+        }
+
+        function showToast(message, isSuccess = true) {
+            const toast = document.createElement('div');
+            toast.className = `fixed bottom-6 right-6 px-6 py-3 rounded-2xl shadow-xl text-sm flex items-center gap-x-3 z-[300] ${isSuccess ? 'bg-emerald-600 text-white' : 'bg-zinc-800 text-white'}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${isSuccess ? 'fa-check-circle' : 'fa-info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.transition = 'all 0.2s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 180);
+            }, 2600);
+        }
+
+        function setupForm() {
+            const form = document.getElementById('post-form');
+            
+            form.addEventListener('submit', function(e) {
+                if (editingPostId) {
+                    form.action = `/admin/posts/${editingPostId}`;
+                }
+            });
+            
+            const contentArea = document.getElementById('content');
+            contentArea.addEventListener('keydown', function(ev) {
+                if ((ev.ctrlKey || ev.metaKey) && ev.key === 'Enter') {
+                    form.requestSubmit();
+                }
+            });
+        }
+
+        function initializeAdmin() {
+            initTailwind();
+            setupForm();
+            
+            const titleField = document.getElementById('title');
+            if (titleField && !document.getElementById('post-id').value) {
+                setTimeout(() => titleField.focus(), 800);
+            }
+            
+            console.log('%c[Admin] Press Ctrl/Cmd + Enter in content box to publish quickly.', 'color:#64748b');
+        }
+        
+        window.onload = initializeAdmin;
+    </script>
+</body>
+</html>
