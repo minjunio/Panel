@@ -3,15 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minjun Seoyeon • Korea Stories & Adventures</title>
-    <meta name="description" content="Personal stories from Korea by Minjun Seoyeon. Explore cities, read travel guides, and connect with fellow Korea lovers.">
+    <title>Minjun Seoyeon • Korea Stories from Busan</title>
+    <meta name="description" content="Personal stories from Korea by Minjun Seoyeon, based in Busan. Explore cities, latest Busan news, and authentic travel experiences.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
         
-        body { font-family: 'Inter', system-ui, sans-serif; }
+        body {
+            font-family: 'Inter', system_ui, -apple-system, sans-serif;
+        }
         
         .heading-serif {
             font-family: 'Playfair Display', Georgia, serif;
@@ -20,19 +22,10 @@
         }
 
         .section-header {
-            font-size: 2rem;
+            font-size: 2.1rem;
             line-height: 1.1;
             font-weight: 700;
-            letter-spacing: -0.025em;
-        }
-
-        .blog-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .blog-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            letter-spacing: -0.03em;
         }
 
         .nav-scrolled {
@@ -42,38 +35,37 @@
         }
 
         .city-card {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
         }
         
         .city-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
         }
 
         .spot-card {
             transition: all 0.2s ease;
         }
 
-        .cherry-blossom {
-            position: absolute;
-            width: 13px;
-            height: 13px;
-            background: linear-gradient(135deg, #fda4af, #f472b6);
-            border-radius: 60% 40% 60% 40%;
-            box-shadow: 0 2px 4px rgba(251, 113, 133, 0.4);
-            animation: fall linear forwards;
-            opacity: 0.65;
-            pointer-events: none;
-            z-index: 5;
+        .news-card {
+            transition: all 0.2s ease;
         }
 
-        @keyframes fall {
-            0% { transform: translateY(-15vh) rotate(0deg); opacity: 0.7; }
-            100% { transform: translateY(125vh) rotate(720deg); opacity: 0; }
+        .news-card:hover {
+            transform: translateY(-2px);
         }
 
-        .trustpilot {
-            background: linear-gradient(white, #f8fafc);
+        .modal {
+            animation: modalPop 0.2s ease-out forwards;
+        }
+
+        @keyframes modalPop {
+            from { opacity: 0; transform: scale(0.96) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .clean-shadow {
+            box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.08);
         }
     </style>
 </head>
@@ -82,12 +74,11 @@
     <!-- NAV -->
     <nav id="navbar" class="bg-white border-b border-zinc-100 sticky top-0 z-50 transition-all">
         <div class="max-w-screen-2xl mx-auto px-8">
-            <div class="flex items-center justify-between h-16">
-                
-                <!-- Left side: Logo + Admin Login -->
-                <div class="flex items-center gap-x-3">
-                    <div class="flex items-center gap-x-2.5">
-                        <div class="w-9 h-9 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner">
+            <div class="flex items-center justify-between h-20">
+                <!-- Left: Logo + Admin -->
+                <div class="flex items-center gap-x-4">
+                    <div class="flex items-center gap-x-3">
+                        <div class="w-9 h-9 bg-rose-600 rounded-2xl flex items-center justify-center">
                             <i class="fa-solid fa-plane text-white text-xl"></i>
                         </div>
                         <div>
@@ -96,185 +87,198 @@
                         </div>
                     </div>
                     
+                    <!-- Top left Admin Login -->
                     <a href="/admin" 
-                       class="ml-3 flex items-center gap-x-2 px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-3xl transition-colors border border-zinc-200">
+                       class="flex items-center gap-x-2 px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-3xl transition-colors border border-zinc-200">
                         <i class="fa-solid fa-lock text-xs"></i>
-                        <span class="hidden sm:inline">Admin Login</span>
+                        <span class="hidden sm:inline">Admin</span>
                     </a>
                 </div>
 
                 <!-- Center Nav -->
-                <div class="hidden md:flex items-center gap-x-8 text-sm">
-                    <a href="#cities" class="nav-link font-medium text-zinc-600 hover:text-zinc-900">Explore Cities</a>
-                    <a href="#news" class="nav-link font-medium text-zinc-600 hover:text-zinc-900">Busan News</a>
-                    <a href="#blog" class="nav-link font-medium text-zinc-600 hover:text-zinc-900">Stories</a>
+                <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
+                    <a href="#news" class="text-zinc-600 hover:text-zinc-900 transition">Busan News</a>
+                    <a href="#cities" class="text-zinc-600 hover:text-zinc-900 transition">Explore Cities</a>
+                    <a href="#stories" class="text-zinc-600 hover:text-zinc-900 transition">Stories</a>
                 </div>
 
-                <!-- Right side: Trustpilot + Live Stats -->
-                <div class="flex items-center gap-x-3">
-                    
+                <!-- Right: Trustpilot + Connect -->
+                <div class="flex items-center gap-x-4">
                     <!-- Trustpilot Badge -->
-                    <div class="hidden md:flex items-center gap-x-2 px-4 py-1.5 bg-white border border-zinc-200 rounded-3xl text-sm shadow-sm">
-                        <div class="flex text-amber-400">
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star"></i>
-                            <i class="fa-solid fa-star-half-stroke"></i>
+                    <div class="hidden lg:flex items-center gap-x-2.5 bg-white border border-zinc-200 px-4 py-1.5 rounded-3xl text-sm clean-shadow">
+                        <div class="flex items-center">
+                            <div class="flex text-yellow-400 text-base">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
                         </div>
-                        <div class="text-sm">
-                            <span class="font-semibold text-zinc-800">4.6</span>
-                            <span class="text-zinc-500 text-xs">/ 5 • 188 reviews</span>
+                        <div class="leading-none">
+                            <div class="font-semibold text-zinc-800">4.6</div>
+                            <div class="text-[10px] text-zinc-500 -mt-0.5">188 reviews</div>
                         </div>
                     </div>
 
-                    <!-- Live Weekly Visitors -->
-                    <div class="hidden lg:flex items-center gap-x-2 px-4 py-1.5 bg-white border border-zinc-200 rounded-3xl text-xs">
-                        <div class="flex items-center gap-x-1.5">
-                            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-                            <span class="font-mono text-emerald-600 font-semibold" id="live-weekly">5,284</span>
-                            <span class="text-zinc-500">this week</span>
-                        </div>
-                    </div>
+                    <a href="#connect" 
+                       class="px-5 py-2 text-sm font-medium bg-zinc-900 hover:bg-black text-white rounded-3xl transition flex items-center gap-x-2">
+                        <i class="fa-brands fa-instagram"></i>
+                        <span class="hidden sm:inline">Connect</span>
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
 
-    <!-- HERO -->
-    <header class="relative overflow-hidden bg-white border-b border-zinc-100">
-        <div id="petals-container" class="absolute inset-0 overflow-hidden pointer-events-none z-10"></div>
-        
+    <!-- HERO / BANNER -->
+    <header class="relative bg-white border-b border-zinc-100">
         <div class="max-w-screen-2xl mx-auto px-8 pt-16 pb-14">
-            <div class="max-w-2xl">
-                <div class="inline-flex items-center gap-x-2 px-4 py-1 rounded-3xl bg-rose-50 text-rose-600 text-sm font-medium mb-6">
-                    <i class="fa-solid fa-globe"></i>
-                    <span>Based in Seoul • Writing from the heart</span>
+            <div class="max-w-3xl">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-x-2 px-4 py-1 rounded-3xl bg-emerald-50 text-emerald-700 text-sm font-medium mb-6">
+                    <i class="fa-solid fa-map-marker-alt"></i>
+                    <span>Based in Busan, South Korea</span>
                 </div>
 
-                <h1 class="heading-serif text-6xl tracking-tighter leading-none mb-6">
+                <h1 class="heading-serif text-6xl md:text-7xl tracking-tighter leading-none mb-6">
                     Stories from<br>
-                    <span class="text-rose-600">Korea</span> &amp; beyond.
+                    <span class="text-rose-600">Korea</span>, told with heart.
                 </h1>
                 
                 <p class="max-w-lg text-xl text-zinc-600 leading-relaxed mb-8">
-                    Hi, I'm <span class="font-semibold text-zinc-800">Minjun Seoyeon</span>. I share honest stories about Korea — 
-                    its neon Seoul nights, serene mountain temples, delicious street food, and the wonderful people I meet.
+                    I'm Minjun Seoyeon. I share honest stories about life in Korea — from Busan’s beaches to hidden temples, 
+                    incredible food, and the people I meet along the way.
                 </p>
 
-                <div class="flex items-center gap-x-4">
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
                     <a href="#cities" 
-                       class="inline-flex items-center justify-center px-8 h-14 rounded-3xl bg-zinc-900 hover:bg-black text-white font-semibold text-base transition-all active:scale-[0.985]">
-                        Explore Cities
+                       class="inline-flex items-center justify-center px-8 h-14 rounded-3xl bg-zinc-900 hover:bg-black text-white font-semibold text-base transition">
+                        Explore Korean Cities
                     </a>
-                    <a href="#blog" 
-                       class="inline-flex items-center justify-center px-7 h-14 rounded-3xl border border-zinc-300 hover:bg-white font-semibold text-base transition-all">
-                        Read Stories
+                    <a href="#news" 
+                       class="inline-flex items-center justify-center px-7 h-14 rounded-3xl border border-zinc-300 hover:bg-white font-semibold text-base transition">
+                        Latest in Busan
                     </a>
                 </div>
             </div>
         </div>
 
-        <!-- Live Stats Bar -->
-        <div class="border-t border-zinc-100 bg-white">
-            <div class="max-w-screen-2xl mx-auto px-8 py-5 flex flex-wrap items-center justify-between gap-y-3 text-sm">
-                <div class="flex items-center gap-x-8">
-                    <div class="flex items-baseline gap-x-3">
-                        <div>
-                            <span class="font-mono text-3xl font-semibold text-emerald-600" id="weekly-count">5,284</span>
-                        </div>
-                        <div class="leading-tight">
-                            <div class="text-xs tracking-widest text-emerald-600/70 font-medium">WEEKLY VISITORS</div>
-                            <div class="text-[10px] text-zinc-500">LIVE • UPDATING</div>
-                        </div>
+        <!-- Trustpilot floating on right -->
+        <div class="hidden xl:block absolute top-8 right-8">
+            <div class="bg-white border border-zinc-200 px-5 py-3 rounded-3xl clean-shadow flex items-center gap-x-3">
+                <div>
+                    <div class="flex text-yellow-400 text-lg">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
                     </div>
-                    
-                    <div class="flex items-baseline gap-x-3 pl-8 border-l border-zinc-200">
-                        <div>
-                            <span class="font-mono text-3xl font-semibold text-zinc-700" id="lifetime-count">1,342,891</span>
-                        </div>
-                        <div class="leading-tight">
-                            <div class="text-xs tracking-widest text-zinc-500 font-medium">LIFETIME VISITS</div>
-                        </div>
-                    </div>
+                    <div class="text-xs text-zinc-500 mt-0.5">Trustpilot • 188 reviews</div>
                 </div>
-                
-                <div class="text-xs px-4 py-2 bg-zinc-100 text-zinc-500 rounded-3xl flex items-center gap-x-2">
-                    <i class="fa-solid fa-globe text-emerald-500"></i>
-                    <span>Readers from <span class="font-semibold text-zinc-600">87 countries</span></span>
+                <div class="text-right">
+                    <div class="font-semibold text-2xl leading-none">4.6</div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- EXPLORE KOREA CITIES -->
-    <section id="cities" class="max-w-screen-2xl mx-auto px-8 pt-14 pb-12">
-        <div class="flex items-end justify-between mb-8">
-            <div>
-                <div class="text-xs tracking-[3px] font-semibold text-rose-600 mb-1">DISCOVER KOREA</div>
-                <h2 class="section-header tracking-tighter">Explore Korea's Cities</h2>
+    <!-- LIVE STATS -->
+    <div class="max-w-screen-2xl mx-auto px-8 pt-8 pb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white border border-zinc-100 rounded-3xl p-6 flex items-center gap-x-5 clean-shadow">
+                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-users text-2xl"></i>
+                </div>
+                <div>
+                    <div class="font-mono text-4xl font-semibold text-emerald-600" id="weekly-count">5,284</div>
+                    <div class="text-sm text-zinc-500 -mt-1">Weekly visitors • <span class="text-emerald-600 font-medium">Live</span></div>
+                </div>
             </div>
-            <p class="text-sm text-zinc-500 max-w-xs text-right hidden md:block">Click any city to see top spots with ratings, prices &amp; Google Maps previews</p>
+            
+            <div class="bg-white border border-zinc-100 rounded-3xl p-6 flex items-center gap-x-5 clean-shadow">
+                <div class="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-globe text-2xl"></i>
+                </div>
+                <div>
+                    <div class="font-mono text-4xl font-semibold text-zinc-700" id="lifetime-count">1,342,891</div>
+                    <div class="text-sm text-zinc-500 -mt-1">Lifetime visits across 87 countries</div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-zinc-100 rounded-3xl p-6 flex items-center gap-x-5 clean-shadow">
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center">
+                    <i class="fa-solid fa-heart text-2xl"></i>
+                </div>
+                <div>
+                    <div class="text-4xl font-semibold text-rose-600">4.6<span class="text-xl align-super">/5</span></div>
+                    <div class="text-sm text-zinc-500 -mt-1">Average reader rating</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LATEST NEWS IN BUSAN -->
+    <section id="news" class="max-w-screen-2xl mx-auto px-8 pt-8 pb-12">
+        <div class="flex items-end justify-between mb-6">
+            <div>
+                <div class="uppercase tracking-[2.5px] text-xs font-semibold text-rose-600 mb-1">BUSAN UPDATES</div>
+                <h2 class="section-header tracking-tighter">Latest News in Busan</h2>
+            </div>
+            <button onclick="refreshBusanNews()" 
+                    class="flex items-center gap-x-2 px-5 py-2 text-sm font-medium border border-zinc-300 hover:bg-white rounded-3xl transition">
+                <i class="fa-solid fa-sync-alt"></i>
+                <span>Refresh News</span>
+            </button>
         </div>
 
-        <!-- City Cards -->
-        <div id="cities-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- Populated by JavaScript -->
         </div>
     </section>
 
-    <!-- LATEST NEWS FROM BUSAN -->
-    <section id="news" class="max-w-screen-2xl mx-auto px-8 py-12 bg-white border-y border-zinc-100">
-        <div class="max-w-4xl mx-auto">
-            <div class="flex items-center justify-between mb-6">
-                <div>
-                    <div class="text-xs tracking-[3px] font-semibold text-rose-600 mb-1">STAY UPDATED</div>
-                    <h2 class="section-header tracking-tighter">Latest News from Busan</h2>
-                </div>
-                <button onclick="refreshBusanNews()" 
-                        class="flex items-center gap-x-2 px-5 h-10 text-sm rounded-3xl border border-zinc-300 hover:bg-zinc-50 transition">
-                    <i class="fa-solid fa-sync"></i>
-                    <span>Refresh</span>
-                </button>
-            </div>
+    <!-- EXPLORE KOREA CITIES -->
+    <section id="cities" class="max-w-screen-2xl mx-auto px-8 pt-6 pb-16 bg-white border-t border-b border-zinc-100">
+        <div class="mb-8">
+            <div class="uppercase tracking-[2.5px] text-xs font-semibold text-rose-600 mb-1">DISCOVER KOREA</div>
+            <h2 class="section-header tracking-tighter">Explore Major Cities</h2>
+            <p class="text-zinc-600 mt-2 max-w-md">Click any city to see top spots with photos, ratings, and Google Maps previews.</p>
+        </div>
 
-            <div id="busan-news-list" class="space-y-4">
-                <!-- Populated by JavaScript -->
-            </div>
+        <div id="cities-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <!-- Populated dynamically via JS -->
         </div>
     </section>
 
     <!-- BLOG STORIES -->
-    <section id="blog" class="max-w-screen-2xl mx-auto px-8 pt-14 pb-16">
+    <section id="stories" class="max-w-screen-2xl mx-auto px-8 pt-8 pb-16">
         <div class="flex items-end justify-between mb-8">
             <div>
                 <div class="text-xs tracking-[3px] font-semibold text-rose-600 mb-1">FROM THE JOURNAL</div>
                 <h2 class="section-header tracking-tighter">Latest Stories</h2>
             </div>
-            <a href="#blog" class="text-sm text-rose-600 hover:text-rose-700 font-medium flex items-center gap-x-1">
-                View all <i class="fa-solid fa-arrow-right text-xs"></i>
-            </a>
         </div>
 
-        <div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="blog-grid">
             <% posts.forEach(function(post) { %>
-                <div class="blog-card bg-white border border-zinc-100 rounded-3xl overflow-hidden group cursor-pointer" 
-                     onclick="showPostModal(<%= post.id %>)">
-                    <div class="relative h-52 overflow-hidden bg-zinc-100">
-                        <img src="<%= post.imageUrl %>" class="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700" alt="<%= post.title %>">
+                <div onclick="showPostModal(<%= post.id %>)" 
+                     class="group bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer clean-shadow hover:shadow-xl transition">
+                    <div class="relative h-52 overflow-hidden">
+                        <img src="<%= post.imageUrl %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="<%= post.title %>">
                         <div class="absolute top-4 left-4">
                             <span class="px-3.5 py-1 text-xs font-medium tracking-wider bg-white/90 backdrop-blur rounded-2xl shadow-sm"><%= post.category %></span>
                         </div>
                     </div>
-                    <div class="p-5">
-                        <div class="flex items-center justify-between text-xs text-zinc-400 mb-2">
+                    <div class="p-6">
+                        <div class="flex justify-between text-xs text-zinc-400 mb-3">
                             <span><%= post.date %></span>
-                            <span class="font-mono"><%= Math.ceil(post.content.length / 180) %> min</span>
+                            <span><%= Math.ceil(post.content.length / 180) %> min read</span>
                         </div>
-                        <h3 class="font-semibold leading-tight tracking-tight text-[16px] mb-2 line-clamp-2 group-hover:text-rose-600 transition-colors">
+                        <h3 class="font-semibold text-[17px] leading-tight tracking-tight mb-3 group-hover:text-rose-600 transition line-clamp-2">
                             <%= post.title %>
                         </h3>
-                        <p class="text-sm text-zinc-600 line-clamp-2"><%= post.excerpt %></p>
+                        <p class="text-sm text-zinc-600 line-clamp-3"><%= post.excerpt %></p>
                     </div>
                 </div>
             <% }) %>
@@ -282,65 +286,80 @@
     </section>
 
     <!-- CONNECT -->
-    <section class="max-w-screen-2xl mx-auto px-8 pb-12">
-        <div class="max-w-4xl mx-auto bg-zinc-900 text-white rounded-3xl px-10 py-10 flex flex-col md:flex-row items-center gap-8">
-            <div class="flex-1">
-                <div class="uppercase text-xs tracking-[2px] text-rose-400 mb-3">LET'S CONNECT</div>
-                <h3 class="text-3xl leading-none tracking-tighter font-semibold mb-2">Want to meet new people<br>or just say hi?</h3>
-                <p class="text-zinc-400">I'm always happy to connect with fellow travelers and Korea lovers.</p>
+    <section id="connect" class="max-w-screen-2xl mx-auto px-8 pb-16">
+        <div class="max-w-4xl mx-auto bg-zinc-900 text-white rounded-3xl px-10 py-12 text-center">
+            <div class="max-w-md mx-auto">
+                <h3 class="text-4xl tracking-tighter font-semibold mb-4">Want to connect?</h3>
+                <p class="text-zinc-400 mb-8">I'm always happy to chat about Korea, travel tips, or just say hi.</p>
+                
+                <a href="https://instagram.com/minjunio.kr" target="_blank"
+                   class="inline-flex items-center justify-center gap-x-3 bg-white text-zinc-900 font-semibold px-8 h-14 rounded-3xl text-lg hover:bg-zinc-100 transition">
+                    <i class="fa-brands fa-instagram text-2xl text-rose-600"></i>
+                    <span>@minjunio.kr on Instagram</span>
+                </a>
             </div>
-            <a href="https://instagram.com/minjunio.kr" target="_blank" 
-               class="inline-flex items-center gap-x-3 bg-white hover:bg-zinc-100 px-8 h-14 text-zinc-900 font-semibold rounded-3xl text-lg transition">
-                <i class="fa-brands fa-instagram text-rose-600 text-3xl"></i>
-                <div class="leading-none">
-                    <div class="font-bold">@minjunio.kr</div>
-                </div>
-            </a>
         </div>
     </section>
 
+    <!-- FOOTER -->
+    <footer class="border-t border-zinc-100 bg-white">
+        <div class="max-w-screen-2xl mx-auto px-8 py-8 text-xs text-zinc-500 flex flex-col md:flex-row justify-between items-center gap-y-3">
+            <div>© <%= new Date().getFullYear() %> Minjun Seoyeon • Writing from Busan with love</div>
+            <div class="flex gap-x-5">
+                <a href="https://instagram.com/minjunio.kr" target="_blank" class="hover:text-zinc-700">Instagram</a>
+                <span class="text-zinc-300">•</span>
+                <span>Thank you for reading</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- NEWS MODAL -->
+    <div id="news-modal" onclick="if (event.target.id === 'news-modal') hideNewsModal()" 
+         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="modal bg-white w-full max-w-lg rounded-3xl overflow-hidden clean-shadow">
+            <div class="px-7 pt-7 pb-5">
+                <div class="flex justify-between items-start mb-4">
+                    <div id="news-modal-category" class="px-4 py-1 text-xs font-medium rounded-2xl bg-zinc-100 text-zinc-600"></div>
+                    <button onclick="hideNewsModal()" class="text-3xl leading-none text-zinc-400 hover:text-zinc-600">&times;</button>
+                </div>
+                
+                <h3 id="news-modal-title" class="text-2xl font-semibold tracking-tight mb-3"></h3>
+                <div id="news-modal-date" class="text-xs text-zinc-400 mb-5"></div>
+                
+                <div id="news-modal-summary" class="text-[15px] leading-relaxed text-zinc-700"></div>
+            </div>
+            
+            <div class="border-t px-7 py-4 bg-zinc-50 flex justify-end">
+                <button onclick="hideNewsModal()" 
+                        class="px-6 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-800">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CITY SPOTS MODAL -->
     <div id="city-modal" onclick="if (event.target.id === 'city-modal') hideCityModal()" 
-         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
         <div onclick="event.stopImmediatePropagation()" 
-             class="bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+             class="modal bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-hidden clean-shadow flex flex-col">
             
-            <div class="px-8 pt-6 pb-4 flex justify-between items-center border-b">
+            <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b">
                 <div>
-                    <h3 id="modal-city-name" class="text-3xl font-semibold tracking-tight"></h3>
-                    <p id="modal-city-desc" class="text-sm text-zinc-500"></p>
+                    <h3 id="city-modal-name" class="text-3xl font-semibold tracking-tight"></h3>
+                    <p id="city-modal-desc" class="text-zinc-500 mt-1"></p>
                 </div>
                 <button onclick="hideCityModal()" class="text-3xl text-zinc-400 hover:text-zinc-600">&times;</button>
             </div>
 
-            <div class="p-8 overflow-y-auto" id="modal-spots-container">
+            <div class="p-8 overflow-y-auto flex-1" id="city-modal-spots">
                 <!-- Spots populated by JS -->
             </div>
         </div>
     </div>
 
-    <!-- POST MODAL (kept from before) -->
-    <div id="post-modal" onclick="if (event.target.id === 'post-modal') hidePostModal()" 
-         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-        <div onclick="event.stopImmediatePropagation()" 
-             class="post-modal bg-white w-full max-w-3xl max-h-[92vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
-            <div class="px-8 pt-8 pb-4 flex justify-between items-start border-b">
-                <div id="modal-category-badge" class="px-4 py-1 text-xs font-medium tracking-wider bg-zinc-100 text-zinc-600 rounded-2xl self-start"></div>
-                <button onclick="hidePostModal()" class="text-zinc-400 hover:text-zinc-600 text-3xl leading-none">&times;</button>
-            </div>
-            <div class="overflow-y-auto flex-1 px-8 py-8">
-                <div id="modal-image-container" class="mb-8 rounded-2xl overflow-hidden"></div>
-                <div id="modal-date" class="text-xs text-zinc-400 mb-1 tracking-wider"></div>
-                <h1 id="modal-title" class="heading-serif text-4xl tracking-tighter leading-none mb-6"></h1>
-                <div id="modal-content" class="blog-content prose prose-zinc max-w-none text-[15.2px] leading-relaxed text-zinc-700"></div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // Tailwind + Navbar
         function initializeTailwind() {}
-        
+
         function initNavbar() {
             const navbar = document.getElementById('navbar');
             window.addEventListener('scroll', () => {
@@ -348,91 +367,172 @@
             });
         }
 
-        // Live Stats
-        function initLiveStats() {
-            setTimeout(() => {
-                const weekly = document.getElementById('weekly-count');
-                const lifetime = document.getElementById('lifetime-count');
-                if (weekly) weekly.textContent = '5,284';
-                if (lifetime) lifetime.textContent = '1,342,891';
-            }, 600);
-
-            setInterval(() => {
-                const el = document.getElementById('weekly-count');
-                const live = document.getElementById('live-weekly');
-                if (el && live) {
-                    let num = parseInt(el.textContent.replace(',', '')) + Math.floor(Math.random() * 3) + 1;
-                    el.textContent = num.toLocaleString();
-                    live.textContent = num.toLocaleString();
+        function animateCounter(id, target) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            let current = 0;
+            const increment = target / 60;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    el.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.floor(current).toLocaleString();
                 }
-            }, 28000);
+            }, 16);
         }
 
-        // Load Cities
+        function initLiveStats() {
+            setTimeout(() => {
+                animateCounter('weekly-count', 5284);
+                animateCounter('lifetime-count', 1342891);
+            }, 800);
+
+            setInterval(() => {
+                const weekly = document.getElementById('weekly-count');
+                if (weekly) {
+                    let num = parseInt(weekly.textContent.replace(',', '')) + Math.floor(Math.random() * 3) + 1;
+                    weekly.textContent = num.toLocaleString();
+                }
+            }, 25000);
+        }
+
+        // BUSAN NEWS
+        let currentNews = [];
+
+        async function loadBusanNews() {
+            try {
+                const res = await fetch('/api/busan-news');
+                currentNews = await res.json();
+                renderNews();
+            } catch (e) {}
+        }
+
+        function renderNews() {
+            const container = document.getElementById('news-grid');
+            container.innerHTML = '';
+
+            currentNews.forEach(news => {
+                const card = document.createElement('div');
+                card.className = `news-card bg-white border border-zinc-100 rounded-3xl p-6 cursor-pointer clean-shadow`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-3">
+                        <span class="px-3 py-1 text-xs font-medium rounded-2xl bg-emerald-100 text-emerald-700">${news.category}</span>
+                        <span class="text-xs text-zinc-400">${news.date}</span>
+                    </div>
+                    <h4 class="font-semibold text-lg leading-tight tracking-tight mb-3 line-clamp-2">${news.title}</h4>
+                    <p class="text-sm text-zinc-600 line-clamp-3">${news.summary}</p>
+                    <div class="mt-4 text-xs text-rose-600 font-medium flex items-center gap-x-1">
+                        Read full story <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </div>
+                `;
+                card.onclick = () => showNewsModal(news);
+                container.appendChild(card);
+            });
+        }
+
+        function showNewsModal(news) {
+            document.getElementById('news-modal-title').textContent = news.title;
+            document.getElementById('news-modal-date').textContent = `${news.date} • ${news.category}`;
+            document.getElementById('news-modal-summary').textContent = news.summary;
+            document.getElementById('news-modal-category').textContent = news.category;
+            document.getElementById('news-modal').classList.remove('hidden');
+            document.getElementById('news-modal').classList.add('flex');
+        }
+
+        function hideNewsModal() {
+            const modal = document.getElementById('news-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        async function refreshBusanNews() {
+            try {
+                const res = await fetch('/api/busan-news/refresh', { method: 'POST' });
+                const data = await res.json();
+                currentNews = data.news;
+                renderNews();
+                
+                const toast = document.createElement('div');
+                toast.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-2xl text-sm flex items-center gap-x-2 z-[300]';
+                toast.innerHTML = `<i class="fa-solid fa-check"></i> <span>News updated with latest stories</span>`;
+                document.body.appendChild(toast);
+                setTimeout(() => toast.remove(), 2200);
+            } catch (e) {
+                alert('Could not refresh news right now.');
+            }
+        }
+
+        // KOREA CITIES
         async function loadCities() {
             try {
                 const res = await fetch('/api/cities');
                 const cities = await res.json();
-                const grid = document.getElementById('cities-grid');
-                grid.innerHTML = '';
-
-                cities.forEach(city => {
-                    const card = document.createElement('div');
-                    card.className = `city-card bg-white border border-zinc-200 rounded-3xl p-5 cursor-pointer hover:border-rose-300`;
-                    card.innerHTML = `
-                        <div class="font-semibold text-lg tracking-tight mb-1">${city.name}</div>
-                        <div class="text-xs text-zinc-500 line-clamp-2 mb-3">${city.description}</div>
-                        <div class="text-xs text-rose-600 font-medium flex items-center gap-x-1">
-                            ${city.spots.length} top spots <i class="fa-solid fa-arrow-right text-xs"></i>
-                        </div>
-                    `;
-                    card.onclick = () => showCityModal(city);
-                    grid.appendChild(card);
-                });
-            } catch (e) {
-                console.error("Failed to load cities");
-            }
+                renderCities(cities);
+            } catch (e) {}
         }
 
-        // Show City Modal with Spots
-        function showCityModal(city) {
-            document.getElementById('modal-city-name').textContent = city.name;
-            document.getElementById('modal-city-desc').textContent = city.description;
-
-            const container = document.getElementById('modal-spots-container');
+        function renderCities(cities) {
+            const container = document.getElementById('cities-grid');
             container.innerHTML = '';
+
+            cities.forEach(city => {
+                const card = document.createElement('div');
+                card.className = `city-card bg-white border border-zinc-200 rounded-3xl p-5 cursor-pointer clean-shadow`;
+                card.innerHTML = `
+                    <div class="font-semibold text-xl tracking-tight mb-1">${city.name}</div>
+                    <div class="text-xs text-zinc-500 line-clamp-2 mb-4">${city.description}</div>
+                    <div class="text-xs text-rose-600 font-medium flex items-center gap-x-1">
+                        View top spots <i class="fa-solid fa-arrow-right"></i>
+                    </div>
+                `;
+                card.onclick = () => showCityModal(city);
+                container.appendChild(card);
+            });
+        }
+
+        function showCityModal(city) {
+            document.getElementById('city-modal-name').textContent = city.name;
+            document.getElementById('city-modal-desc').textContent = city.description;
+
+            const spotsContainer = document.getElementById('city-modal-spots');
+            spotsContainer.innerHTML = '';
 
             city.spots.forEach(spot => {
                 const div = document.createElement('div');
-                div.className = `spot-card border border-zinc-200 rounded-3xl p-5 mb-4 flex gap-5`;
+                div.className = `spot-card mb-6 border border-zinc-100 rounded-3xl overflow-hidden flex flex-col md:flex-row`;
                 div.innerHTML = `
-                    <img src="\( {spot.image}" class="w-36 h-28 object-cover rounded-2xl flex-shrink-0" alt=" \){spot.name}">
-                    <div class="flex-1">
+                    <div class="md:w-2/5">
+                        <img src="\( {spot.image}" class="w-full h-56 md:h-full object-cover" alt=" \){spot.name}">
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
                         <div class="flex justify-between items-start">
                             <div>
-                                <div class="font-semibold text-xl tracking-tight">${spot.name}</div>
-                                <div class="flex items-center gap-x-1 mt-1">
-                                    <div class="flex text-amber-400 text-sm">
+                                <h4 class="font-semibold text-xl tracking-tight">${spot.name}</h4>
+                                <div class="flex items-center gap-x-2 mt-1">
+                                    <div class="flex text-yellow-400">
                                         \( {'★'.repeat(Math.floor(spot.rating))} \){'☆'.repeat(5 - Math.floor(spot.rating))}
                                     </div>
-                                    <span class="text-sm font-medium text-zinc-600">${spot.rating}</span>
+                                    <span class="font-medium text-sm">${spot.rating}</span>
                                 </div>
                             </div>
                             <div class="text-right">
                                 <div class="font-semibold text-lg">${spot.price}</div>
+                                <div class="text-xs text-zinc-500">per person</div>
                             </div>
                         </div>
-                        <p class="text-sm text-zinc-600 mt-3 mb-4">${spot.description}</p>
-                        
-                        <a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(spot.mapQuery)}" 
-                           target="_blank"
-                           class="inline-flex items-center gap-x-2 text-sm px-5 py-2 bg-zinc-900 hover:bg-black text-white rounded-2xl transition">
+
+                        <p class="text-sm text-zinc-600 mt-4 flex-1">${spot.description}</p>
+
+                        <button onclick="openGoogleMaps('${spot.mapQuery}'); event.stopImmediatePropagation();"
+                                class="mt-5 w-full md:w-auto px-5 py-2.5 text-sm font-semibold border border-zinc-300 hover:bg-zinc-50 rounded-2xl flex items-center justify-center gap-x-2">
                             <i class="fa-solid fa-map-marker-alt"></i>
                             <span>View on Google Maps</span>
-                        </a>
+                        </button>
                     </div>
                 `;
-                container.appendChild(div);
+                spotsContainer.appendChild(div);
             });
 
             document.getElementById('city-modal').classList.remove('hidden');
@@ -445,114 +545,50 @@
             modal.classList.add('hidden');
         }
 
-        // Busan News
-        async function loadBusanNews() {
-            try {
-                const res = await fetch('/api/busan-news');
-                const news = await res.json();
-                renderBusanNews(news);
-            } catch (e) {
-                console.error("Failed to load Busan news");
-            }
+        function openGoogleMaps(query) {
+            const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+            window.open(url, '_blank');
         }
 
-        function renderBusanNews(news) {
-            const container = document.getElementById('busan-news-list');
-            container.innerHTML = '';
-
-            news.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `border border-zinc-200 rounded-3xl p-5 flex gap-4`;
-                div.innerHTML = `
-                    <div class="flex-1">
-                        <div class="flex items-center gap-x-3 mb-1">
-                            <span class="text-xs px-3 py-px bg-zinc-100 text-zinc-600 rounded-xl">${item.category}</span>
-                            <span class="text-xs text-zinc-400">${item.date}</span>
-                        </div>
-                        <div class="font-semibold tracking-tight">${item.title}</div>
-                        <p class="text-sm text-zinc-600 mt-1">${item.summary}</p>
-                    </div>
-                `;
-                container.appendChild(div);
-            });
-        }
-
-        async function refreshBusanNews() {
-            try {
-                const res = await fetch('/api/busan-news/refresh', { method: 'POST' });
-                const data = await res.json();
-                renderBusanNews(data.news);
-            } catch (e) {
-                alert("Could not refresh news right now.");
-            }
-        }
-
-        // Cherry Blossom Animation
-        function createCherryPetals(count = 12) {
-            const container = document.getElementById('petals-container');
-            if (!container) return;
-            container.innerHTML = '';
-
-            for (let i = 0; i < count; i++) {
-                const petal = document.createElement('div');
-                petal.className = 'cherry-blossom';
-                const left = Math.random() * 100;
-                petal.style.left = `${left}vw`;
-                const size = 10 + Math.random() * 6;
-                petal.style.width = `${size}px`;
-                petal.style.height = `${size}px`;
-                const duration = 10 + Math.random() * 10;
-                petal.style.animationDuration = `${duration}s`;
-                petal.style.animationDelay = `-${Math.random() * 15}s`;
-                container.appendChild(petal);
-
-                petal.addEventListener('animationend', () => {
-                    if (petal.parentNode) petal.parentNode.removeChild(petal);
-                    setTimeout(() => {
-                        if (document.getElementById('petals-container')) createCherryPetals(1);
-                    }, 600);
-                }, { once: true });
-            }
-        }
-
-        // Post Modal (simplified)
         function showPostModal(postId) {
             fetch('/api/posts')
                 .then(res => res.json())
-                .then(allPosts => {
-                    const post = allPosts.find(p => p.id === postId);
+                .then(posts => {
+                    const post = posts.find(p => p.id === postId);
                     if (!post) return;
 
-                    document.getElementById('modal-category-badge').innerHTML = 
-                        `<span class="px-4 py-1 text-xs font-medium tracking-wider bg-zinc-100 text-zinc-600 rounded-2xl">${post.category}</span>`;
-                    document.getElementById('modal-date').innerHTML = `${post.date} • ${Math.ceil(post.content.length / 180)} min read`;
-                    document.getElementById('modal-title').innerHTML = post.title;
-                    document.getElementById('modal-image-container').innerHTML = `<img src="${post.imageUrl}" class="w-full max-h-[380px] object-cover rounded-2xl" alt="">`;
-                    document.getElementById('modal-content').innerHTML = marked.parse(post.content);
-
-                    const modal = document.getElementById('post-modal');
-                    modal.classList.remove('hidden');
-                    modal.classList.add('flex');
+                    const modalHTML = `
+                        <div onclick="this.remove()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[300] flex items-center justify-center p-6">
+                            <div onclick="event.stopImmediatePropagation()" class="bg-white w-full max-w-3xl rounded-3xl overflow-hidden clean-shadow">
+                                <div class="p-8">
+                                    <div class="flex justify-between mb-6">
+                                        <span class="px-4 py-1 text-xs font-medium rounded-2xl bg-zinc-100">${post.category}</span>
+                                        <button onclick="event.target.closest('.fixed').remove()" class="text-3xl text-zinc-400 hover:text-zinc-600">&times;</button>
+                                    </div>
+                                    <img src="${post.imageUrl}" class="w-full rounded-2xl mb-8 max-h-[420px] object-cover" alt="">
+                                    <h1 class="heading-serif text-4xl tracking-tighter mb-4">${post.title}</h1>
+                                    <div class="text-xs text-zinc-400 mb-6">${post.date} • ${Math.ceil(post.content.length / 180)} min read</div>
+                                    <div class="prose prose-zinc max-w-none text-[15.5px] leading-relaxed">${marked.parse(post.content)}</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    document.body.insertAdjacentHTML('beforeend', modalHTML);
                 });
         }
 
-        function hidePostModal() {
-            const modal = document.getElementById('post-modal');
-            modal.classList.remove('flex');
-            modal.classList.add('hidden');
-        }
-
-        // Initialize everything
         function initializeBlog() {
             initializeTailwind();
             initNavbar();
             initLiveStats();
-            loadCities();
             loadBusanNews();
-            
-            setTimeout(() => {
-                createCherryPetals(10);
-            }, 600);
+            loadCities();
+
+            const logo = document.querySelector('nav .flex.items-center');
+            if (logo) {
+                logo.style.cursor = 'pointer';
+                logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+            }
         }
 
         window.onload = initializeBlog;
