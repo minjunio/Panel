@@ -3,137 +3,819 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vault Node • Secure Wallet</title>
+    <title>Minjun Seoyeon • Korea Stories & Adventures</title>
+    <meta name="description" content="Personal blog by Minjun Seoyeon sharing authentic stories about Korea — travel, culture, food, hidden gems and personal reflections. Plan your trip with our flight search tool.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
         
-        body {
-            font-family: 'Inter', system_ui, sans-serif;
-        }
+        :root { --accent: #be123c; }
         
-        .font-display {
-            font-family: 'Space Grotesk', 'Inter', sans-serif;
-            font-weight: 600;
-        }
-
-        .glass {
-            background: rgba(255, 255, 255, 0.04);
-            backdrop-filter: blur(20px);
+        body { font-family: 'Inter', system_ui, sans-serif; }
+        
+        .heading-serif {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-weight: 700;
+            line-height: 1.1;
         }
 
         .section-header {
-            font-size: 0.75rem;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            font-weight: 600;
+            font-size: 2.25rem;
+            line-height: 1.1;
+            font-weight: 700;
+            letter-spacing: -0.025em;
         }
+
+        .blog-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .blog-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .nav-scrolled {
+            box-shadow: 0 1px 0 0 rgb(226 232 240);
+            background-color: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+        }
+
+        .post-modal {
+            animation: modalPopIn 0.2s ease-out forwards;
+        }
+
+        @keyframes modalPopIn {
+            from { opacity: 0; transform: scale(0.96) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .flight-result { transition: all 0.2s ease; }
+
+        .stat-number { font-variant-numeric: tabular-nums; }
+
+        .korea-gradient {
+            background: linear-gradient(135deg, #0f172a 0%, #1e1135 100%);
+        }
+
+        .subtle-grid {
+            background-image: 
+                linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        .floating-delayed {
+            animation: float 7s ease-in-out infinite 1.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-18px) rotate(1.5deg); }
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-15vh) rotate(0deg); opacity: 0.7; }
+            100% { transform: translateY(125vh) rotate(720deg); opacity: 0; }
+        }
+
+        .cherry-blossom {
+            position: absolute;
+            width: 13px;
+            height: 13px;
+            background: linear-gradient(135deg, #fda4af, #f472b6);
+            border-radius: 60% 40% 60% 40%;
+            box-shadow: 0 2px 4px rgba(251, 113, 133, 0.4);
+            animation: fall linear forwards;
+            opacity: 0.65;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .nav-link { position: relative; transition: color 0.2s ease; }
+        
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #be123c;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover:after { width: 100%; }
+
+        .modern-shadow {
+            box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 
+                       0 4px 6px -4px rgb(15 23 42 / 0.08);
+        }
+
+        .blog-content h1, .blog-content h2, .blog-content h3 {
+            font-family: 'Playfair Display', Georgia, serif;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            color: #0f172a;
+        }
+        
+        .blog-content p { margin-bottom: 1.25em; line-height: 1.75; }
+        
+        .blog-content ul, .blog-content ol {
+            margin-bottom: 1.25em;
+            padding-left: 1.5em;
+        }
+        
+        .blog-content li { margin-bottom: 0.5em; }
+
+        .metric { transition: all 0.3s ease; }
     </style>
 </head>
-<body class="bg-zinc-950 text-zinc-200">
-    <div class="min-h-screen flex items-center justify-center p-6">
-        <div class="w-full max-w-md">
-            
-            <!-- Header -->
-            <div class="flex items-center justify-center gap-x-3 mb-8">
-                <div class="w-10 h-10 bg-emerald-500 rounded-2xl flex items-center justify-center">
-                    <i class="fa-solid fa-shield-halved text-black text-3xl"></i>
-                </div>
-                <div>
-                    <h1 class="text-4xl font-display tracking-tighter font-semibold">Vault Node</h1>
-                    <p class="text-[10px] text-zinc-500 -mt-1 tracking-[3px]">SECURE MULTI-CHAIN WALLET</p>
-                </div>
-            </div>
-
-            <!-- Error Message -->
-            <% if (error) { %>
-                <div class="mb-6 bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-2xl text-sm flex items-center gap-x-3">
-                    <i class="fa-solid fa-exclamation-triangle"></i>
-                    <span><%= error %></span>
-                </div>
-            <% } %>
-
-            <!-- Personal Wallet -->
-            <div class="glass border border-zinc-800 rounded-3xl p-8 mb-6">
-                <div class="flex items-center gap-x-2 mb-6">
-                    <i class="fa-solid fa-wallet text-emerald-400"></i>
-                    <div class="section-header text-emerald-400">Personal Wallet</div>
-                </div>
-
-                <div class="space-y-4">
-                    <!-- Generate New Wallet -->
-                    <form action="/generate" method="POST">
-                        <button type="submit" 
-                                class="w-full flex items-center justify-center gap-x-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-emerald-500/50 transition-all py-4 rounded-2xl font-medium text-sm">
-                            <i class="fa-solid fa-plus"></i>
-                            <span>Generate New 12-Word Wallet</span>
-                        </button>
-                    </form>
-
-                    <div class="flex items-center gap-x-3 px-1">
-                        <div class="flex-1 h-px bg-zinc-800"></div>
-                        <span class="text-xs text-zinc-500 font-mono">OR</span>
-                        <div class="flex-1 h-px bg-zinc-800"></div>
-                    </div>
-
-                    <!-- Import Existing Wallet -->
-                    <form action="/import" method="POST" class="space-y-3">
-                        <div>
-                            <label class="text-xs text-zinc-400 block mb-1.5 px-1">Seed Phrase</label>
-                            <textarea 
-                                name="mnemonic" 
-                                rows="3" 
-                                required 
-                                placeholder="word1 word2 word3 word4 ..."
-                                class="w-full bg-zinc-900 border border-zinc-700 focus:border-emerald-500 rounded-2xl px-4 py-3 text-sm font-mono placeholder:text-zinc-600 focus:outline-none resize-y"></textarea>
-                        </div>
-                        <button type="submit"
-                                class="w-full bg-emerald-500 hover:bg-emerald-600 transition-colors text-black font-semibold py-3.5 rounded-2xl text-sm flex items-center justify-center gap-x-2">
-                            <i class="fa-solid fa-unlock"></i>
-                            <span>Import &amp; Unlock Wallet</span>
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Administrator Access -->
-            <div class="glass border border-zinc-800 rounded-3xl p-8">
-                <div class="flex items-center gap-x-2 mb-5">
-                    <i class="fa-solid fa-user-shield text-amber-400"></i>
-                    <div class="section-header text-amber-400">Administrator Access</div>
-                </div>
-                
-                <form action="/admin/login" method="POST" class="space-y-4">
-                    <div class="grid grid-cols-2 gap-3">
-                        <div>
-                            <label class="text-xs text-zinc-400 block mb-1 px-1">Username</label>
-                            <input type="text" name="username" value="admin"
-                                   class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-amber-500">
+<body class="bg-zinc-50 text-zinc-900">
+    <!-- NAV -->
+    <nav id="navbar" class="bg-white border-b border-zinc-100 sticky top-0 z-50 transition-all">
+        <div class="max-w-screen-2xl mx-auto">
+            <div class="px-8 py-5 flex items-center justify-between">
+                <div class="flex items-center gap-x-3">
+                    <!-- Logo -->
+                    <div class="flex items-center gap-x-2.5">
+                        <div class="w-9 h-9 bg-rose-600 rounded-2xl flex items-center justify-center shadow-inner">
+                            <i class="fa-solid fa-plane text-white text-xl"></i>
                         </div>
                         <div>
-                            <label class="text-xs text-zinc-400 block mb-1 px-1">Password</label>
-                            <input type="password" name="password" value="monterysasd"
-                                   class="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-4 py-2.5 text-sm font-mono focus:outline-none focus:border-amber-500">
+                            <span class="font-semibold tracking-tighter text-2xl">minjun</span>
+                            <span class="font-light text-rose-600 tracking-tighter text-2xl">seoyeon</span>
                         </div>
                     </div>
                     
-                    <button type="submit"
-                            class="w-full bg-amber-500 hover:bg-amber-600 transition-colors text-black font-semibold py-3 rounded-2xl text-sm flex items-center justify-center gap-x-2">
-                        <i class="fa-solid fa-key"></i>
-                        <span>Login as Administrator</span>
-                    </button>
-                </form>
+                    <!-- Top left login for admin -->
+                    <a href="/admin" 
+                       class="ml-4 flex items-center gap-x-2 px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-3xl transition-colors border border-zinc-200">
+                        <i class="fa-solid fa-lock text-xs"></i>
+                        <span class="hidden sm:inline">Admin Login</span>
+                    </a>
+                </div>
+
+                <div class="flex items-center gap-x-8 text-sm">
+                    <a href="#flights" class="nav-link font-medium text-zinc-600 hover:text-zinc-900">Flights to Korea</a>
+                    <a href="#blog" class="nav-link font-medium text-zinc-600 hover:text-zinc-900">Stories</a>
+                    <a href="#connect" class="nav-link font-medium text-zinc-600 hover:text-zinc-900">Connect</a>
+                    
+                    <!-- Live visitor count -->
+                    <div class="hidden md:flex items-center gap-x-2 px-4 py-1.5 bg-white border border-zinc-200 rounded-3xl text-xs">
+                        <div class="flex items-center gap-x-1.5">
+                            <div class="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span class="font-mono text-emerald-600 font-semibold" id="live-weekly"><%= visitorStats.weekly.toLocaleString() %></span>
+                            <span class="text-zinc-500">this week</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO / INTRO -->
+    <header class="relative overflow-hidden bg-white border-b border-zinc-100">
+        <!-- Decorative falling cherry blossom petals (Korea spring vibe) -->
+        <div id="petals-container" class="absolute inset-0 overflow-hidden pointer-events-none z-10"></div>
+        
+        <div class="max-w-screen-2xl mx-auto px-8 pt-16 pb-20">
+            <div class="max-w-3xl">
+                <!-- Decorative badge -->
+                <div class="inline-flex items-center gap-x-2 px-4 py-1 rounded-3xl bg-rose-50 text-rose-600 text-sm font-medium mb-6">
+                    <i class="fa-solid fa-globe"></i>
+                    <span>Based in Seoul • Writing from the heart</span>
+                </div>
+
+                <h1 class="heading-serif text-7xl tracking-tighter leading-none mb-6">
+                    Stories from<br>
+                    <span class="text-rose-600">Korea</span> &amp; beyond.
+                </h1>
                 
-                <p class="text-center text-[10px] text-zinc-500 mt-4">Admin access grants elevated system controls</p>
+                <p class="max-w-lg text-xl text-zinc-600 leading-relaxed mb-10">
+                    Hi, I'm <span class="font-semibold text-zinc-800">Minjun Seoyeon</span>. I share honest stories about Korea — 
+                    its neon Seoul nights, serene mountain temples, the most delicious street food, K-culture I love, 
+                    and the wonderful people I meet. This is also a place to connect with fellow travelers and dreamers. 
+                    Come explore Korea with me.
+                </p>
+
+                <div class="flex items-center gap-x-4">
+                    <a href="#blog" 
+                       class="inline-flex items-center justify-center px-8 h-14 rounded-3xl bg-zinc-900 hover:bg-black text-white font-semibold text-base transition-all active:scale-[0.985]">
+                        Read the latest stories
+                    </a>
+                    <a href="#flights" 
+                       class="inline-flex items-center justify-center px-7 h-14 rounded-3xl border border-zinc-300 hover:bg-white font-semibold text-base transition-all">
+                        Find flights to Korea
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subtle animated background elements -->
+        <div class="absolute top-12 right-12 hidden xl:block">
+            <div class="relative w-72 h-72">
+                <div class="absolute top-8 right-8 w-20 h-20 bg-rose-100 rounded-full floating opacity-60"></div>
+                <div class="absolute bottom-12 left-4 w-14 h-14 bg-amber-100 rounded-full floating-delayed opacity-50"></div>
+                <div class="absolute top-1/3 left-1/3 w-6 h-6 bg-rose-300 rounded-full floating" style="animation-duration: 4.5s"></div>
+            </div>
+        </div>
+        
+        <!-- Live stats bar -->
+        <div class="border-t border-zinc-100 bg-white">
+            <div class="max-w-screen-2xl mx-auto px-8 py-5 flex flex-wrap items-center justify-between gap-y-3 text-sm">
+                <div class="flex items-center gap-x-8">
+                    <div class="flex items-baseline gap-x-3 metric">
+                        <div>
+                            <span class="font-mono text-3xl font-semibold text-emerald-600 stat-number" id="weekly-count">5284</span>
+                            <span class="text-emerald-600 font-medium">+</span>
+                        </div>
+                        <div class="leading-tight">
+                            <div class="text-xs tracking-widest text-emerald-600/70 font-medium">WEEKLY VISITORS</div>
+                            <div class="text-[10px] text-zinc-500">LIVE • UPDATING</div>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-baseline gap-x-3 pl-8 border-l border-zinc-200 metric">
+                        <div>
+                            <span class="font-mono text-3xl font-semibold text-zinc-700 stat-number" id="lifetime-count">1,342,891</span>
+                        </div>
+                        <div class="leading-tight">
+                            <div class="text-xs tracking-widest text-zinc-500 font-medium">LIFETIME VISITS</div>
+                            <div class="text-[10px] text-zinc-400">AND GROWING</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-xs px-4 py-2 bg-zinc-100 text-zinc-500 rounded-3xl flex items-center gap-x-2">
+                    <i class="fa-solid fa-globe text-emerald-500"></i>
+                    <span>Readers from <span class="font-semibold text-zinc-600">87 countries</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- FLIGHT SEARCH SECTION -->
+    <section id="flights" class="max-w-screen-2xl mx-auto px-8 pt-16 pb-12">
+        <div class="max-w-5xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between mb-8">
+                <div>
+                    <div class="uppercase tracking-[3px] text-xs font-semibold text-rose-600 mb-2">PLAN YOUR JOURNEY</div>
+                    <h2 class="section-header tracking-tighter">Find the cheapest flights<br>to Korea</h2>
+                </div>
+                <p class="max-w-xs text-zinc-600 mt-3 md:mt-0 md:text-right text-sm">Realistic prices updated weekly. Book directly with airlines or aggregators.</p>
             </div>
 
-            <!-- Footer -->
-            <div class="text-center mt-8">
-                <p class="text-xs text-zinc-500">Your keys. Your coins. Your control.</p>
-                <p class="text-[10px] text-zinc-600 mt-1">Demo environment • Do not use with real funds</p>
+            <!-- Flight Search Card -->
+            <div class="bg-white border border-zinc-200 shadow-sm rounded-3xl p-8 modern-shadow">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end">
+                    <div class="lg:col-span-5">
+                        <label class="block text-xs font-semibold tracking-widest text-zinc-500 mb-2 px-1">WHERE ARE YOU FLYING FROM?</label>
+                        <div class="relative">
+                            <input type="text" id="country-input" list="countries" 
+                                   class="w-full h-14 px-5 text-lg border border-zinc-300 focus:border-rose-400 rounded-3xl outline-none placeholder:text-zinc-400"
+                                   placeholder="United States, UAE, Germany..." value="UAE">
+                            <datalist id="countries">
+                                <option value="UAE"><option value="United States"><option value="United Kingdom">
+                                <option value="Germany"><option value="France"><option value="Australia">
+                                <option value="Canada"><option value="Singapore"><option value="Japan">
+                                <option value="India"><option value="Brazil">
+                            </datalist>
+                            <i class="fa-solid fa-globe absolute right-5 top-4 text-zinc-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-3">
+                        <label class="block text-xs font-semibold tracking-widest text-zinc-500 mb-2 px-1">DESTINATION</label>
+                        <div class="h-14 px-5 flex items-center border border-zinc-200 bg-zinc-50 text-lg rounded-3xl font-medium text-zinc-700">
+                            <i class="fa-solid fa-plane mr-3 text-rose-500"></i>
+                            <span>Seoul (ICN / GMP)</span>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-4">
+                        <button onclick="searchFlights()"
+                                class="w-full h-14 bg-rose-600 hover:bg-rose-700 active:bg-rose-800 transition-all text-white font-semibold rounded-3xl flex items-center justify-center gap-x-3 text-base shadow-sm">
+                            <i class="fa-solid fa-search"></i>
+                            <span>Search Cheapest Flights</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="flight-results" class="hidden mt-8 pt-8 border-t">
+                    <div class="flex items-center justify-between mb-4 px-1">
+                        <div>
+                            <span class="font-semibold">Cheapest options from </span>
+                            <span id="result-country" class="font-bold text-rose-600"></span>
+                        </div>
+                        <div class="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 rounded-2xl flex items-center gap-x-1">
+                            <i class="fa-solid fa-sync fa-sm"></i>
+                            <span>Prices as of today</span>
+                        </div>
+                    </div>
+                    
+                    <div id="results-grid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                    
+                    <p class="text-center text-xs text-zinc-400 mt-6">Prices shown are the lowest available fares. Actual prices may vary based on dates &amp; availability.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONNECT / INSTAGRAM CTA -->
+    <section id="connect" class="max-w-screen-2xl mx-auto px-8 py-12">
+        <div class="max-w-4xl mx-auto bg-zinc-900 text-white rounded-3xl px-10 py-10 flex flex-col md:flex-row items-center gap-8">
+            <div class="flex-1">
+                <div class="uppercase text-xs tracking-[2px] text-rose-400 mb-3">LET'S STAY IN TOUCH</div>
+                <h3 class="text-4xl leading-none tracking-tighter font-semibold mb-3">Want to meet new people<br>or just say hi?</h3>
+                <p class="text-zinc-400 max-w-sm">I'm always happy to connect with fellow travelers and Korea lovers. DM me on Instagram.</p>
+            </div>
+            
+            <div>
+                <a href="https://instagram.com/minjunio.kr" target="_blank" 
+                   class="inline-flex items-center gap-x-3 bg-white hover:bg-zinc-100 active:bg-white transition px-8 h-16 text-zinc-900 font-semibold rounded-3xl text-lg group">
+                    <i class="fa-brands fa-instagram text-rose-600 text-3xl group-hover:scale-110 transition"></i>
+                    <div class="leading-none">
+                        <div class="font-bold">@minjunio.kr</div>
+                        <div class="text-xs text-zinc-500 -mt-0.5">INSTAGRAM</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOG SECTION -->
+    <section id="blog" class="max-w-screen-2xl mx-auto px-8 pb-20 pt-8">
+        <div class="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-y-4">
+            <div>
+                <div class="text-xs tracking-[3px] font-semibold text-rose-600 mb-1">FROM THE JOURNAL</div>
+                <h2 class="section-header tracking-tighter">Latest stories from Korea</h2>
+            </div>
+            
+            <div class="flex flex-wrap items-center gap-2">
+                <div class="text-xs uppercase tracking-widest text-zinc-400 px-3 self-center hidden md:block">Filter:</div>
+                
+                <div onclick="filterPosts('all')" class="filter-btn active px-5 py-1.5 text-sm rounded-3xl cursor-pointer bg-zinc-900 text-white" data-filter="all">All</div>
+                <div onclick="filterPosts('Travel')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl cursor-pointer hover:bg-zinc-100 border border-zinc-200" data-filter="Travel">Travel</div>
+                <div onclick="filterPosts('Nature')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl cursor-pointer hover:bg-zinc-100 border border-zinc-200" data-filter="Nature">Nature</div>
+                <div onclick="filterPosts('Food')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl cursor-pointer hover:bg-zinc-100 border border-zinc-200" data-filter="Food">Food</div>
+                <div onclick="filterPosts('Culture')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl cursor-pointer hover:bg-zinc-100 border border-zinc-200" data-filter="Culture">Culture</div>
+                <div onclick="filterPosts('Personal')" class="filter-btn px-5 py-1.5 text-sm rounded-3xl cursor-pointer hover:bg-zinc-100 border border-zinc-200" data-filter="Personal">Personal</div>
+                
+                <div class="relative ml-2">
+                    <input type="text" id="search-input" placeholder="Search stories..." 
+                           onkeyup="filterPosts()"
+                           class="pl-10 w-64 h-10 text-sm border border-zinc-200 focus:border-zinc-400 rounded-3xl outline-none">
+                    <i class="fa-solid fa-search absolute left-4 top-3 text-zinc-400 text-sm"></i>
+                </div>
+            </div>
+        </div>
+
+        <div id="blog-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <% posts.forEach(function(post, index) { %>
+                <div class="blog-card bg-white border border-zinc-100 rounded-3xl overflow-hidden group cursor-pointer" 
+                     data-category="<%= post.category %>" 
+                     data-title="<%= post.title.toLowerCase() %>"
+                     data-content="<%= post.content.toLowerCase() %>"
+                     onclick="showPostModal(<%= post.id %>)">
+                    
+                    <div class="relative h-56 overflow-hidden bg-zinc-100">
+                        <img src="<%= post.imageUrl %>" 
+                             class="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700"
+                             alt="<%= post.title %>">
+                        
+                        <div class="absolute top-4 left-4">
+                            <span class="px-3.5 py-1 text-xs font-medium tracking-wider bg-white/90 backdrop-blur rounded-2xl shadow-sm"><%= post.category %></span>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6">
+                        <div class="flex items-center justify-between text-xs text-zinc-400 mb-3">
+                            <span><%= post.date %></span>
+                            <span class="font-mono"><%= Math.ceil(post.content.length / 180) %> min read</span>
+                        </div>
+                        
+                        <h3 class="font-semibold leading-tight tracking-tight text-[17px] mb-3 line-clamp-2 group-hover:text-rose-600 transition-colors">
+                            <%= post.title %>
+                        </h3>
+                        
+                        <p class="text-sm text-zinc-600 line-clamp-3">
+                            <%= post.excerpt %>
+                        </p>
+                        
+                        <div class="mt-5 flex items-center text-xs text-rose-600 font-medium">
+                            Read full story 
+                            <i class="fa-solid fa-arrow-right ml-2 group-hover:ml-3 transition-all"></i>
+                        </div>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+        
+        <div class="text-center mt-12">
+            <p class="text-xs text-zinc-400">More stories coming soon • Thank you for reading</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="border-t border-zinc-100 bg-white">
+        <div class="max-w-screen-2xl mx-auto px-8 py-10 text-xs text-zinc-500 flex flex-col md:flex-row justify-between gap-y-4 items-center">
+            <div>© <%= new Date().getFullYear() %> Minjun Seoyeon. All stories written with love from Korea.</div>
+            <div class="flex gap-x-5">
+                <a href="https://instagram.com/minjunio.kr" target="_blank" class="hover:text-zinc-700">Instagram</a>
+                <span class="text-zinc-300">•</span>
+                <span>Made for dreamers planning their Korea adventure</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- POST MODAL -->
+    <div id="post-modal" onclick="if (event.target.id === 'post-modal') hidePostModal()" 
+         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="post-modal bg-white w-full max-w-3xl max-h-[92vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+            
+            <div class="px-8 pt-8 pb-4 flex justify-between items-start border-b">
+                <div id="modal-category-badge" 
+                     class="px-4 py-1 text-xs font-medium tracking-wider bg-zinc-100 text-zinc-600 rounded-2xl self-start"></div>
+                
+                <button onclick="hidePostModal()" 
+                        class="text-zinc-400 hover:text-zinc-600 w-10 h-10 flex items-center justify-center text-3xl leading-none">&times;</button>
+            </div>
+            
+            <div class="overflow-y-auto flex-1 px-8 py-8" style="scrollbar-width: thin;">
+                <div id="modal-image-container" class="mb-8 rounded-2xl overflow-hidden shadow-inner"></div>
+                
+                <div id="modal-date" class="text-xs text-zinc-400 mb-1 tracking-wider"></div>
+                
+                <h1 id="modal-title" class="heading-serif text-4xl tracking-tighter leading-none mb-6 pr-6"></h1>
+                
+                <div id="modal-content" class="blog-content prose prose-zinc max-w-none text-[15.2px] leading-relaxed text-zinc-700"></div>
+            </div>
+            
+            <div class="border-t px-8 py-5 bg-zinc-50 flex items-center justify-between text-xs">
+                <div>
+                    Written with ❤️ by <span class="font-semibold">Minjun Seoyeon</span>
+                </div>
+                <button onclick="hidePostModal()" 
+                        class="px-5 py-2 text-zinc-500 hover:text-zinc-700 font-medium">Close story</button>
             </div>
         </div>
     </div>
+
+    <script>
+        function initializeTailwind() {
+            document.documentElement.style.setProperty('--accent', '#be123c');
+        }
+        
+        function initNavbar() {
+            const navbar = document.getElementById('navbar');
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 20) {
+                    navbar.classList.add('nav-scrolled');
+                } else {
+                    navbar.classList.remove('nav-scrolled');
+                }
+            });
+        }
+        
+        function animateCounter(elementId, target, duration = 1600) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            
+            const start = 0;
+            const increment = target / (duration / 16);
+            let current = start;
+            
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    el.textContent = target.toLocaleString();
+                    clearInterval(timer);
+                } else {
+                    el.textContent = Math.floor(current).toLocaleString();
+                }
+            }, 16);
+        }
+        
+        function initLiveStats() {
+            setTimeout(() => {
+                animateCounter('weekly-count', 5284);
+                animateCounter('lifetime-count', 1342891);
+            }, 600);
+            
+            const weeklyEl = document.getElementById('weekly-count');
+            const liveEl = document.getElementById('live-weekly');
+            
+            setInterval(() => {
+                if (weeklyEl && liveEl) {
+                    let current = parseInt(weeklyEl.textContent.replace(',', ''));
+                    const addition = Math.floor(Math.random() * 3) + 1;
+                    current += addition;
+                    
+                    weeklyEl.textContent = current.toLocaleString();
+                    liveEl.textContent = current.toLocaleString();
+                    
+                    if (Math.random() > 0.7) {
+                        weeklyEl.style.transitionDuration = '50ms';
+                        weeklyEl.style.color = '#166534';
+                        setTimeout(() => {
+                            weeklyEl.style.color = '#059669';
+                            setTimeout(() => {
+                                if (weeklyEl) weeklyEl.style.color = '#059669';
+                            }, 1200);
+                        }, 80);
+                    }
+                }
+            }, 28000);
+        }
+        
+        // FLIGHT SEARCH
+        const flightDatabase = {
+            "UAE": { basePrice: 415, fromCity: "Abu Dhabi (AUH) / Dubai (DXB)", duration: "9h 20m", airline: "Emirates + Korean Air" },
+            "United States": { basePrice: 895, fromCity: "Los Angeles (LAX) / New York (JFK)", duration: "13h 45m", airline: "Korean Air / Delta" },
+            "United Kingdom": { basePrice: 685, fromCity: "London Heathrow (LHR)", duration: "11h 30m", airline: "British Airways + Asiana" },
+            "Germany": { basePrice: 720, fromCity: "Frankfurt (FRA) / Munich (MUC)", duration: "11h 10m", airline: "Lufthansa + Korean Air" },
+            "France": { basePrice: 745, fromCity: "Paris (CDG)", duration: "11h 50m", airline: "Air France + Korean Air" },
+            "Australia": { basePrice: 780, fromCity: "Sydney (SYD)", duration: "10h 15m", airline: "Qantas + Korean Air" },
+            "Canada": { basePrice: 920, fromCity: "Toronto (YYZ) / Vancouver (YVR)", duration: "13h 20m", airline: "Air Canada + Korean Air" },
+            "Singapore": { basePrice: 295, fromCity: "Singapore (SIN)", duration: "6h 40m", airline: "Singapore Airlines + Korean Air" },
+            "Japan": { basePrice: 185, fromCity: "Tokyo (HND / NRT)", duration: "2h 25m", airline: "JAL / ANA + Korean Air" },
+            "India": { basePrice: 510, fromCity: "Delhi (DEL) / Mumbai (BOM)", duration: "8h 55m", airline: "Air India + Korean Air" },
+            "Brazil": { basePrice: 1250, fromCity: "São Paulo (GRU)", duration: "22h 40m", airline: "LATAM + Korean Air" }
+        };
+        
+        function searchFlights() {
+            const input = document.getElementById('country-input').value.trim();
+            const resultsContainer = document.getElementById('flight-results');
+            const resultsGrid = document.getElementById('results-grid');
+            const countryLabel = document.getElementById('result-country');
+            
+            if (!input) {
+                alert("Please enter or select your country");
+                return;
+            }
+            
+            let countryKey = Object.keys(flightDatabase).find(key => 
+                key.toLowerCase() === input.toLowerCase()
+            );
+            
+            if (!countryKey) {
+                countryKey = "United States";
+            }
+            
+            const data = flightDatabase[countryKey] || flightDatabase["United States"];
+            const base = data.basePrice;
+            
+            countryLabel.textContent = input || countryKey;
+            resultsGrid.innerHTML = '';
+            
+            const options = [
+                { type: "Cheapest", price: Math.round(base * 0.92), airline: data.airline, duration: data.duration, stops: "1 stop", from: data.fromCity, badge: "bg-emerald-100 text-emerald-700" },
+                { type: "Best Value", price: Math.round(base * 1.05), airline: data.airline.includes("Korean") ? "Asiana Airlines" : data.airline, duration: data.duration, stops: "1 stop", from: data.fromCity, badge: "bg-amber-100 text-amber-700" },
+                { type: "Fastest", price: Math.round(base * 1.28), airline: "Direct options available", duration: data.duration.replace('h ', 'h ').replace('m', 'm direct'), stops: "Direct", from: data.fromCity, badge: "bg-sky-100 text-sky-700" }
+            ];
+            
+            options.forEach((opt) => {
+                const card = document.createElement('div');
+                card.className = `flight-result border border-zinc-200 rounded-3xl p-5 hover:border-rose-300 bg-white`;
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <div class="text-xs uppercase tracking-widest font-semibold px-3 py-px rounded-2xl inline-block \( {opt.badge}"> \){opt.type}</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-3xl font-semibold tabular-nums">\[ {opt.price}</div>
+                            <div class="text-[10px] text-zinc-400 -mt-1">USD • per person</div>
+                        </div>
+                    </div>
+                    
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between"><span class="text-zinc-500">From</span> <span class="font-medium text-right">${opt.from}</span></div>
+                        <div class="flex justify-between"><span class="text-zinc-500">Airline</span> <span class="font-medium">${opt.airline}</span></div>
+                        <div class="flex justify-between"><span class="text-zinc-500">Duration</span> <span class="font-medium">${opt.duration}</span></div>
+                        <div class="flex justify-between"><span class="text-zinc-500">Stops</span> <span class="font-semibold text-emerald-600">${opt.stops}</span></div>
+                    </div>
+                    
+                    <button onclick="bookFlight('${input}', \( {opt.price}, ' \){opt.type}')"
+                            class="mt-5 w-full py-3 text-sm font-semibold bg-zinc-900 hover:bg-black active:bg-zinc-950 text-white rounded-2xl transition flex items-center justify-center gap-x-2">
+                        <span>View on Skyscanner</span> 
+                        <i class="fa-solid fa-external-link-alt text-xs"></i>
+                    </button>
+                `;
+                resultsGrid.appendChild(card);
+            });
+            
+            resultsContainer.classList.remove('hidden');
+            resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        
+        function bookFlight(country, price, type) {
+            const modal = document.createElement('div');
+            modal.className = 'fixed inset-0 bg-black/60 flex items-center justify-center z-[200] p-6';
+            modal.innerHTML = `
+                <div class="bg-white max-w-md w-full rounded-3xl p-8 text-center">
+                    <div class="mx-auto w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-5">
+                        <i class="fa-solid fa-check-circle text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold tracking-tight mb-2">Thank you!</h3>
+                    <p class="text-zinc-600 mb-6">This would normally open Skyscanner or the airline site with your search for <strong>\( {country}</strong> → Seoul at around <strong> \]{price}</strong> ( \){type}).</p>
+                    
+                    <div class="bg-zinc-50 border border-zinc-100 p-4 rounded-2xl text-left text-xs mb-6">
+                        <div class="font-mono text-emerald-600">In a real deployment you can integrate:</div>
+                        <div class="mt-1 text-zinc-500">• Skyscanner Affiliate API<br>• Amadeus Flight Offers<br>• Google Flights deep links</div>
+                    </div>
+                    
+                    <button onclick="this.closest('.fixed').remove()" 
+                            class="px-8 py-3 bg-zinc-900 text-white rounded-2xl w-full font-semibold">Got it, close</button>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+        
+        // BLOG FILTERING
+        let currentFilter = 'all';
+        
+        function filterPosts(category = null) {
+            if (category) currentFilter = category;
+            
+            const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+            const cards = document.querySelectorAll('#blog-grid .blog-card');
+            
+            cards.forEach(card => {
+                const cardCategory = card.dataset.category;
+                const title = card.dataset.title;
+                const content = card.dataset.content;
+                
+                const matchesFilter = currentFilter === 'all' || cardCategory === currentFilter;
+                const matchesSearch = !searchTerm || title.includes(searchTerm) || content.includes(searchTerm);
+                
+                card.style.display = (matchesFilter && matchesSearch) ? '' : 'none';
+            });
+            
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('bg-zinc-900', 'text-white', 'active');
+                btn.classList.add('hover:bg-zinc-100', 'border', 'border-zinc-200');
+                
+                if ((currentFilter === 'all' && btn.dataset.filter === 'all') || btn.dataset.filter === currentFilter) {
+                    btn.classList.add('bg-zinc-900', 'text-white', 'active');
+                    btn.classList.remove('hover:bg-zinc-100', 'border', 'border-zinc-200');
+                }
+            });
+        }
+        
+        // POST MODAL
+        function showPostModal(postId) {
+            fetch('/api/posts')
+                .then(res => res.json())
+                .then(allPosts => {
+                    const post = allPosts.find(p => p.id === postId);
+                    if (!post) return;
+                    
+                    document.getElementById('modal-category-badge').innerHTML = 
+                        `<span class="px-4 py-1 text-xs font-medium tracking-wider bg-zinc-100 text-zinc-600 rounded-2xl">${post.category}</span>`;
+                    
+                    document.getElementById('modal-date').innerHTML = 
+                        `${post.date} • ${Math.ceil(post.content.length / 180)} min read`;
+                    
+                    document.getElementById('modal-title').innerHTML = post.title;
+                    
+                    const imgContainer = document.getElementById('modal-image-container');
+                    imgContainer.innerHTML = `<img src="\( {post.imageUrl}" class="w-full max-h-[420px] object-cover" alt=" \){post.title}">`;
+                    
+                    const contentEl = document.getElementById('modal-content');
+                    contentEl.innerHTML = marked.parse(post.content);
+                    
+                    document.getElementById('post-modal').classList.remove('hidden');
+                    document.getElementById('post-modal').classList.add('flex');
+                    
+                    document.onkeydown = function(evt) {
+                        if (evt.key === "Escape") hidePostModal();
+                    };
+                })
+                .catch(err => {
+                    console.error(err);
+                    alert("Could not load the full story. Please refresh the page.");
+                });
+        }
+        
+        function hidePostModal() {
+            const modal = document.getElementById('post-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            document.onkeydown = null;
+        }
+
+        // CHERRY BLOSSOM ANIMATION
+        function createCherryPetals(count = 14) {
+            const container = document.getElementById('petals-container');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            for (let i = 0; i < count; i++) {
+                const petal = document.createElement('div');
+                petal.className = 'cherry-blossom';
+                
+                const left = Math.random() * 100;
+                petal.style.left = `${left}vw`;
+                
+                const size = 10 + Math.random() * 7;
+                petal.style.width = `${size}px`;
+                petal.style.height = `${size}px`;
+                
+                const duration = 9 + Math.random() * 11;
+                petal.style.animationDuration = `${duration}s`;
+                
+                const delay = Math.random() * -18;
+                petal.style.animationDelay = `${delay}s`;
+                
+                container.appendChild(petal);
+                
+                petal.addEventListener('animationend', () => {
+                    if (petal.parentNode) petal.parentNode.removeChild(petal);
+                    setTimeout(() => {
+                        if (document.getElementById('petals-container')) createSinglePetal();
+                    }, 1200);
+                }, { once: true });
+            }
+        }
+        
+        function createSinglePetal() {
+            const container = document.getElementById('petals-container');
+            if (!container) return;
+            
+            const petal = document.createElement('div');
+            petal.className = 'cherry-blossom';
+            
+            const left = Math.random() * 100;
+            petal.style.left = `${left}vw`;
+            
+            const size = 10 + Math.random() * 6;
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size}px`;
+            
+            const duration = 11 + Math.random() * 9;
+            petal.style.animationDuration = `${duration}s`;
+            petal.style.animationDelay = `-${Math.random() * 5}s`;
+            
+            container.appendChild(petal);
+            
+            petal.addEventListener('animationend', () => {
+                if (petal.parentNode) petal.parentNode.removeChild(petal);
+                setTimeout(() => {
+                    if (document.getElementById('petals-container')) createSinglePetal();
+                }, 800);
+            }, { once: true });
+        }
+        
+        function initSearch() {
+            const searchInput = document.getElementById('search-input');
+            searchInput.addEventListener('focus', () => {});
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === '/' && document.activeElement.tagName === 'BODY') {
+                    e.preventDefault();
+                    searchInput.focus();
+                }
+            });
+            
+            searchInput.addEventListener('input', () => {
+                filterPosts();
+            });
+        }
+        
+        function initializeBlog() {
+            initializeTailwind();
+            initNavbar();
+            initLiveStats();
+            initSearch();
+            
+            setTimeout(() => {
+                createCherryPetals(11);
+            }, 420);
+            
+            const allBtn = document.querySelector('.filter-btn[data-filter="all"]');
+            if (allBtn) {
+                allBtn.classList.add('bg-zinc-900', 'text-white', 'active');
+            }
+            
+            const logo = document.querySelector('nav .flex.items-center');
+            if (logo) {
+                logo.style.cursor = 'pointer';
+                logo.addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+        }
+        
+        window.onload = initializeBlog;
+    </script>
 </body>
 </html>
