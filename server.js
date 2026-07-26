@@ -1,235 +1,211 @@
 const express = require('express');
 const session = require('express-session');
-const { ethers } = require('ethers');
-const bip39 = require('bip39');
-const ed25519 = require('ed25519-hd-key');
-const { 
-    Keypair, 
-    Connection, 
-    clusterApiUrl, 
-    PublicKey, 
-    SystemProgram, 
-    Transaction, 
-    sendAndConfirmTransaction,
-    LAMPORTS_PER_SOL 
-} = require('@solana/web3.js');
 const path = require('path');
-const crypto = require('crypto');
+const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ================== SESSION ==================
-const sessionMiddleware = session({
-    secret: process.env.SESSION_SECRET || 'vault-node-secure-key-2026',
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-        maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-        httpOnly: true,
-        secure: false // set true behind HTTPS in production
-    }
-});
+// ====================== CONFIG ======================
+const ADMIN_PASSWORD = 'minjunseoyeon2026'; // CHANGE THIS PASSWORD in production!
+const SESSION_SECRET = 'minjun-korea-blog-secret-2026';
 
+// ====================== MIDDLEWARE ======================
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(sessionMiddleware);
 
-// ================== PROVIDERS ==================
-const ethProvider = new ethers.JsonRpcProvider('https://eth.llamarpc.com');
-const solConnection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+app.use(session({
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { 
+    secure: false, // set to true if using HTTPS in production
+    maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
+  }
+}));
 
-// ================== HELPERS ==================
-function deriveWalletsFromMnemonic(mnemonic) {
-    if (!bip39.validateMnemonic(mnemonic)) {
-        throw new Error('Invalid mnemonic phrase');
-    }
-    const ethWallet = ethers.Wallet.fromPhrase(mnemonic);
-    const seed = bip39.mnemonicToSeedSync(mnemonic);
-    const derivedSeed = ed25519.derivePath("m/44'/501'/0'/0'", seed.toString('hex')).key;
-    const solanaKeypair = Keypair.fromSeed(derivedSeed);
-    
-    return {
-        mnemonic,
-        ethAddress: ethWallet.address,
-        ethPrivateKey: ethWallet.privateKey,
-        solAddress: solanaKeypair.publicKey.toBase58(),
-        solSecretKey: Buffer.from(solanaKeypair.secretKey).toString('hex')
-    };
+// ====================== DATA HANDLING ======================
+const dataDir = path.join(__dirname, 'data');
+const postsPath = path.join(dataDir, 'posts.json');
+
+// Ensure data directory exists
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
 }
 
-async function fetchLiveBalances(ethAddress, solAddress) {
-    try {
-        const ethBalanceWei = await ethProvider.getBalance(ethAddress);
-        const ethBalance = parseFloat(ethers.formatEther(ethBalanceWei));
-        
-        const solPubKey = new PublicKey(solAddress);
-        const solBalanceLamports = await solConnection.getBalance(solPubKey);
-        const solBalance = solBalanceLamports / LAMPORTS_PER_SOL;
-        
-        const usd = (ethBalance * 3200) + (solBalance * 140);
-        return { 
-            eth: parseFloat(ethBalance.toFixed(6)), 
-            sol: parseFloat(solBalance.toFixed(6)), 
-            usd: parseFloat(usd.toFixed(2)) 
-        };
-    } catch (e) {
-        console.error('Balance fetch error:', e.message);
-        return { eth: 0, sol: 0, usd: 0 };
-    }
-}
-
-async function sendTransaction(network, fromWallet, toAddress, amount) {
-    if (network === 'ETH') {
-        const wallet = new ethers.Wallet(fromWallet.ethPrivateKey, ethProvider);
-        const tx = await wallet.sendTransaction({
-            to: toAddress,
-            value: ethers.parseEther(amount.toString())
-        });
-        await tx.wait(1);
-        return { hash: tx.hash, network: 'ETH' };
+// Load posts from file or create with seed
+let posts = [];
+function loadPosts() {
+  try {
+    if (fs.existsSync(postsPath)) {
+      const data = fs.readFileSync(postsPath, 'utf8');
+      posts = JSON.parse(data);
     } else {
-        const fromKeypair = Keypair.fromSecretKey(Buffer.from(fromWallet.solSecretKey, 'hex'));
-        const lamports = Math.floor(parseFloat(amount) * LAMPORTS_PER_SOL);
-        const transaction = new Transaction().add(SystemProgram.transfer({
-            fromPubkey: fromKeypair.publicKey,
-            toPubkey: new PublicKey(toAddress),
-            lamports
-        }));
-        const signature = await sendAndConfirmTransaction(
-            solConnection, 
-            transaction, 
-            [fromKeypair],
-            { commitment: 'confirmed' }
-        );
-        return { hash: signature, network: 'SOL' };
+      posts = [];
+      savePosts();
     }
+  } catch (err) {
+    console.error('Error loading posts:', err);
+    posts = [];
+  }
 }
 
-// ================== ROUTES ==================
+function savePosts() {
+  try {
+    fs.writeFileSync(postsPath, JSON.stringify(posts, null, 2), 'utf8');
+  } catch (err) {
+    console.error('Error saving posts:', err);
+  }
+}
 
-// Landing
+// Initial load
+loadPosts();
+
+// ====================== AUTH MIDDLEWARE ======================
+function requireLogin(req, res, next) {
+  if (req.session && req.session.loggedIn) {
+    return next();
+  }
+  res.redirect('/admin');
+}
+
+// ====================== ROUTES ======================
+
+// PUBLIC HOME PAGE
 app.get('/', (req, res) => {
-    if (req.session.wallet) {
-        if (req.session.wallet.isAdmin) {
-            return res.redirect('/admin/wallet');
-        }
-        return res.redirect('/wallet/portfolio');
+  const sortedPosts = [...posts].sort((a, b) => b.id - a.id);
+  res.render('index', { 
+    posts: sortedPosts,
+    visitorStats: {
+      weekly: 5284,
+      lifetime: 1342891
     }
-    res.render('index', { error: req.query.error || null });
+  });
 });
 
-// Generate new wallet
-app.post('/generate', async (req, res) => {
-    try {
-        const mnemonic = bip39.generateMnemonic(128);
-        const walletData = deriveWalletsFromMnemonic(mnemonic);
-        walletData.balances = await fetchLiveBalances(walletData.ethAddress, walletData.solAddress);
-        req.session.wallet = walletData;
-        req.session.isAdmin = false;
-        res.redirect('/wallet/portfolio');
-    } catch (e) {
-        res.render('index', { error: 'Failed to generate new wallet.' });
-    }
-});
-
-// Import wallet
-app.post('/import', async (req, res) => {
-    try {
-        const mnemonic = req.body.mnemonic.trim();
-        const walletData = deriveWalletsFromMnemonic(mnemonic);
-        walletData.balances = await fetchLiveBalances(walletData.ethAddress, walletData.solAddress);
-        req.session.wallet = walletData;
-        req.session.isAdmin = false;
-        res.redirect('/wallet/portfolio');
-    } catch (e) {
-        res.render('index', { error: 'Invalid seed phrase. Please check and try again.' });
-    }
-});
-
-// Admin Login
-app.post('/admin/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === 'admin' && password === 'monterysasd') {
-        req.session.isAdmin = true;
-        req.session.wallet = { isAdmin: true, username: 'admin' };
-        return res.redirect('/admin/wallet');
-    }
-    res.render('index', { error: 'Invalid admin credentials.' });
-});
-
-// User Wallet
-app.get('/wallet/:tab', async (req, res) => {
-    if (!req.session.wallet || req.session.wallet.isAdmin) {
-        return res.redirect('/');
-    }
-    
-    const activeTab = ['portfolio', 'send', 'receive'].includes(req.params.tab) ? req.params.tab : 'portfolio';
-    
-    if (activeTab === 'portfolio') {
-        req.session.wallet.balances = await fetchLiveBalances(
-            req.session.wallet.ethAddress, 
-            req.session.wallet.solAddress
-        );
-    }
-    
-    res.render('wallet', { 
-        wallet: req.session.wallet, 
-        activeTab,
-        success: req.query.success || null,
-        error: req.query.error || null
+// ADMIN LOGIN PAGE + DASHBOARD
+app.get('/admin', (req, res) => {
+  const isLoggedIn = req.session && req.session.loggedIn;
+  
+  if (isLoggedIn) {
+    const sortedPosts = [...posts].sort((a, b) => b.id - a.id);
+    res.render('admin', { 
+      loggedIn: true, 
+      posts: sortedPosts,
+      success: req.query.success || null,
+      error: req.query.error || null
     });
+  } else {
+    res.render('admin', { 
+      loggedIn: false, 
+      posts: [],
+      success: null,
+      error: null
+    });
+  }
 });
 
-// Send (real on-chain)
-app.post('/wallet/send', async (req, res) => {
-    if (!req.session.wallet) return res.redirect('/');
-    
-    const { network, targetAddress, amount } = req.body;
-    const userWallet = req.session.wallet;
-    
-    try {
-        if (!targetAddress || !amount || parseFloat(amount) <= 0) {
-            throw new Error('Invalid address or amount');
-        }
-        
-        const result = await sendTransaction(network, userWallet, targetAddress, amount);
-        
-        res.redirect(`/wallet/send?success=${encodeURIComponent(
-            `${network} sent successfully! TX: ${result.hash}`
-        )}`);
-    } catch (error) {
-        res.redirect(`/wallet/send?error=${encodeURIComponent(error.message)}`);
-    }
+// Handle login
+app.post('/login', (req, res) => {
+  const { password } = req.body;
+  
+  if (password === ADMIN_PASSWORD) {
+    req.session.loggedIn = true;
+    req.session.save(() => {
+      res.redirect('/admin?success=Welcome back, Minjun!');
+    });
+  } else {
+    res.redirect('/admin?error=Incorrect password. Please try again.');
+  }
 });
 
 // Logout
 app.post('/logout', (req, res) => {
-    req.session.destroy(() => {
-        res.redirect('/');
-    });
+  req.session.destroy(() => {
+    res.redirect('/admin');
+  });
 });
 
-// ================== ADMIN ==================
-app.get('/admin/wallet', (req, res) => {
-    if (!req.session.isAdmin) {
-        return res.redirect('/');
+// CREATE new post (admin only)
+app.post('/admin/posts', requireLogin, (req, res) => {
+  try {
+    const { title, content, imageUrl, category } = req.body;
+    
+    if (!title || !content) {
+      return res.redirect('/admin?error=Title and content are required.');
     }
-    res.render('adminwallet', { 
-        isAdmin: true,
-        success: req.query.success || null,
-        error: req.query.error || null
-    });
+
+    const newPost = {
+      id: Date.now(),
+      title: title.trim(),
+      content: content.trim(),
+      imageUrl: imageUrl && imageUrl.trim() ? imageUrl.trim() : 'https://picsum.photos/id/1018/1200/630',
+      category: category || 'Personal',
+      date: new Date().toISOString().split('T')[0],
+      excerpt: content.trim().substring(0, 140) + (content.length > 140 ? '...' : '')
+    };
+
+    posts.unshift(newPost);
+    savePosts();
+
+    res.redirect('/admin?success=Blog post published successfully! 🎉');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/admin?error=Failed to create post. Please try again.');
+  }
 });
 
-app.post('/admin/send', async (req, res) => {
-    if (!req.session.isAdmin) return res.redirect('/');
-    res.redirect('/admin/wallet?success=Admin send feature coming soon');
+// UPDATE existing post
+app.post('/admin/posts/:id', requireLogin, (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+    const { title, content, imageUrl, category } = req.body;
+
+    const postIndex = posts.findIndex(p => p.id === postId);
+    if (postIndex === -1) {
+      return res.redirect('/admin?error=Post not found.');
+    }
+
+    posts[postIndex].title = title.trim();
+    posts[postIndex].content = content.trim();
+    posts[postIndex].imageUrl = imageUrl && imageUrl.trim() ? imageUrl.trim() : posts[postIndex].imageUrl;
+    posts[postIndex].category = category || posts[postIndex].category;
+    posts[postIndex].excerpt = content.trim().substring(0, 140) + (content.length > 140 ? '...' : '');
+
+    savePosts();
+
+    res.redirect('/admin?success=Post updated successfully!');
+  } catch (err) {
+    console.error(err);
+    res.redirect('/admin?error=Failed to update post.');
+  }
 });
 
-// ================== START ==================
-app.listen(PORT, () => {
-    console.log(`[VAULT NODE] Secure Wallet running on http://localhost:${PORT}`);
+// DELETE post
+app.delete('/admin/posts/:id', requireLogin, (req, res) => {
+  try {
+    const postId = parseInt(req.params.id);
+    posts = posts.filter(p => p.id !== postId);
+    savePosts();
+    res.json({ success: true, message: 'Post deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Failed to delete post' });
+  }
 });
+
+// API endpoint to get all posts
+app.get('/api/posts', (req, res) => {
+  const sortedPosts = [...posts].sort((a, b) => b.id - a.id);
+  res.json(sortedPosts);
+});
+
+// ====================== ERROR HANDLING ======================
+app.use((req, res) => {
+  res.status(404).send(`
+    <div style="text-align:center; padding: 80px 20px; font-family: system-ui;">
+      <h1 style="font-size: 4rem; margin-bottom: 1rem;">404</h1>
+      <p style="font-size: 1.
