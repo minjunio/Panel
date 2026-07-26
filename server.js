@@ -208,4 +208,20 @@ app.use((req, res) => {
   res.status(404).send(`
     <div style="text-align:center; padding: 80px 20px; font-family: system-ui;">
       <h1 style="font-size: 4rem; margin-bottom: 1rem;">404</h1>
-      <p style="font-size: 1.
+      <p style="font-size: 1.25rem; color: #64748b;">Page not found. Let's get you back to the blog.</p>
+      <a href="/" style="display: inline-block; margin-top: 2rem; padding: 12px 28px; background: #0f172a; color: white; text-decoration: none; border-radius: 9999px;">← Return Home</a>
+    </div>
+  `);
+});
+
+// ====================== START SERVER ======================
+app.listen(PORT, () => {
+  console.log(`
+╔════════════════════════════════════════════════════════════╗
+║  ✈️  Minjun Seoyeon Blog is running!                        ║
+║  🌍  http://localhost:${PORT}                               ║
+║  📝  Admin panel: http://localhost:${PORT}/admin            ║
+║  🔑  Default password: minjunseoyeon2026 (change it!)       ║
+╚════════════════════════════════════════════════════════════╝
+  `);
+});
