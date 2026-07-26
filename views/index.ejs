@@ -4,13 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minjun Seoyeon • Korea Stories from Busan</title>
-    <meta name="description" content="Personal stories from Korea by Minjun Seoyeon, based in Busan. Explore cities, latest Busan news, and authentic travel experiences.">
+    <meta name="description" content="Personal stories from Korea by Minjun Seoyeon, based in Busan.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
-        
         body { font-family: 'Inter', system_ui, -apple-system, sans-serif; }
         .heading-serif { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; line-height: 1.05; }
         .section-header { font-size: 2.1rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; }
@@ -18,11 +17,7 @@
         .city-card { transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
         .city-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
         .clean-shadow { box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.08); }
-        
-        .trustpilot {
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-        }
+        .trustpilot { background: #ffffff; border: 1px solid #e5e7eb; }
     </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900">
@@ -41,7 +36,6 @@
                             <span class="font-light text-rose-600 tracking-tighter text-2xl">seoyeon</span>
                         </div>
                     </div>
-                    
                     <a href="/admin" class="flex items-center gap-x-2 px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-3xl transition-colors border border-zinc-200">
                         <i class="fa-solid fa-lock text-xs"></i>
                         <span class="hidden sm:inline">Admin</span>
@@ -65,7 +59,7 @@
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star-half-stroke"></i>
                             </div>
-                            <div class="text-[10px] font-semibold text-[#00b67a] tracking-wider">TRUSTPILOT</div>
+                            <div class="text-[10px] font-bold text-[#00b67a] tracking-wider">Trustpilot</div>
                         </div>
                         <div class="text-center">
                             <div class="font-bold text-xl leading-none">4.6</div>
@@ -112,7 +106,7 @@
             </div>
         </div>
 
-        <!-- Trustpilot Badge on Hero -->
+        <!-- Trustpilot on Hero -->
         <div class="hidden xl:block absolute top-8 right-8">
             <div class="trustpilot flex items-center gap-x-3 px-5 py-3 rounded-3xl clean-shadow">
                 <div>
@@ -123,7 +117,7 @@
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star-half-stroke"></i>
                     </div>
-                    <div class="text-[10px] font-semibold text-[#00b67a] tracking-wider">TRUSTPILOT</div>
+                    <div class="text-[10px] font-bold text-[#00b67a] tracking-wider">Trustpilot</div>
                 </div>
                 <div class="text-center">
                     <div class="font-bold text-2xl leading-none">4.6</div>
@@ -182,7 +176,7 @@
         </div>
 
         <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- Populated by JavaScript -->
+            <!-- Populated by JS -->
         </div>
     </section>
 
@@ -293,7 +287,7 @@
             </div>
 
             <div class="p-8 overflow-y-auto flex-1" id="city-modal-spots">
-                <!-- Populated dynamically -->
+                <!-- Populated by JavaScript -->
             </div>
         </div>
     </div>
@@ -441,19 +435,19 @@
             spotsContainer.innerHTML = '';
 
             city.spots.forEach(spot => {
-                // Generate stars correctly
+                // Generate stars properly
                 const fullStars = Math.floor(spot.rating);
-                const hasHalfStar = (spot.rating % 1) !== 0;
+                const hasHalf = (spot.rating % 1) !== 0;
                 let starsHTML = '';
                 
                 for (let i = 0; i < fullStars; i++) {
                     starsHTML += '<i class="fa-solid fa-star text-yellow-400"></i>';
                 }
-                if (hasHalfStar) {
+                if (hasHalf) {
                     starsHTML += '<i class="fa-solid fa-star-half-stroke text-yellow-400"></i>';
                 }
-                const remaining = 5 - Math.ceil(spot.rating);
-                for (let i = 0; i < remaining; i++) {
+                const empty = 5 - Math.ceil(spot.rating);
+                for (let i = 0; i < empty; i++) {
                     starsHTML += '<i class="fa-regular fa-star text-yellow-400"></i>';
                 }
 
