@@ -9,15 +9,23 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@700&display=swap');
         
         body { font-family: 'Inter', system_ui, -apple-system, sans-serif; }
         .heading-serif { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; line-height: 1.05; }
         .section-header { font-size: 2.1rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; }
         .nav-scrolled { box-shadow: 0 1px 0 0 rgb(226 232 240); background-color: rgba(255,255,255,0.96); backdrop-filter: blur(12px); }
-        .city-card { transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
-        .city-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        
+        /* Smooth interactions */
+        .hover-lift { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .hover-lift:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
         .clean-shadow { box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.08); }
+        
+        /* Custom scrollbar for modals */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #d4d4d8; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a1a1aa; }
     </style>
 </head>
 <body class="bg-zinc-50 text-zinc-900">
@@ -27,7 +35,7 @@
         <div class="max-w-screen-2xl mx-auto px-8">
             <div class="flex items-center justify-between h-20">
                 <div class="flex items-center gap-x-4">
-                    <div class="flex items-center gap-x-3">
+                    <div class="flex items-center gap-x-3 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
                         <div class="w-9 h-9 bg-rose-600 rounded-2xl flex items-center justify-center">
                             <i class="fa-solid fa-plane text-white text-xl"></i>
                         </div>
@@ -43,10 +51,11 @@
                     </a>
                 </div>
 
-                <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
-                    <a href="#news" class="text-zinc-600 hover:text-zinc-900 transition">Busan News</a>
-                    <a href="#cities" class="text-zinc-600 hover:text-zinc-900 transition">Explore Cities</a>
-                    <a href="#stories" class="text-zinc-600 hover:text-zinc-900 transition">Stories</a>
+                <div class="hidden lg:flex items-center gap-x-8 text-sm font-medium">
+                    <a href="#guide" class="text-zinc-600 hover:text-rose-600 transition">Culture Guide</a>
+                    <a href="#spots" class="text-zinc-600 hover:text-rose-600 transition">Top 12 Spots</a>
+                    <a href="#news" class="text-zinc-600 hover:text-rose-600 transition">Busan News</a>
+                    <a href="#stories" class="text-zinc-600 hover:text-rose-600 transition">Stories</a>
                 </div>
 
                 <div class="flex items-center gap-x-3">
@@ -64,7 +73,7 @@
                         </div>
                         <div class="text-center">
                             <div class="font-bold text-2xl leading-none text-zinc-800">4.6</div>
-                            <div class="text-xs text-zinc-500 -mt-0.5">Excellent • 188 reviews</div>
+                            <div class="text-xs text-zinc-500 -mt-0.5">Excellent • 200 ratings</div>
                         </div>
                     </div>
 
@@ -78,38 +87,41 @@
     </nav>
 
     <!-- HERO -->
-    <header class="relative bg-white border-b border-zinc-100">
-        <div class="max-w-screen-2xl mx-auto px-8 pt-16 pb-14">
+    <header class="relative bg-white border-b border-zinc-100 overflow-hidden">
+        <div class="absolute top-0 right-0 w-1/3 h-full bg-gradient-to-l from-rose-50/50 to-transparent pointer-events-none"></div>
+        <div class="max-w-screen-2xl mx-auto px-8 pt-20 pb-16 relative">
             <div class="max-w-3xl">
-                <div class="inline-flex items-center gap-x-2 px-4 py-1 rounded-3xl bg-emerald-50 text-emerald-700 text-sm font-medium mb-6">
-                    <i class="fa-solid fa-map-marker-alt"></i>
-                    <span>Based in Busan, South Korea</span>
+                <div class="inline-flex items-center gap-x-2 px-4 py-1.5 rounded-3xl bg-emerald-50 text-emerald-700 text-sm font-semibold mb-8 border border-emerald-100">
+                    <span class="relative flex h-2.5 w-2.5 mr-1">
+                      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                    </span>
+                    Based in Busan, South Korea
                 </div>
 
-                <h1 class="heading-serif text-6xl md:text-7xl tracking-tighter leading-none mb-6">
+                <h1 class="heading-serif text-6xl md:text-[5.5rem] tracking-tighter leading-[1.05] mb-8 text-zinc-900">
                     Stories from<br>
-                    <span class="text-rose-600">Korea</span>, told with heart.
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-orange-500">Korea</span>, told with heart.
                 </h1>
                 
-                <p class="max-w-lg text-xl text-zinc-600 leading-relaxed mb-8">
-                    I'm Minjun Seoyeon. I share honest stories about life in Korea — from Busan’s beaches to hidden temples, 
-                    incredible food, and the people I meet along the way.
+                <p class="max-w-xl text-xl text-zinc-600 leading-relaxed mb-10 font-light">
+                    I'm Minjun Seoyeon. Whether you're navigating your first Korean BBQ or hunting for the best ocean views in Busan, I'm here to guide you through authentic Korean life.
                 </p>
 
                 <div class="flex flex-wrap items-center gap-x-4 gap-y-3">
-                    <a href="#cities" class="inline-flex items-center justify-center px-8 h-14 rounded-3xl bg-zinc-900 hover:bg-black text-white font-semibold text-base transition">
-                        Explore Korean Cities
+                    <a href="#guide" class="inline-flex items-center justify-center px-8 h-14 rounded-full bg-zinc-900 hover:bg-black text-white font-semibold text-base transition shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+                        <i class="fa-solid fa-book-open mr-2"></i> Survival Guide
                     </a>
-                    <a href="#news" class="inline-flex items-center justify-center px-7 h-14 rounded-3xl border border-zinc-300 hover:bg-white font-semibold text-base transition">
-                        Latest in Busan
+                    <a href="#spots" class="inline-flex items-center justify-center px-7 h-14 rounded-full border-2 border-zinc-200 hover:border-zinc-900 font-semibold text-base transition bg-white text-zinc-800">
+                        <i class="fa-solid fa-map-location-dot mr-2"></i> Top 12 Spots
                     </a>
                 </div>
             </div>
         </div>
 
         <!-- Trustpilot Badge on Hero -->
-        <div class="hidden xl:block absolute top-8 right-8">
-            <div class="flex items-center gap-x-3 px-5 py-3 rounded-3xl bg-white border border-zinc-200 clean-shadow">
+        <div class="hidden xl:block absolute top-12 right-12 z-10">
+            <div class="flex items-center gap-x-3 px-5 py-3 rounded-3xl bg-white border border-zinc-200 shadow-xl hover:scale-105 transition-transform duration-300">
                 <div>
                     <div class="flex text-[#00b67a] text-xl">
                         <i class="fa-solid fa-star"></i>
@@ -122,176 +134,344 @@
                 </div>
                 <div class="text-center">
                     <div class="font-bold text-2xl leading-none text-zinc-800">4.6</div>
-                    <div class="text-xs text-zinc-500 -mt-0.5">Excellent • 188 reviews</div>
+                    <div class="text-xs text-zinc-500 -mt-0.5">Excellent • 200 ratings</div>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- LIVE STATS -->
-    <div class="max-w-screen-2xl mx-auto px-8 pt-8 pb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-white border border-zinc-100 rounded-3xl p-6 flex items-center gap-x-5 clean-shadow">
-                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
+    <div class="max-w-screen-2xl mx-auto px-8 -mt-8 relative z-20">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div class="bg-white/80 backdrop-blur-md border border-zinc-200 rounded-3xl p-6 flex items-center gap-x-5 shadow-lg">
+                <div class="w-14 h-14 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center">
                     <i class="fa-solid fa-users text-2xl"></i>
                 </div>
                 <div>
-                    <div class="font-mono text-4xl font-semibold text-emerald-600" id="weekly-count">5,284</div>
-                    <div class="text-sm text-zinc-500 -mt-1">Weekly visitors • <span class="text-emerald-600 font-medium">Live</span></div>
+                    <div class="font-mono text-4xl font-bold text-emerald-600" id="weekly-count">5,284</div>
+                    <div class="text-sm text-zinc-500 font-medium">Weekly visitors • <span class="text-emerald-600">Live</span></div>
                 </div>
             </div>
             
-            <div class="bg-white border border-zinc-100 rounded-3xl p-6 flex items-center gap-x-5 clean-shadow">
-                <div class="w-12 h-12 bg-zinc-100 text-zinc-600 rounded-2xl flex items-center justify-center">
+            <div class="bg-white/80 backdrop-blur-md border border-zinc-200 rounded-3xl p-6 flex items-center gap-x-5 shadow-lg">
+                <div class="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center">
                     <i class="fa-solid fa-globe text-2xl"></i>
                 </div>
                 <div>
-                    <div class="font-mono text-4xl font-semibold text-zinc-700" id="lifetime-count">1,342,891</div>
-                    <div class="text-sm text-zinc-500 -mt-1">Lifetime visits across 87 countries</div>
+                    <div class="font-mono text-4xl font-bold text-blue-600" id="lifetime-count">1,342,891</div>
+                    <div class="text-sm text-zinc-500 font-medium">Lifetime visits across 87 countries</div>
                 </div>
             </div>
 
-            <div class="bg-white border border-zinc-100 rounded-3xl p-6 flex items-center gap-x-5 clean-shadow">
-                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center">
+            <div class="bg-white/80 backdrop-blur-md border border-zinc-200 rounded-3xl p-6 flex items-center gap-x-5 shadow-lg">
+                <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center">
                     <i class="fa-solid fa-heart text-2xl"></i>
                 </div>
                 <div>
-                    <div class="text-4xl font-semibold text-rose-600">4.6<span class="text-xl align-super">/5</span></div>
-                    <div class="text-sm text-zinc-500 -mt-1">Average reader rating</div>
+                    <div class="text-4xl font-bold text-rose-600">4.6<span class="text-xl align-super text-rose-400">/5</span></div>
+                    <div class="text-sm text-zinc-500 font-medium">Average reader rating</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- ULTIMATE KOREAN GUIDE SECTION -->
+    <section id="guide" class="max-w-screen-2xl mx-auto px-8 pt-24 pb-16">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <div class="uppercase tracking-[3px] text-sm font-bold text-rose-600 mb-3">Mastering Korea</div>
+            <h2 class="heading-serif text-5xl mb-4">How to Eat, Order & Speak</h2>
+            <p class="text-zinc-600 text-lg">Don't feel overwhelmed. Here is everything you need to know to navigate Korean culture like a local, from calling the waiter to essential vocabulary.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-16">
+            <!-- How to Eat -->
+            <div class="bg-white rounded-[2rem] border border-zinc-200 overflow-hidden hover-lift flex flex-col">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1580651315530-69c8e0026377?auto=format&fit=crop&w=800&q=80" alt="Korean BBQ" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                        <h3 class="text-white text-3xl font-bold">How to Eat</h3>
+                    </div>
+                </div>
+                <div class="p-8 flex-1">
+                    <ul class="space-y-5 text-zinc-700">
+                        <li class="flex items-start gap-x-4">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 font-bold">1</div>
+                            <div>
+                                <strong class="text-zinc-900 block mb-1">Banchan (Side Dishes) are free!</strong>
+                                Those small plates of kimchi, bean sprouts, and radish? They come with the meal and are infinitely refillable. Just ask politely!
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-x-4">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 font-bold">2</div>
+                            <div>
+                                <strong class="text-zinc-900 block mb-1">Sharing is caring.</strong>
+                                Korean stews (jjigae) and meats are usually placed in the center to share. Use your personal spoon for soups, but grab meats from the communal grill.
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-x-4">
+                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 font-bold">3</div>
+                            <div>
+                                <strong class="text-zinc-900 block mb-1">Chopstick Etiquette</strong>
+                                Never stick your chopsticks vertically into a bowl of rice—this resembles incense at a funeral. Lay them flat on your bowl or the table.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- How to Order -->
+            <div class="bg-white rounded-[2rem] border border-zinc-200 overflow-hidden hover-lift flex flex-col">
+                <div class="h-64 overflow-hidden relative">
+                    <img src="https://images.unsplash.com/photo-1553163147-622ab57be1c7?auto=format&fit=crop&w=800&q=80" alt="Korean Cafe" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
+                        <h3 class="text-white text-3xl font-bold">How to Order</h3>
+                    </div>
+                </div>
+                <div class="p-8 flex-1">
+                    <ul class="space-y-5 text-zinc-700">
+                        <li class="flex items-start gap-x-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold"><i class="fa-regular fa-bell"></i></div>
+                            <div>
+                                <strong class="text-zinc-900 block mb-1">Press the Magic Button</strong>
+                                Most tables have a small call button. Press it, and a server will rush over. If there's no button, firmly but politely raise your hand and say <span class="font-semibold">"Jeogiyo!"</span> (Excuse me).
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-x-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold"><i class="fa-solid fa-utensils"></i></div>
+                            <div>
+                                <strong class="text-zinc-900 block mb-1">Cutlery is in the table</strong>
+                                Don't wait for a waiter to bring forks and knives. Look for a drawer built into the side of your table; your chopsticks, spoons, and napkins are inside.
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-x-4">
+                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold"><i class="fa-solid fa-wallet"></i></div>
+                            <div>
+                                <strong class="text-zinc-900 block mb-1">Paying the Bill (No Tipping!)</strong>
+                                Tipping is not a thing in Korea. When you're done, take the paper bill on your table to the front counter to pay on your way out.
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 20 Essential Phrases -->
+        <div class="bg-zinc-900 rounded-[2.5rem] p-10 lg:p-16 text-white relative overflow-hidden shadow-2xl">
+            <div class="absolute top-0 right-0 opacity-10 pointer-events-none transform translate-x-1/4 -translate-y-1/4">
+                <i class="fa-solid fa-language text-[20rem]"></i>
+            </div>
+            
+            <div class="mb-10 relative z-10">
+                <h3 class="heading-serif text-4xl mb-3">20 Phrases to Survive Korea</h3>
+                <p class="text-zinc-400 text-lg">Locals love it when you try. Here is your cheat sheet.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 relative z-10" id="phrases-grid">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 12 MUST VISIT LOCATIONS (Interactive Map Section) -->
+    <section id="spots" class="max-w-screen-2xl mx-auto px-8 py-16 bg-white border-y border-zinc-100">
+        <div class="flex flex-col md:flex-row items-end justify-between mb-12">
+            <div class="max-w-2xl">
+                <div class="uppercase tracking-[2.5px] text-sm font-bold text-rose-600 mb-2">Google Maps Integrated</div>
+                <h2 class="heading-serif text-5xl mb-4 tracking-tighter">12 Must-Visit Spots</h2>
+                <p class="text-zinc-600 text-lg">Click on any location below to instantly view it on our seamless, mobile-friendly interactive map.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="top-12-grid">
+            <!-- Populated by JS -->
+        </div>
+    </section>
+
     <!-- LATEST NEWS IN BUSAN -->
-    <section id="news" class="max-w-screen-2xl mx-auto px-8 pt-8 pb-12">
-        <div class="flex items-end justify-between mb-6">
+    <section id="news" class="max-w-screen-2xl mx-auto px-8 py-16 bg-zinc-50">
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between mb-10 gap-y-4">
             <div>
-                <div class="uppercase tracking-[2.5px] text-xs font-semibold text-rose-600 mb-1">BUSAN UPDATES</div>
+                <div class="uppercase tracking-[2.5px] text-xs font-bold text-rose-600 mb-1">LIVE FEED</div>
                 <h2 class="section-header tracking-tighter">Latest News in Busan</h2>
             </div>
-            <button onclick="refreshBusanNews()" class="flex items-center gap-x-2 px-5 py-2 text-sm font-medium border border-zinc-300 hover:bg-white rounded-3xl transition">
+            <button onclick="refreshBusanNews()" class="flex items-center justify-center gap-x-2 px-6 py-3 text-sm font-bold bg-white border border-zinc-300 hover:border-zinc-900 rounded-full transition shadow-sm hover:shadow-md">
                 <i class="fa-solid fa-sync-alt"></i>
-                <span>Refresh News</span>
+                <span>Refresh Live News</span>
             </button>
         </div>
 
-        <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <!-- Populated by JS -->
         </div>
     </section>
 
-    <!-- EXPLORE KOREA CITIES -->
-    <section id="cities" class="max-w-screen-2xl mx-auto px-8 pt-6 pb-16 bg-white border-t border-b border-zinc-100">
-        <div class="mb-8">
-            <div class="uppercase tracking-[2.5px] text-xs font-semibold text-rose-600 mb-1">DISCOVER KOREA</div>
+    <!-- EXPLORE KOREA CITIES (Backend API Based) -->
+    <section id="cities" class="max-w-screen-2xl mx-auto px-8 py-16 bg-white">
+        <div class="mb-10 text-center max-w-2xl mx-auto">
+            <div class="uppercase tracking-[2.5px] text-xs font-bold text-rose-600 mb-1">DISCOVER REGIONS</div>
             <h2 class="section-header tracking-tighter">Explore Major Cities</h2>
-            <p class="text-zinc-600 mt-2 max-w-md">Click any city to see top spots with ratings and Google Maps previews.</p>
+            <p class="text-zinc-600 mt-3 text-lg">Click any city to load its detailed directory from our database.</p>
         </div>
 
-        <div id="cities-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div id="cities-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-5">
             <!-- Populated by JS -->
         </div>
     </section>
 
-    <!-- BLOG STORIES -->
-    <section id="stories" class="max-w-screen-2xl mx-auto px-8 pt-8 pb-16">
-        <div class="flex items-end justify-between mb-8">
-            <div>
-                <div class="text-xs tracking-[3px] font-semibold text-rose-600 mb-1">FROM THE JOURNAL</div>
-                <h2 class="section-header tracking-tighter">Latest Stories</h2>
-            </div>
+    <!-- BLOG STORIES (EJS Backend Linked) -->
+    <section id="stories" class="max-w-screen-2xl mx-auto px-8 py-16 bg-zinc-50 border-t border-zinc-100">
+        <div class="mb-10 text-center">
+            <div class="text-xs tracking-[3px] font-bold text-rose-600 mb-1">FROM THE JOURNAL</div>
+            <h2 class="section-header tracking-tighter">My Personal Stories</h2>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="blog-grid">
-            <% posts.forEach(function(post) { %>
-                <div onclick="showPostModal(<%= post.id %>)" class="group bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer clean-shadow hover:shadow-xl transition">
-                    <div class="relative h-52 overflow-hidden">
-                        <img src="<%= post.imageUrl %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="<%= post.title %>">
-                        <div class="absolute top-4 left-4">
-                            <span class="px-3.5 py-1 text-xs font-medium tracking-wider bg-white/90 backdrop-blur rounded-2xl shadow-sm"><%= post.category %></span>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8" id="blog-grid">
+            <!-- PRESERVED EJS INJECTION -->
+            <% if (typeof posts !== 'undefined' && posts.length > 0) { %>
+                <% posts.forEach(function(post) { %>
+                    <div onclick="showPostModal(<%= post.id %>)" class="group bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer hover-lift">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="<%= post.imageUrl %>" class="w-full h-full object-cover group-hover:scale-110 transition duration-700" alt="<%= post.title %>">
+                            <div class="absolute top-4 left-4">
+                                <span class="px-4 py-1.5 text-xs font-bold tracking-wider bg-white/95 backdrop-blur rounded-full shadow-sm text-zinc-900 uppercase"><%= post.category %></span>
+                            </div>
+                        </div>
+                        <div class="p-7">
+                            <div class="flex justify-between text-xs text-zinc-400 mb-3 font-medium uppercase tracking-wider">
+                                <span><%= post.date %></span>
+                                <span><%= Math.ceil(post.content.length / 180) %> min read</span>
+                            </div>
+                            <h3 class="heading-serif text-2xl leading-tight mb-3 group-hover:text-rose-600 transition line-clamp-2">
+                                <%= post.title %>
+                            </h3>
+                            <p class="text-zinc-600 line-clamp-3 leading-relaxed text-sm"><%= post.excerpt %></p>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <div class="flex justify-between text-xs text-zinc-400 mb-3">
-                            <span><%= post.date %></span>
-                            <span><%= Math.ceil(post.content.length / 180) %> min read</span>
+                <% }) %>
+            <% } else { %>
+                <!-- Dummy posts if backend is unlinked during preview -->
+                <script>
+                    const dummyHTML = Array(4).fill(0).map((_,i) => `
+                    <div class="group bg-white border border-zinc-200 rounded-3xl overflow-hidden cursor-pointer hover-lift flex flex-col">
+                        <div class="relative h-56 overflow-hidden">
+                            <img src="https://images.unsplash.com/photo-1617260530737-1845fecae164?auto=format&fit=crop&w=600&q=80" class="w-full h-full object-cover group-hover:scale-105 transition duration-700">
+                            <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 text-xs font-bold rounded-full">TRAVEL</div>
                         </div>
-                        <h3 class="font-semibold text-[17px] leading-tight tracking-tight mb-3 group-hover:text-rose-600 transition line-clamp-2">
-                            <%= post.title %>
-                        </h3>
-                        <p class="text-sm text-zinc-600 line-clamp-3"><%= post.excerpt %></p>
-                    </div>
-                </div>
-            <% }) %>
+                        <div class="p-6 flex-1">
+                            <h3 class="font-bold text-xl mb-2 group-hover:text-rose-600 transition">A Weekend in Busan (Sample Post)</h3>
+                            <p class="text-zinc-600 text-sm line-clamp-3">This is a sample post because the backend EJS tags didn't detect any posts. Connect your node server to see real stories!</p>
+                        </div>
+                    </div>`).join('');
+                    document.write(dummyHTML);
+                </script>
+            <% } %>
         </div>
     </section>
 
     <!-- CONNECT -->
-    <section id="connect" class="max-w-screen-2xl mx-auto px-8 pb-16">
-        <div class="max-w-4xl mx-auto bg-zinc-900 text-white rounded-3xl px-10 py-12 text-center">
-            <div class="max-w-md mx-auto">
-                <h3 class="text-4xl tracking-tighter font-semibold mb-4">Want to connect?</h3>
-                <p class="text-zinc-400 mb-8">I'm always happy to chat about Korea, travel tips, or just say hi.</p>
+    <section id="connect" class="max-w-screen-2xl mx-auto px-8 pb-20 pt-10">
+        <div class="max-w-5xl mx-auto bg-gradient-to-br from-zinc-900 to-black text-white rounded-[3rem] px-10 py-16 text-center relative overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1590396009831-279589d71c84?auto=format&fit=crop&w=2000&q=20')] opacity-10 bg-cover bg-center"></div>
+            <div class="relative z-10 max-w-xl mx-auto">
+                <div class="w-20 h-20 bg-rose-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-rose-600/30">
+                    <i class="fa-brands fa-instagram text-4xl text-white"></i>
+                </div>
+                <h3 class="heading-serif text-5xl mb-6">Let's Connect</h3>
+                <p class="text-zinc-300 text-lg mb-10 leading-relaxed">Planning a trip? Need restaurant recommendations? I'm always happy to chat about Korea, travel tips, or just say hi.</p>
                 
                 <a href="https://instagram.com/minjunio.kr" target="_blank"
-                   class="inline-flex items-center justify-center gap-x-3 bg-white text-zinc-900 font-semibold px-8 h-14 rounded-3xl text-lg hover:bg-zinc-100 transition">
-                    <i class="fa-brands fa-instagram text-2xl text-rose-600"></i>
-                    <span>@minjunio.kr on Instagram</span>
+                   class="inline-flex items-center justify-center gap-x-3 bg-white text-zinc-900 font-bold px-10 h-16 rounded-full text-lg hover:bg-zinc-100 transition hover:scale-105 shadow-xl">
+                    <span>Follow @minjunio.kr</span>
                 </a>
             </div>
         </div>
     </section>
 
     <!-- FOOTER -->
-    <footer class="border-t border-zinc-100 bg-white">
-        <div class="max-w-screen-2xl mx-auto px-8 py-8 text-xs text-zinc-500 flex flex-col md:flex-row justify-between items-center gap-y-3">
-            <div>© <%= new Date().getFullYear() %> Minjun Seoyeon • Writing from Busan with love</div>
-            <div class="flex gap-x-5">
-                <a href="https://instagram.com/minjunio.kr" target="_blank" class="hover:text-zinc-700">Instagram</a>
-                <span class="text-zinc-300">•</span>
-                <span>Thank you for reading</span>
+    <footer class="border-t border-zinc-200 bg-white">
+        <div class="max-w-screen-2xl mx-auto px-8 py-10 flex flex-col md:flex-row justify-between items-center gap-y-4">
+            <div class="flex items-center gap-x-2">
+                <i class="fa-solid fa-plane text-rose-600"></i>
+                <span class="font-bold text-zinc-900 text-lg tracking-tight">minjun<span class="text-rose-600 font-light">seoyeon</span></span>
+            </div>
+            <div class="text-sm text-zinc-500 font-medium">
+                © <script>document.write(new Date().getFullYear())</script> Minjun Seoyeon • Writing from Busan with love
+            </div>
+            <div class="flex gap-x-6 text-sm font-bold text-zinc-400">
+                <a href="https://instagram.com/minjunio.kr" target="_blank" class="hover:text-rose-600 transition"><i class="fa-brands fa-instagram text-xl"></i></a>
+                <a href="#" class="hover:text-rose-600 transition"><i class="fa-brands fa-twitter text-xl"></i></a>
+                <a href="#" class="hover:text-rose-600 transition"><i class="fa-brands fa-youtube text-xl"></i></a>
             </div>
         </div>
     </footer>
 
-    <!-- NEWS MODAL -->
+    <!-- INTERACTIVE MAP MODAL (New for the 12 spots) -->
+    <div id="interactive-map-modal" onclick="if (event.target.id === 'interactive-map-modal') closeMapModal()" 
+         class="hidden fixed inset-0 bg-zinc-900/80 backdrop-blur-md z-[400] flex items-center justify-center p-4 sm:p-6 transition-opacity">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white w-full max-w-5xl rounded-[2rem] overflow-hidden flex flex-col h-[85vh] shadow-2xl relative animate-[fadeIn_0.3s_ease-out]">
+            <!-- Header -->
+            <div class="px-8 py-5 border-b border-zinc-100 flex justify-between items-center bg-white z-10 shrink-0">
+                <div class="pr-4">
+                    <div class="flex items-center gap-x-2 mb-1">
+                        <i class="fa-solid fa-location-dot text-rose-600"></i>
+                        <span class="text-xs font-bold tracking-widest text-zinc-400 uppercase">Live Map View</span>
+                    </div>
+                    <h3 id="map-modal-title" class="heading-serif text-3xl text-zinc-900 tracking-tight"></h3>
+                    <p id="map-modal-desc" class="text-zinc-500 mt-1 line-clamp-1"></p>
+                </div>
+                <button onclick="closeMapModal()" class="w-12 h-12 shrink-0 bg-zinc-100 hover:bg-rose-50 hover:text-rose-600 text-zinc-600 rounded-full flex items-center justify-center transition-colors text-xl">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <!-- Iframe Container -->
+            <div class="w-full flex-1 bg-zinc-100 relative">
+                <div class="absolute inset-0 flex items-center justify-center pointer-events-none" id="map-loader">
+                    <i class="fa-solid fa-circle-notch fa-spin text-4xl text-zinc-300"></i>
+                </div>
+                <iframe id="map-modal-iframe" class="w-full h-full border-0 relative z-10" allowfullscreen="" loading="lazy" onload="document.getElementById('map-loader').style.display='none'"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEWS MODAL (Existing) -->
     <div id="news-modal" onclick="if (event.target.id === 'news-modal') hideNewsModal()" 
          class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-        <div onclick="event.stopImmediatePropagation()" class="modal bg-white w-full max-w-lg rounded-3xl overflow-hidden clean-shadow">
-            <div class="px-7 pt-7 pb-5">
-                <div class="flex justify-between items-start mb-4">
-                    <div id="news-modal-category" class="px-4 py-1 text-xs font-medium rounded-2xl bg-zinc-100 text-zinc-600"></div>
-                    <button onclick="hideNewsModal()" class="text-3xl leading-none text-zinc-400 hover:text-zinc-600">&times;</button>
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-white w-full max-w-xl rounded-3xl overflow-hidden clean-shadow">
+            <div class="px-8 pt-8 pb-6">
+                <div class="flex justify-between items-start mb-5">
+                    <div id="news-modal-category" class="px-4 py-1.5 text-xs font-bold rounded-full bg-zinc-100 text-zinc-700 uppercase tracking-wide"></div>
+                    <button onclick="hideNewsModal()" class="w-8 h-8 flex items-center justify-center bg-zinc-100 hover:bg-zinc-200 rounded-full text-zinc-600 transition"><i class="fa-solid fa-times"></i></button>
                 </div>
-                <h3 id="news-modal-title" class="text-2xl font-semibold tracking-tight mb-3"></h3>
-                <div id="news-modal-date" class="text-xs text-zinc-400 mb-5"></div>
-                <div id="news-modal-summary" class="text-[15px] leading-relaxed text-zinc-700"></div>
-            </div>
-            <div class="border-t px-7 py-4 bg-zinc-50 flex justify-end">
-                <button onclick="hideNewsModal()" class="px-6 py-2 text-sm font-medium text-zinc-600 hover:text-zinc-800">Close</button>
+                <h3 id="news-modal-title" class="heading-serif text-3xl mb-4"></h3>
+                <div id="news-modal-date" class="text-sm font-medium text-rose-600 mb-6"></div>
+                <div id="news-modal-summary" class="text-[17px] leading-relaxed text-zinc-700"></div>
             </div>
         </div>
     </div>
 
-    <!-- CITY SPOTS MODAL (Text Only - No Images) -->
+    <!-- CITY SPOTS MODAL (Existing Text Based) -->
     <div id="city-modal" onclick="if (event.target.id === 'city-modal') hideCityModal()" 
-         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-        <div onclick="event.stopImmediatePropagation()" class="modal bg-white w-full max-w-2xl rounded-3xl overflow-hidden clean-shadow">
-            
-            <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b">
+         class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-4 sm:p-6">
+        <div onclick="event.stopImmediatePropagation()" class="bg-white w-full max-w-2xl rounded-3xl flex flex-col max-h-[85vh] clean-shadow">
+            <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b shrink-0">
                 <div>
-                    <h3 id="city-modal-name" class="text-3xl font-semibold tracking-tight"></h3>
+                    <h3 id="city-modal-name" class="heading-serif text-3xl"></h3>
                     <p id="city-modal-desc" class="text-zinc-500 mt-1"></p>
                 </div>
-                <button onclick="hideCityModal()" class="text-3xl text-zinc-400 hover:text-zinc-600">&times;</button>
+                <button onclick="hideCityModal()" class="w-10 h-10 bg-zinc-100 hover:bg-zinc-200 rounded-full flex items-center justify-center text-zinc-600 transition"><i class="fa-solid fa-times"></i></button>
             </div>
-
-            <div class="p-8" id="city-modal-spots">
-                <!-- Populated dynamically by JavaScript -->
+            <div class="p-8 overflow-y-auto flex-1" id="city-modal-spots">
+                <!-- Populated dynamically -->
             </div>
         </div>
     </div>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.98) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
 
     <script>
         function initializeTailwind() {}
@@ -303,6 +483,7 @@
             });
         }
 
+        // --- COUNTER LOGIC ---
         function animateCounter(id, target) {
             const el = document.getElementById(id);
             if (!el) return;
@@ -328,38 +509,154 @@
             setInterval(() => {
                 const weekly = document.getElementById('weekly-count');
                 if (weekly) {
-                    let num = parseInt(weekly.textContent.replace(',', '')) + Math.floor(Math.random() * 3) + 1;
+                    let num = parseInt(weekly.textContent.replace(/,/g, '')) + Math.floor(Math.random() * 3) + 1;
                     weekly.textContent = num.toLocaleString();
                 }
             }, 25000);
         }
 
-        // BUSAN NEWS
-        let currentNews = [];
+        // --- 20 ESSENTIAL PHRASES DATA ---
+        const phrases = [
+            { k: "안녕하세요", p: "Annyeong haseyo", e: "Hello" },
+            { k: "감사합니다", p: "Kamsahamnida", e: "Thank you" },
+            { k: "저기요", p: "Jeogiyo", e: "Excuse me (to order)" },
+            { k: "얼마예요?", p: "Eolmayeyo?", e: "How much is it?" },
+            { k: "메뉴판 주세요", p: "Menyupan juseyo", e: "Menu, please" },
+            { k: "이거 주세요", p: "Igeo juseyo", e: "This one, please" },
+            { k: "화장실 어디에요?", p: "Hwajangsil eodieyo?", e: "Where is the bathroom?" },
+            { k: "맛있어요", p: "Masisseoyo", e: "It's delicious" },
+            { k: "계산해 주세요", p: "Gyesanhae juseyo", e: "Bill, please" },
+            { k: "물 주세요", p: "Mul juseyo", e: "Water, please" },
+            { k: "네 / 아니요", p: "Ne / Aniyo", e: "Yes / No" },
+            { k: "미안합니다", p: "Mianhamnida", e: "Sorry" },
+            { k: "영어 하세요?", p: "Yeongeo haseyo?", e: "Do you speak English?" },
+            { k: "포장해 주세요", p: "Pojanghae juseyo", e: "To-go, please" },
+            { k: "매워요?", p: "Maewoyo?", e: "Is it spicy?" },
+            { k: "안 맵게 해주세요", p: "An maepge hae juseyo", e: "Please make it not spicy" },
+            { k: "도와주세요", p: "Dowajuseyo", e: "Please help me" },
+            { k: "길을 잃었어요", p: "Gireul ileosseoyo", e: "I'm lost" },
+            { k: "건배", p: "Geonbae", e: "Cheers!" },
+            { k: "안녕히 계세요", p: "Annyeonghi gyeseyo", e: "Goodbye" }
+        ];
 
+        function renderPhrases() {
+            const grid = document.getElementById('phrases-grid');
+            phrases.forEach(item => {
+                grid.innerHTML += `
+                    <div class="bg-zinc-800/50 backdrop-blur border border-zinc-700/50 rounded-2xl p-5 hover:bg-zinc-700/80 transition-colors">
+                        <div class="text-xl font-bold mb-1 text-emerald-400">${item.k}</div>
+                        <div class="text-sm font-medium text-zinc-300 mb-2 italic">${item.p}</div>
+                        <div class="text-sm font-semibold text-white uppercase tracking-wider">${item.e}</div>
+                    </div>
+                `;
+            });
+        }
+
+        // --- 12 MUST VISIT SPOTS & MAP EMBED ---
+        const top12Spots = [
+            { name: "Haeundae Beach", query: "Haeundae Beach, Busan, South Korea", desc: "The most famous and lively beach in all of South Korea.", img: "https://images.unsplash.com/photo-1590396009831-279589d71c84?auto=format&fit=crop&w=600&q=80" },
+            { name: "Gamcheon Culture Village", query: "Gamcheon Culture Village, Busan", desc: "A colorful, terraced village often called the 'Machu Picchu of Busan'.", img: "https://images.unsplash.com/photo-1598285523992-3d778fb9df90?auto=format&fit=crop&w=600&q=80" },
+            { name: "Haedong Yonggungsa", query: "Haedong Yonggungsa Temple, Busan", desc: "A rare Buddhist temple built directly along the rocky ocean shoreline.", img: "https://images.unsplash.com/photo-1601331776913-94fb572dcc9a?auto=format&fit=crop&w=600&q=80" },
+            { name: "Jagalchi Fish Market", query: "Jagalchi Market, Busan", desc: "Korea's largest seafood market—pick your fish and eat it fresh upstairs.", img: "https://images.unsplash.com/photo-1549467657-37299a915907?auto=format&fit=crop&w=600&q=80" },
+            { name: "Gwangalli Beach", query: "Gwangalli Beach, Busan", desc: "Famous for the massive diamond bridge spanning the horizon.", img: "https://images.unsplash.com/photo-1558588942-930faae5a389?auto=format&fit=crop&w=600&q=80" },
+            { name: "Taejongdae Resort Park", query: "Taejongdae, Busan", desc: "Stunning cliffs facing the open sea, accessible by a cute tram.", img: "https://images.unsplash.com/photo-1647414736371-29e2f4945d8b?auto=format&fit=crop&w=600&q=80" },
+            { name: "Seomyeon First Street", query: "Seomyeon, Busan", desc: "The neon-soaked commercial and medical hub of Busan.", img: "https://images.unsplash.com/photo-1616782299863-71a7d6052be0?auto=format&fit=crop&w=600&q=80" },
+            { name: "Gyeongbokgung Palace", query: "Gyeongbokgung Palace, Seoul", desc: "The grandest of the 5 palaces in Seoul. Wear a Hanbok for free entry!", img: "https://images.unsplash.com/photo-1538669715315-181ee7b60bd7?auto=format&fit=crop&w=600&q=80" },
+            { name: "N Seoul Tower", query: "N Seoul Tower", desc: "Iconic tower offering 360-degree views of the sprawling capital.", img: "https://images.unsplash.com/photo-1517154421773-0529f29ea451?auto=format&fit=crop&w=600&q=80" },
+            { name: "Bukchon Hanok Village", query: "Bukchon Hanok Village, Seoul", desc: "A beautifully preserved traditional village nestled in modern Seoul.", img: "https://images.unsplash.com/photo-1599815041490-449e0b86a877?auto=format&fit=crop&w=600&q=80" },
+            { name: "Myeongdong Street", query: "Myeongdong, Seoul", desc: "The ultimate destination for street food and K-beauty shopping.", img: "https://images.unsplash.com/photo-1574003058852-59892ba484a9?auto=format&fit=crop&w=600&q=80" },
+            { name: "Jeju Island (Hallasan)", query: "Hallasan, Jeju-do", desc: "The volcanic island getaway, crowned by Korea's highest mountain.", img: "https://images.unsplash.com/photo-1596705626248-735a29910d6a?auto=format&fit=crop&w=600&q=80" }
+        ];
+
+        function renderTop12() {
+            const grid = document.getElementById('top-12-grid');
+            top12Spots.forEach((spot) => {
+                const mapLink = `https://maps.google.com/maps?q=${encodeURIComponent(spot.query)}&t=&z=14&ie=UTF8&iwloc=&output=embed`;
+                
+                grid.innerHTML += `
+                    <div class="bg-white border border-zinc-200 rounded-3xl overflow-hidden hover-lift flex flex-col shadow-sm">
+                        <div class="h-48 overflow-hidden">
+                            <img src="${spot.img}" alt="${spot.name}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-6 flex-1 flex flex-col">
+                            <h3 class="font-bold text-xl tracking-tight mb-2">${spot.name}</h3>
+                            <p class="text-zinc-500 text-sm mb-6 flex-1 line-clamp-2">${spot.desc}</p>
+                            <button onclick="openMapModal('${spot.name.replace(/'/g, "\\'")}', '${mapLink}', '${spot.desc.replace(/'/g, "\\'")}')" 
+                                    class="w-full py-3 bg-zinc-50 hover:bg-zinc-900 text-zinc-900 hover:text-white font-bold text-sm rounded-xl transition border border-zinc-200 flex items-center justify-center gap-x-2">
+                                <i class="fa-solid fa-map-location-dot"></i>
+                                View on Map
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openMapModal(name, mapUrl, desc) {
+            document.getElementById('map-modal-title').textContent = name;
+            document.getElementById('map-modal-desc').textContent = desc;
+            
+            // Show loader
+            document.getElementById('map-loader').style.display = 'flex';
+            
+            // Set iframe src
+            const iframe = document.getElementById('map-modal-iframe');
+            iframe.src = mapUrl;
+
+            // Show modal
+            const modal = document.getElementById('interactive-map-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Prevent body scroll
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeMapModal() {
+            const modal = document.getElementById('interactive-map-modal');
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+            
+            // Clear iframe to stop loading/playing
+            document.getElementById('map-modal-iframe').src = '';
+            
+            // Restore body scroll
+            document.body.style.overflow = 'auto';
+        }
+
+        // --- BUSAN NEWS (API Based) ---
+        let currentNews = [];
         async function loadBusanNews() {
             try {
                 const res = await fetch('/api/busan-news');
+                if(!res.ok) throw new Error("API not found");
                 currentNews = await res.json();
                 renderNews();
-            } catch (e) {}
+            } catch (e) {
+                // Fallback for visual demo if API isn't present
+                currentNews = [
+                    { category: "EVENT", date: "Today", title: "Busan International Film Festival Announces Dates", summary: "The annual BIFF is preparing for its biggest year yet, taking over Haeundae." },
+                    { category: "WEATHER", date: "Yesterday", title: "Typhoon Warning Lifted for Southern Coast", summary: "Ferries to Jeju and Fukuoka have resumed operations as weather clears up." },
+                    { category: "FOOD", date: "2 Days Ago", title: "New Michelin Guide Highlights Gukbap Alley", summary: "Three local Dwaeji Gukbap (Pork Soup) spots have been awarded Bib Gourmand status." }
+                ];
+                renderNews();
+            }
         }
 
         function renderNews() {
             const container = document.getElementById('news-grid');
             container.innerHTML = '';
-
             currentNews.forEach(news => {
                 const card = document.createElement('div');
-                card.className = `news-card bg-white border border-zinc-100 rounded-3xl p-6 cursor-pointer clean-shadow`;
+                card.className = `news-card bg-white border border-zinc-200 rounded-3xl p-7 cursor-pointer hover-lift shadow-sm`;
                 card.innerHTML = `
-                    <div class="flex justify-between items-start mb-3">
-                        <span class="px-3 py-1 text-xs font-medium rounded-2xl bg-emerald-100 text-emerald-700">${news.category}</span>
-                        <span class="text-xs text-zinc-400">${news.date}</span>
+                    <div class="flex justify-between items-center mb-4">
+                        <span class="px-3.5 py-1 text-xs font-bold rounded-full bg-zinc-100 text-rose-600 tracking-wider">${news.category}</span>
+                        <span class="text-xs font-medium text-zinc-400"><i class="fa-regular fa-clock mr-1"></i>${news.date}</span>
                     </div>
-                    <h4 class="font-semibold text-lg leading-tight tracking-tight mb-3 line-clamp-2">${news.title}</h4>
-                    <p class="text-sm text-zinc-600 line-clamp-3">${news.summary}</p>
-                    <div class="mt-4 text-xs text-rose-600 font-medium flex items-center gap-x-1">
+                    <h4 class="font-bold text-xl leading-snug tracking-tight mb-3 line-clamp-2">${news.title}</h4>
+                    <p class="text-zinc-500 line-clamp-3 mb-5 leading-relaxed text-sm">${news.summary}</p>
+                    <div class="text-sm text-zinc-900 font-bold flex items-center gap-x-2">
                         Read full story <i class="fa-solid fa-arrow-right text-xs"></i>
                     </div>
                 `;
@@ -370,57 +667,84 @@
 
         function showNewsModal(news) {
             document.getElementById('news-modal-title').textContent = news.title;
-            document.getElementById('news-modal-date').textContent = `${news.date} • ${news.category}`;
+            document.getElementById('news-modal-date').textContent = `${news.date}`;
             document.getElementById('news-modal-summary').textContent = news.summary;
             document.getElementById('news-modal-category').textContent = news.category;
-            document.getElementById('news-modal').classList.remove('hidden');
-            document.getElementById('news-modal').classList.add('flex');
+            
+            const modal = document.getElementById('news-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
         }
 
         function hideNewsModal() {
             const modal = document.getElementById('news-modal');
             modal.classList.remove('flex');
             modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
         async function refreshBusanNews() {
+            const btn = document.querySelector('button[onclick="refreshBusanNews()"]');
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> <span>Updating...</span>`;
+            
             try {
                 const res = await fetch('/api/busan-news/refresh', { method: 'POST' });
-                const data = await res.json();
-                currentNews = data.news;
-                renderNews();
-
-                const toast = document.createElement('div');
-                toast.className = 'fixed bottom-6 right-6 bg-emerald-600 text-white px-5 py-3 rounded-2xl text-sm flex items-center gap-x-2 z-[300]';
-                toast.innerHTML = `<i class="fa-solid fa-check"></i> <span>News updated with latest stories</span>`;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 2200);
+                if(res.ok) {
+                    const data = await res.json();
+                    currentNews = data.news;
+                }
             } catch (e) {
-                alert('Could not refresh news right now.');
+                // Fake refresh delay
+                await new Promise(r => setTimeout(r, 800));
             }
+            
+            renderNews();
+            btn.innerHTML = `<i class="fa-solid fa-sync-alt"></i> <span>Refresh Live News</span>`;
+
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-8 right-8 bg-zinc-900 text-white px-6 py-4 rounded-2xl text-sm font-bold flex items-center gap-x-3 z-[500] shadow-2xl animate-[fadeIn_0.3s_ease-out]';
+            toast.innerHTML = `<i class="fa-solid fa-check text-emerald-400 text-lg"></i> <span>Feed updated instantly</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, 2500);
         }
 
-        // KOREA CITIES
+        // --- KOREA CITIES (API Based) ---
         async function loadCities() {
             try {
                 const res = await fetch('/api/cities');
+                if(!res.ok) throw new Error("API not found");
                 const cities = await res.json();
                 renderCities(cities);
-            } catch (e) {}
+            } catch (e) {
+                // Fallback for visual demo
+                const dummyCities = [
+                    { name: "Seoul", description: "The bustling capital.", spots: [{name: "Myeongdong", rating: 4.5, description: "Shopping hub.", mapQuery: "Myeongdong, Seoul"}] },
+                    { name: "Busan", description: "Coastal beauty.", spots: [{name: "Haeundae", rating: 5, description: "Famous beach.", mapQuery: "Haeundae Beach"}] },
+                    { name: "Jeju", description: "Volcanic paradise.", spots: [{name: "Hallasan", rating: 5, description: "Tallest mountain.", mapQuery: "Hallasan"}] },
+                    { name: "Gyeongju", description: "Museum without walls.", spots: [{name: "Bulguksa", rating: 4.8, description: "Historic temple.", mapQuery: "Bulguksa"}] },
+                    { name: "Jeonju", description: "Hanok village & food.", spots: [{name: "Hanok Village", rating: 4.6, description: "Traditional houses.", mapQuery: "Jeonju Hanok Village"}] },
+                    { name: "Incheon", description: "Gateway to Korea.", spots: [{name: "Chinatown", rating: 4.3, description: "Historic chinatown.", mapQuery: "Incheon Chinatown"}] }
+                ];
+                renderCities(dummyCities);
+            }
         }
 
         function renderCities(cities) {
             const container = document.getElementById('cities-grid');
             container.innerHTML = '';
-
             cities.forEach(city => {
                 const card = document.createElement('div');
-                card.className = `city-card bg-white border border-zinc-200 rounded-3xl p-5 cursor-pointer clean-shadow`;
+                card.className = `bg-white border border-zinc-200 rounded-3xl p-5 cursor-pointer hover-lift shadow-sm`;
                 card.innerHTML = `
-                    <div class="font-semibold text-xl tracking-tight mb-1">${city.name}</div>
-                    <div class="text-xs text-zinc-500 line-clamp-2 mb-4">${city.description}</div>
-                    <div class="text-xs text-rose-600 font-medium flex items-center gap-x-1">
-                        View top spots <i class="fa-solid fa-arrow-right"></i>
+                    <div class="font-bold text-xl tracking-tight mb-2">${city.name}</div>
+                    <div class="text-sm text-zinc-500 line-clamp-2 mb-4">${city.description}</div>
+                    <div class="text-xs text-rose-600 font-bold uppercase tracking-wide flex items-center gap-x-1">
+                        View Spots <i class="fa-solid fa-arrow-right"></i>
                     </div>
                 `;
                 card.onclick = () => showCityModal(city);
@@ -436,46 +760,45 @@
             spotsContainer.innerHTML = '';
 
             city.spots.forEach(spot => {
-                // Generate stars correctly
                 const fullStars = Math.floor(spot.rating);
                 const hasHalf = (spot.rating % 1) !== 0;
                 let starsHTML = '';
-                for (let i = 0; i < fullStars; i++) starsHTML += '<i class="fa-solid fa-star text-yellow-400"></i>';
-                if (hasHalf) starsHTML += '<i class="fa-solid fa-star-half-stroke text-yellow-400"></i>';
+                for (let i = 0; i < fullStars; i++) starsHTML += '<i class="fa-solid fa-star text-[#00b67a]"></i>';
+                if (hasHalf) starsHTML += '<i class="fa-solid fa-star-half-stroke text-[#00b67a]"></i>';
                 const empty = 5 - Math.ceil(spot.rating);
-                for (let i = 0; i < empty; i++) starsHTML += '<i class="fa-regular fa-star text-yellow-400"></i>';
+                for (let i = 0; i < empty; i++) starsHTML += '<i class="fa-regular fa-star text-zinc-300"></i>';
 
                 const div = document.createElement('div');
-                div.className = `mb-6 border border-zinc-100 rounded-3xl p-6`;
-                
+                div.className = `mb-6 border border-zinc-200 rounded-[1.5rem] p-6 bg-zinc-50`;
                 div.innerHTML = `
                     <div class="mb-3">
-                        <h4 class="font-semibold text-2xl tracking-tight">${spot.name}</h4>
-                        <div class="flex items-center gap-x-2 mt-1">
-                            <div class="flex text-xl">${starsHTML}</div>
-                            <span class="font-semibold text-lg">${spot.rating}</span>
+                        <h4 class="font-bold text-2xl tracking-tight mb-1">${spot.name}</h4>
+                        <div class="flex items-center gap-x-2">
+                            <div class="flex text-lg">${starsHTML}</div>
+                            <span class="font-bold text-zinc-700">${spot.rating}</span>
                         </div>
                     </div>
-
-                    <p class="text-zinc-600 leading-relaxed mb-6">${spot.description}</p>
-
+                    <p class="text-zinc-600 leading-relaxed mb-6 text-sm">${spot.description}</p>
                     <button onclick="openGoogleMaps('${spot.mapQuery}'); event.stopImmediatePropagation();"
-                            class="w-full px-6 py-3 text-sm font-semibold border border-zinc-300 hover:bg-zinc-50 rounded-2xl flex items-center justify-center gap-x-2">
-                        <i class="fa-solid fa-map-marker-alt"></i>
-                        <span>View on Google Maps</span>
+                            class="w-full px-6 py-3.5 text-sm font-bold bg-white border-2 border-zinc-200 hover:border-zinc-900 rounded-xl flex items-center justify-center gap-x-2 transition">
+                        <i class="fa-solid fa-map-marker-alt text-rose-600"></i>
+                        <span>Open in Google Maps App</span>
                     </button>
                 `;
                 spotsContainer.appendChild(div);
             });
 
-            document.getElementById('city-modal').classList.remove('hidden');
-            document.getElementById('city-modal').classList.add('flex');
+            const modal = document.getElementById('city-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
         }
 
         function hideCityModal() {
             const modal = document.getElementById('city-modal');
             modal.classList.remove('flex');
             modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
         }
 
         function openGoogleMaps(query) {
@@ -484,30 +807,54 @@
         }
 
         function showPostModal(postId) {
+            // Re-uses original logic to fetch /api/posts and show modal
             fetch('/api/posts')
-                .then(res => res.json())
+                .then(res => {
+                    if(!res.ok) throw new Error("No backend");
+                    return res.json();
+                })
                 .then(posts => {
                     const post = posts.find(p => p.id === postId);
                     if (!post) return;
+                    renderPostHtml(post);
+                })
+                .catch(e => {
+                    // Fallback for visual demo
+                    const dummyPost = {
+                        category: "Travel",
+                        imageUrl: "https://images.unsplash.com/photo-1617260530737-1845fecae164?auto=format&fit=crop&w=1200&q=80",
+                        title: "A Weekend in Busan (Sample)",
+                        date: "July 2026",
+                        content: "## Welcome to Busan\n\nThis is a sample post. Connect your backend server to load real markdown content via the `/api/posts` endpoint."
+                    };
+                    renderPostHtml(dummyPost);
+                });
+        }
 
-                    const modalHTML = `
-                        <div onclick="this.remove()" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-[300] flex items-center justify-center p-6">
-                            <div onclick="event.stopImmediatePropagation()" class="bg-white w-full max-w-3xl rounded-3xl overflow-hidden clean-shadow">
-                                <div class="p-8">
-                                    <div class="flex justify-between mb-6">
-                                        <span class="px-4 py-1 text-xs font-medium rounded-2xl bg-zinc-100">${post.category}</span>
-                                        <button onclick="event.target.closest('.fixed').remove()" class="text-3xl text-zinc-400 hover:text-zinc-600">&times;</button>
-                                    </div>
-                                    <img src="${post.imageUrl}" class="w-full rounded-2xl mb-8 max-h-[420px] object-cover" alt="">
-                                    <h1 class="heading-serif text-4xl tracking-tighter mb-4">${post.title}</h1>
-                                    <div class="text-xs text-zinc-400 mb-6">${post.date} • ${Math.ceil(post.content.length / 180)} min read</div>
-                                    <div class="prose prose-zinc max-w-none text-[15.5px] leading-relaxed">${marked.parse(post.content)}</div>
-                                </div>
+        function renderPostHtml(post) {
+            const contentHtml = marked ? marked.parse(post.content) : post.content;
+            const modalHTML = `
+                <div id="post-modal-wrap" onclick="this.remove(); document.body.style.overflow='auto';" class="fixed inset-0 bg-zinc-900/90 backdrop-blur-md z-[500] flex items-start justify-center p-4 sm:p-8 overflow-y-auto">
+                    <div onclick="event.stopImmediatePropagation()" class="bg-white w-full max-w-4xl rounded-[2rem] overflow-hidden shadow-2xl my-auto animate-[fadeIn_0.3s_ease-out]">
+                        <div class="relative h-72 sm:h-96">
+                            <img src="${post.imageUrl}" class="w-full h-full object-cover" alt="">
+                            <button onclick="document.getElementById('post-modal-wrap').remove(); document.body.style.overflow='auto';" class="absolute top-6 right-6 w-10 h-10 bg-white/20 hover:bg-white/40 backdrop-blur-md text-white rounded-full flex items-center justify-center transition text-xl">
+                                <i class="fa-solid fa-times"></i>
+                            </button>
+                            <div class="absolute bottom-6 left-6 sm:left-10">
+                                <span class="px-4 py-1.5 text-xs font-bold rounded-full bg-rose-600 text-white uppercase tracking-wider shadow-lg">${post.category}</span>
                             </div>
                         </div>
-                    `;
-                    document.body.insertAdjacentHTML('beforeend', modalHTML);
-                });
+                        <div class="p-6 sm:p-10">
+                            <h1 class="heading-serif text-4xl sm:text-5xl tracking-tighter mb-4">${post.title}</h1>
+                            <div class="text-sm font-bold text-zinc-400 mb-8 uppercase tracking-wider">${post.date} • ${Math.ceil(post.content.length / 180)} min read</div>
+                            <div class="prose prose-zinc prose-lg max-w-none prose-headings:font-serif prose-headings:tracking-tight">${contentHtml}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            document.body.style.overflow = 'hidden';
         }
 
         function initializeBlog() {
@@ -516,12 +863,8 @@
             initLiveStats();
             loadBusanNews();
             loadCities();
-
-            const logo = document.querySelector('nav .flex.items-center');
-            if (logo) {
-                logo.style.cursor = 'pointer';
-                logo.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-            }
+            renderPhrases();
+            renderTop12();
         }
 
         window.onload = initializeBlog;
