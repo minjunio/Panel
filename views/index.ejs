@@ -11,44 +11,16 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Playfair+Display:wght@700&amp;display=swap');
         
-        body {
-            font-family: 'Inter', system_ui, -apple-system, sans-serif;
-        }
+        body { font-family: 'Inter', system_ui, -apple-system, sans-serif; }
+        .heading-serif { font-family: 'Playfair Display', Georgia, serif; font-weight: 700; line-height: 1.05; }
+        .section-header { font-size: 2.1rem; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; }
+        .nav-scrolled { box-shadow: 0 1px 0 0 rgb(226 232 240); background-color: rgba(255,255,255,0.96); backdrop-filter: blur(12px); }
+        .city-card { transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1); }
+        .city-card:hover { transform: translateY(-6px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .clean-shadow { box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.08); }
         
-        .heading-serif {
-            font-family: 'Playfair Display', Georgia, serif;
-            font-weight: 700;
-            line-height: 1.05;
-        }
-
-        .section-header {
-            font-size: 2.1rem;
-            line-height: 1.1;
-            font-weight: 700;
-            letter-spacing: -0.03em;
-        }
-
-        .nav-scrolled {
-            box-shadow: 0 1px 0 0 rgb(226 232 240);
-            background-color: rgba(255,255,255,0.96);
-            backdrop-filter: blur(12px);
-        }
-
-        .city-card {
-            transition: all 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
-        }
-        
-        .city-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
-        }
-
-        .clean-shadow {
-            box-shadow: 0 10px 15px -3px rgb(15 23 42 / 0.08), 0 4px 6px -4px rgb(15 23 42 / 0.08);
-        }
-
-        .trustpilot-badge {
-            background: white;
+        .trustpilot {
+            background: #ffffff;
             border: 1px solid #e5e7eb;
         }
     </style>
@@ -59,7 +31,6 @@
     <nav id="navbar" class="bg-white border-b border-zinc-100 sticky top-0 z-50 transition-all">
         <div class="max-w-screen-2xl mx-auto px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Logo + Admin -->
                 <div class="flex items-center gap-x-4">
                     <div class="flex items-center gap-x-3">
                         <div class="w-9 h-9 bg-rose-600 rounded-2xl flex items-center justify-center">
@@ -71,26 +42,23 @@
                         </div>
                     </div>
                     
-                    <a href="/admin" 
-                       class="flex items-center gap-x-2 px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-3xl transition-colors border border-zinc-200">
+                    <a href="/admin" class="flex items-center gap-x-2 px-4 py-1.5 text-sm font-medium text-zinc-600 hover:text-zinc-900 hover:bg-zinc-100 rounded-3xl transition-colors border border-zinc-200">
                         <i class="fa-solid fa-lock text-xs"></i>
                         <span class="hidden sm:inline">Admin</span>
                     </a>
                 </div>
 
-                <!-- Nav Links -->
                 <div class="hidden md:flex items-center gap-x-8 text-sm font-medium">
                     <a href="#news" class="text-zinc-600 hover:text-zinc-900 transition">Busan News</a>
                     <a href="#cities" class="text-zinc-600 hover:text-zinc-900 transition">Explore Cities</a>
                     <a href="#stories" class="text-zinc-600 hover:text-zinc-900 transition">Stories</a>
                 </div>
 
-                <!-- Trustpilot Badge + Connect -->
                 <div class="flex items-center gap-x-3">
-                    <!-- Trustpilot Style Badge -->
-                    <div class="trustpilot-badge hidden lg:flex items-center gap-x-3 px-4 py-2 rounded-3xl clean-shadow">
+                    <!-- Trustpilot Badge -->
+                    <div class="trustpilot hidden lg:flex items-center gap-x-3 px-4 py-2 rounded-3xl clean-shadow">
                         <div>
-                            <div class="flex text-[#00b67a] text-lg leading-none">
+                            <div class="flex text-[#00b67a] text-lg">
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
                                 <i class="fa-solid fa-star"></i>
@@ -100,13 +68,12 @@
                             <div class="text-[10px] font-semibold text-[#00b67a] tracking-wider">TRUSTPILOT</div>
                         </div>
                         <div class="text-center">
-                            <div class="font-bold text-xl leading-none text-zinc-800">4.6</div>
+                            <div class="font-bold text-xl leading-none">4.6</div>
                             <div class="text-[10px] text-zinc-500 -mt-0.5">Excellent • 188 reviews</div>
                         </div>
                     </div>
 
-                    <a href="#connect" 
-                       class="px-5 py-2 text-sm font-medium bg-zinc-900 hover:bg-black text-white rounded-3xl transition flex items-center gap-x-2">
+                    <a href="#connect" class="px-5 py-2 text-sm font-medium bg-zinc-900 hover:bg-black text-white rounded-3xl transition flex items-center gap-x-2">
                         <i class="fa-brands fa-instagram"></i>
                         <span class="hidden sm:inline">Connect</span>
                     </a>
@@ -145,21 +112,21 @@
             </div>
         </div>
 
-        <!-- Trustpilot Badge on Hero (Right) -->
+        <!-- Trustpilot Badge on Hero -->
         <div class="hidden xl:block absolute top-8 right-8">
-            <div class="trustpilot-badge flex items-center gap-x-3 px-5 py-3 rounded-3xl clean-shadow">
+            <div class="trustpilot flex items-center gap-x-3 px-5 py-3 rounded-3xl clean-shadow">
                 <div>
-                    <div class="flex text-[#00b67a] text-xl leading-none">
+                    <div class="flex text-[#00b67a] text-xl">
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star"></i>
                         <i class="fa-solid fa-star-half-stroke"></i>
                     </div>
-                    <div class="text-[10px] font-semibold text-[#00b67a] tracking-wider mt-0.5">TRUSTPILOT</div>
+                    <div class="text-[10px] font-semibold text-[#00b67a] tracking-wider">TRUSTPILOT</div>
                 </div>
                 <div class="text-center">
-                    <div class="font-bold text-2xl leading-none text-zinc-800">4.6</div>
+                    <div class="font-bold text-2xl leading-none">4.6</div>
                     <div class="text-xs text-zinc-500 -mt-0.5">Excellent • 188 reviews</div>
                 </div>
             </div>
@@ -208,15 +175,14 @@
                 <div class="uppercase tracking-[2.5px] text-xs font-semibold text-rose-600 mb-1">BUSAN UPDATES</div>
                 <h2 class="section-header tracking-tighter">Latest News in Busan</h2>
             </div>
-            <button onclick="refreshBusanNews()" 
-                    class="flex items-center gap-x-2 px-5 py-2 text-sm font-medium border border-zinc-300 hover:bg-white rounded-3xl transition">
+            <button onclick="refreshBusanNews()" class="flex items-center gap-x-2 px-5 py-2 text-sm font-medium border border-zinc-300 hover:bg-white rounded-3xl transition">
                 <i class="fa-solid fa-sync-alt"></i>
                 <span>Refresh News</span>
             </button>
         </div>
 
         <div id="news-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- Populated by JS -->
+            <!-- Populated by JavaScript -->
         </div>
     </section>
 
@@ -244,8 +210,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="blog-grid">
             <% posts.forEach(function(post) { %>
-                <div onclick="showPostModal(<%= post.id %>)" 
-                     class="group bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer clean-shadow hover:shadow-xl transition">
+                <div onclick="showPostModal(<%= post.id %>)" class="group bg-white border border-zinc-100 rounded-3xl overflow-hidden cursor-pointer clean-shadow hover:shadow-xl transition">
                     <div class="relative h-52 overflow-hidden">
                         <img src="<%= post.imageUrl %>" class="w-full h-full object-cover group-hover:scale-105 transition duration-700" alt="<%= post.title %>">
                         <div class="absolute top-4 left-4">
@@ -298,8 +263,7 @@
     <!-- NEWS MODAL -->
     <div id="news-modal" onclick="if (event.target.id === 'news-modal') hideNewsModal()" 
          class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-        <div onclick="event.stopImmediatePropagation()" 
-             class="modal bg-white w-full max-w-lg rounded-3xl overflow-hidden clean-shadow">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-white w-full max-w-lg rounded-3xl overflow-hidden clean-shadow">
             <div class="px-7 pt-7 pb-5">
                 <div class="flex justify-between items-start mb-4">
                     <div id="news-modal-category" class="px-4 py-1 text-xs font-medium rounded-2xl bg-zinc-100 text-zinc-600"></div>
@@ -318,8 +282,7 @@
     <!-- CITY SPOTS MODAL -->
     <div id="city-modal" onclick="if (event.target.id === 'city-modal') hideCityModal()" 
          class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-        <div onclick="event.stopImmediatePropagation()" 
-             class="modal bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-hidden clean-shadow flex flex-col">
+        <div onclick="event.stopImmediatePropagation()" class="modal bg-white w-full max-w-4xl max-h-[90vh] rounded-3xl overflow-hidden clean-shadow flex flex-col">
             
             <div class="px-8 pt-8 pb-5 flex justify-between items-center border-b">
                 <div>
@@ -330,14 +293,14 @@
             </div>
 
             <div class="p-8 overflow-y-auto flex-1" id="city-modal-spots">
-                <!-- Dynamically populated by JavaScript -->
+                <!-- Populated dynamically -->
             </div>
         </div>
     </div>
 
     <script>
         function initializeTailwind() {}
-
+        
         function initNavbar() {
             const navbar = document.getElementById('navbar');
             window.addEventListener('scroll', () => {
@@ -376,7 +339,7 @@
             }, 25000);
         }
 
-        // ========== BUSAN NEWS ==========
+        // BUSAN NEWS
         let currentNews = [];
 
         async function loadBusanNews() {
@@ -442,7 +405,7 @@
             }
         }
 
-        // ========== KOREA CITIES ==========
+        // KOREA CITIES
         async function loadCities() {
             try {
                 const res = await fetch('/api/cities');
@@ -478,14 +441,21 @@
             spotsContainer.innerHTML = '';
 
             city.spots.forEach(spot => {
-                // Generate stars properly
+                // Generate stars correctly
                 const fullStars = Math.floor(spot.rating);
-                const hasHalf = (spot.rating % 1) !== 0;
+                const hasHalfStar = (spot.rating % 1) !== 0;
                 let starsHTML = '';
-                for (let i = 0; i < fullStars; i++) starsHTML += '<i class="fa-solid fa-star text-yellow-400"></i>';
-                if (hasHalf) starsHTML += '<i class="fa-solid fa-star-half-stroke text-yellow-400"></i>';
-                const emptyStars = 5 - Math.ceil(spot.rating);
-                for (let i = 0; i < emptyStars; i++) starsHTML += '<i class="fa-regular fa-star text-yellow-400"></i>';
+                
+                for (let i = 0; i < fullStars; i++) {
+                    starsHTML += '<i class="fa-solid fa-star text-yellow-400"></i>';
+                }
+                if (hasHalfStar) {
+                    starsHTML += '<i class="fa-solid fa-star-half-stroke text-yellow-400"></i>';
+                }
+                const remaining = 5 - Math.ceil(spot.rating);
+                for (let i = 0; i < remaining; i++) {
+                    starsHTML += '<i class="fa-regular fa-star text-yellow-400"></i>';
+                }
 
                 const div = document.createElement('div');
                 div.className = `spot-card mb-6 border border-zinc-100 rounded-3xl overflow-hidden flex flex-col md:flex-row`;
